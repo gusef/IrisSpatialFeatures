@@ -1,0 +1,11 @@
+Package: Iris
+Type: Package
+Title: An R package to extract spatial features based on multiplex IF images 
+Version: 0.99
+Date: 2016-11-03
+Author: Daniel Gusenleitner
+Maintainer: Daniel Gusenleitner <Daniel_Gusenleitner@dfci.harvard.edu>
+Depends: R (>= 3.2.0)
+Imports: spatstat, limma, RColorBrewer, tiff
+Description: More about what it does (maybe more than one line)
+License: MIT License
