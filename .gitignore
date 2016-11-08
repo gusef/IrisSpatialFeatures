@@ -35,3 +35,7 @@ vignettes/*.pdf
 
 # interaction map outputs
 .png
+
+# cpp files
+.o
+.dll
