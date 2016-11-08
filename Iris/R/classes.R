@@ -25,5 +25,6 @@ Iris <- setClass("Iris",
                            pData = "data.frame",
                            counts = "matrix",
                            nearest_neighbors = "list",
-                           interactions = "list"))
+                           interactions = "list",
+                           proximity = "list"))
 

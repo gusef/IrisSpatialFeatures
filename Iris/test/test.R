@@ -38,5 +38,17 @@ silent_col=c('yellow')
 interaction.maps(dataset,int_markers,int_marker_cols,silent_markers,silent_col)
 
 #running the proximity / touching analysis
-touching <- extract_touches(dataset,raw=raw)
+#dataset <- extract.proximity(dataset)
+
+
+#regions of interest
+extract.ROI(dataset)@counts
+extract.ROI(dataset,normalize=F)@counts
+
+#get interactions again
+invasive_margin <- extract.ROI(dataset)
+invasive_margin <- extract.interactions(invasive_margin)
+plot.interactions(invasive_margin,"SOX10+ PDL1+",xlim_fix=4)
+
+
 
