@@ -3,32 +3,32 @@
 \alias{Iris}
 \docType{package}
 \title{
-\packageTitle{Iris}
+  A short title line describing what the package does
 }
 \description{
-\packageDescription{Iris}
+  A more detailed description of what the package does. A length
+  of about one to five lines is recommended.
 }
 \details{
-
-The DESCRIPTION file:
-\packageDESCRIPTION{Iris}
-\packageIndices{Iris}
-~~ An overview of how to use the package, including the most important functions ~~
+  This section should provide a more detailed overview of how to use the
+  package, including the most important functions.
 }
 \author{
-\packageAuthor{Iris}
+Your Name, email optional.
 
-Maintainer: \packageMaintainer{Iris}
+Maintainer: Your Name <your@email.com>
 }
 \references{
-~~ Literature or other references for background information ~~
+  This optional section can contain literature or other references for
+  background information.
 }
-~~ Optionally other standard keywords, one per line, from file KEYWORDS in the R documentation directory ~~
 \keyword{ package }
 \seealso{
-~~ Optional links to other man pages, e.g. ~~
-~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
+  Optional links to other man pages
 }
 \examples{
-~~ simple examples of the most important functions ~~
+  \dontrun{
+     ## Optional simple examples of the most important functions
+     ## These can be in \dontrun{} and \donttest{} blocks.   
+  }
 }

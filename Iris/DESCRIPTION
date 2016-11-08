@@ -5,7 +5,8 @@ Version: 0.99
 Date: 2016-11-03
 Author: Daniel Gusenleitner
 Maintainer: Daniel Gusenleitner <Daniel_Gusenleitner@dfci.harvard.edu>
-Depends: R (>= 3.2.0)
-Imports: spatstat, limma, RColorBrewer, tiff
-Description: More about what it does (maybe more than one line)
+Depends: R (>= 3.2.0), methods
+Imports: limma, Biobase, RColorBrewer, tiff, Rcpp (>= 0.12.7), spatstat
+Description: Iris reads the output of the PerkinElmer inForm software and calculates a variety of spatial statistics. In addition to simple counts, it can derive average nearest neighbors for each cell-type and interaction summary profiles for each celltype. These statistics are derived across images, both overall and regions of interest as defined by user defined masks.
 License: MIT License
+LinkingTo: Rcpp
