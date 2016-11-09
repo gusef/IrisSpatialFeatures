@@ -25,6 +25,10 @@ setMethod("read.raw",
               object@samples <- lapply(object@samples,read.raw.sample,raw_dir_name,label_fix,
                                        format,dir_filter,read_nuc_seg_map,read_dapi_map)
               names(object@samples) <- toupper(raw_directories)
+              
+              if(length(object@samples)==0){
+                  stop('No images files found in :',raw_dir_name)
+              }
               #automatically extract the counts
               object <- extract.counts(object)
               return(object)
@@ -325,7 +329,7 @@ setGeneric("extract.ROI", function(object, ...) standardGeneric("extract.ROI"))
 setMethod("extract.ROI",
           signature = "Iris",
           definition = function(object, ROI='filled_margin', normalize=T){
-              all_levels <- rownames(dataset@counts)
+              all_levels <- rownames(object@counts)
               ret <- lapply(object@samples, extract.ROI.sample, ROI, normalize, all_levels)
               object@samples <- lapply(ret,function(x)x$object)
               
@@ -337,9 +341,9 @@ setMethod("extract.ROI",
               object@interactions <- list()
               object@proximity <- list()
               
-              
               return(object)
           })
+
 
 
 setGeneric("extract.ROI.sample", function(object, ...) standardGeneric("extract.ROI.sample"))
@@ -350,7 +354,7 @@ setMethod("extract.ROI.sample",
               object@coordinates <- lapply(ret,function(x)x$object)
               ROI.counts <- rowSums(sapply(ret,function(x)x$ROI.counts))
               return(list(object=object, ROI.counts=ROI.counts))
-          })
+})
 
 
 setGeneric("extract.ROI.Coordinate", function(object,...) standardGeneric("extract.ROI.Coordinate"))
@@ -374,5 +378,5 @@ setMethod("extract.ROI.Coordinate",
                   ROI.counts <- ROI.counts/size
               }
               return(list(object=object,ROI.counts=ROI.counts))
-          })
+})
 
