@@ -23,6 +23,11 @@ dataset <- threshold.dataset(dataset,
 #get the counts
 get.counts(dataset)
 
+#counts in regions of interest
+extract.ROI(dataset)@counts
+extract.ROI(dataset,normalize=F)@counts
+
+
 #run the interaction analysis
 dataset <- extract.interactions(dataset)
 get.interactions(dataset,'CD8+ PD1+')
@@ -40,15 +45,11 @@ interaction.maps(dataset,int_markers,int_marker_cols,silent_markers,silent_col)
 #running the proximity / touching analysis
 #dataset <- extract.proximity(dataset)
 
-
-#regions of interest
-extract.ROI(dataset)@counts
-extract.ROI(dataset,normalize=F)@counts
-
 #get interactions again
 invasive_margin <- extract.ROI(dataset)
 invasive_margin <- extract.interactions(invasive_margin)
 plot.interactions(invasive_margin,"SOX10+ PDL1+",xlim_fix=4)
+
 
 
 
