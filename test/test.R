@@ -1,4 +1,4 @@
-setwd("C:/work/projects/imaging/Iris_repo/Iris/test")
+setwd("C:/work/projects/imaging/Iris_repo/test")
 rm(list=ls())
 gc()
 require(Iris)
@@ -6,7 +6,7 @@ require(RColorBrewer)
 
 raw_data <- Iris()
 raw_data<- read.raw(raw_data,
-                    raw_dir_name='../../../R_package/test/',
+                    raw_dir_name='../../R_package/test/',
                     format='Mantra')
 
 
