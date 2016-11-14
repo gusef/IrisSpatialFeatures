@@ -2,11 +2,11 @@ setwd("C:/work/projects/imaging/Iris_repo/test")
 rm(list=ls())
 gc()
 require(Iris)
-require(RColorBrewer)
+
 
 raw_data <- Iris()
 raw_data<- read.raw(raw_data,
-                    raw_dir_name='../../R_package/test/',
+                    raw_dir_name='data/',
                     format='Mantra')
 
 
@@ -21,11 +21,11 @@ dataset <- threshold.dataset(dataset,
                              base=c('CD8+','OTHER'))
 
 #get the counts
-get.counts(dataset)
+get.counts.per.mm2(dataset)
 
 #counts in regions of interest
-extract.ROI(dataset)@counts
-extract.ROI(dataset,normalize=F)@counts
+ROI <- extract.ROI(dataset,ROI='tumor')
+get.counts.per.mm2(ROI)
 
 
 #run the interaction analysis
@@ -33,7 +33,7 @@ dataset <- extract.interactions(dataset)
 get.interactions(dataset,'CD8+ PD1+')
 
 #plotting interaction summaries
-plot.interactions(dataset,"SOX10+ PDL1+",xlim_fix=4)
+plot.interactions(dataset,'CD8+ PD1+',xlim_fix=4)
 
 #plotting interaction maps
 int_markers <- c('CD8+ PD1+','SOX10+ PDL1+')
@@ -46,9 +46,10 @@ interaction.maps(dataset,int_markers,int_marker_cols,silent_markers,silent_col)
 #dataset <- extract.proximity(dataset)
 
 #get interactions again
-invasive_margin <- extract.ROI(dataset)
-invasive_margin <- extract.interactions(invasive_margin)
-plot.interactions(invasive_margin,"SOX10+ PDL1+",xlim_fix=4)
+tumor_area <- extract.ROI(dataset,ROI='tumor')
+get.counts.per.mm2(tumor_area)
+tumor_area <- extract.interactions(tumor_area)
+plot.interactions(tumor_area,"SOX10+ PDL1-",xlim_fix=4)
 
 
 

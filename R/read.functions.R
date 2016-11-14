@@ -19,7 +19,9 @@ setMethod("read.raw",
                                 format='Vectra',
                                 dir_filter='',
                                 read_nuc_seg_map=F,
-                                read_dapi_map=F){
+                                read_dapi_map=F,
+                                MicronsPerPixel=0.496){
+              object@microns_per_pixel=MicronsPerPixel
               raw_directories <- dir(raw_dir_name)
               object@samples <- lapply(raw_directories,function(x)Sample(sample_name=x))
               object@samples <- lapply(object@samples,read.raw.sample,raw_dir_name,label_fix,
@@ -329,12 +331,12 @@ setGeneric("extract.ROI", function(object, ...) standardGeneric("extract.ROI"))
 setMethod("extract.ROI",
           signature = "Iris",
           definition = function(object, ROI='filled_margin', normalize=T){
-              all_levels <- rownames(object@counts)
+              all_levels <- sort(unique(unlist(lapply(object@counts,colnames))))
               ret <- lapply(object@samples, extract.ROI.sample, ROI, normalize, all_levels)
               object@samples <- lapply(ret,function(x)x$object)
               
               #update the counts
-              object@counts <- sapply(ret,function(x)x$ROI.counts)
+              object@counts <- lapply(ret,function(x)x$ROI.counts)
               
               #reset all spatial stats
               object@nearest_neighbors <- list()
@@ -352,7 +354,8 @@ setMethod("extract.ROI.sample",
           definition = function(object, ROI, normalize, all_levels){
               ret <-lapply(object@coordinates, extract.ROI.Coordinate, ROI, normalize, all_levels)
               object@coordinates <- lapply(ret,function(x)x$object)
-              ROI.counts <- rowSums(sapply(ret,function(x)x$ROI.counts))
+              ROI.counts <- t(sapply(ret,function(x)x$ROI.counts))
+              colnames(ROI.counts) <- all_levels
               return(list(object=object, ROI.counts=ROI.counts))
 })
 

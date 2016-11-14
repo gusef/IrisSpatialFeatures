@@ -23,8 +23,10 @@ Sample <- setClass("Sample",
 Iris <- setClass("Iris",
                  slots = c(samples = "list",
                            pData = "data.frame",
-                           counts = "matrix",
+                           counts = "list",
                            nearest_neighbors = "list",
                            interactions = "list",
-                           proximity = "list"))
+                           proximity = "list",
+                           microns_per_pixel="numeric",
+                           markers="character"))
 

@@ -3,8 +3,7 @@ setGeneric("extract.interactions", function(object, ...) standardGeneric("extrac
 setMethod("extract.interactions",
           signature = "Iris",
           definition = function(object){
-              all_levels <- rownames(object@counts)
-              object@interactions <- lapply(object@samples,interactions.per.sample,all_levels)
+              object@interactions <- lapply(object@samples,interactions.per.sample,object@markers)
               names(object@interactions) <- names(object@samples)
               return(object)
 })
@@ -16,6 +15,13 @@ setMethod("interactions.per.sample",
               message(paste(object@sample_name,' ... processing...'))              
               interactions <- lapply(object@coordinates,interaction.events,all_levels)
             
+              areas_with_counts <- sapply(interactions,length) > 0
+              if (sum(areas_with_counts)==0){
+                  stop('There has to be at least one coordinate that has cells in it to calculate interactions')
+              }
+              
+              interactions <- interactions[areas_with_counts]
+              
               ppps <- lapply(interactions,function(x)x$ppp)
               ints <- lapply(interactions,function(x)x$ints)
 
@@ -57,6 +63,10 @@ setMethod("interaction.events",
               #extract membrane map and set membranes to -1
               if (is.null(object@raw@mem_seg_map)){
                   stop('The interaction analysis can only be run on datasets that include the membrane maps. Try the proximity analysis instead.')
+              }
+              
+              if (length(object@ppp$x)==0){
+                  return(list())
               }
 
               #fill in all of the cells in the membrane map using the cell ID
@@ -200,7 +210,7 @@ setGeneric("get.interactions", function(object, ...) standardGeneric("get.intera
 setMethod("get.interactions",
           signature = "Iris",
           definition = function(object,marker,normalize=T){
-              if (!marker %in% rownames(object@counts)){
+              if (!marker %in% object@markers){
                   stop(paste('There is no celltype: ',marker))
               }
 
@@ -226,10 +236,9 @@ setMethod("plot.interactions",
               stop(paste('Please run extract.interactions before plotting the interactions.'))
           }
               
-              
           int <- lapply(object@interactions,function(x)x$avg$mean)
           dat <- sapply(int,function(x)x[,label])
-          count <- object@counts[label,]
+          count <- get.counts.collapsed(object)[label,]
           labels <- rownames(dat)
           
           if (normalize){
@@ -255,8 +264,6 @@ setMethod("plot.interactions",
           if (is.null(palette)){
               palette <- brewer.pal(length(labels),"Spectral") 
           }
-    
-    
     
           #generate the plots
           op <- par(no.readonly = TRUE)

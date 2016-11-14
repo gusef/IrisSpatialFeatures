@@ -1,0 +1,2 @@
+Path	Sample Name	Tissue Category	First Cell Compartment	First Stain Component	Second Cell Compartment	Second Stain Component	Double Negative	Single PD-Ligand-1 (Opal 690)	Single PD-1 (Opal 540)	Double Positive	Tissue Category Area (Percent)	Number of Cells	PD-Ligand-1 (Opal 690) Threshold	PD-1 (Opal 540) Threshold	Lab ID	Slide ID	TMA Sector	TMA Row	TMA Column	TMA Field	inForm 2.1.5430.24864
+N:\METHODS PAPER\MELANOMA\BOND Rx\MULTIS	MEL29822_080416_1.im3		Membrane	PD-Ligand-1 (Opal 690)	Nucleus	PD-1 (Opal 540)	83.01 %	9.92 %	3.49 %	3.58 %	100.00 %	2319	4.2	14			0	0	0	0	
