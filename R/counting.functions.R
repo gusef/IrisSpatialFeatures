@@ -97,8 +97,8 @@ extractCountsF <- function(x,counter){
     return(counter)
 }
 
-setGeneric("extract.counts.noncollapsed", function(object, ...) standardGeneric("extract.counts.noncollapsed"))
-setMethod("extract.counts.noncollapsed",
+setGeneric("get.counts.noncollapsed", function(object, ...) standardGeneric("get.counts.noncollapsed"))
+setMethod("get.counts.noncollapsed",
           signature = "Iris",
           definition = function(object){
               counts <- object@counts
