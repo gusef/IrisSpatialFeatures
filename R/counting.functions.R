@@ -50,6 +50,19 @@ setMethod("get.counts.per.mm2",
           })
 
 
+setGeneric("get.count.ratios", function(object, ...) standardGeneric("get.count.ratios"))
+setMethod("get.count.ratios",
+          signature = "Iris",
+          definition = function(object, marker1, marker2){
+              ratios <- sapply(object@counts,function(x,m1,m2)x[,m1]/x[,m2],marker1,marker2)
+              ratios[is.infinite(ratios)] <- NA
+              means <- apply(ratios,2,mean,na.rm=T)
+              se <- apply(ratios,2,function(x)sd(x,na.rm = T)/sqrt(length(x[!is.na(x)])))
+              res <- paste(format(means,digits=1),'+/-',format(se,digits=1))   
+              names(res) <- sapply(object@samples,function(x)x@sample_name)
+              return(res)
+ })
+
 
 setGeneric("extract.counts", function(object, ...) standardGeneric("extract.counts"))
 setMethod("extract.counts",

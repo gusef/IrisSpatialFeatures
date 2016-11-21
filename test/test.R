@@ -21,10 +21,9 @@ dataset <- threshold.dataset(dataset,
 
 #get the counts
 get.counts.per.mm2(dataset)
-
 get.counts.collapsed(dataset)
 extract.counts.noncollapsed(dataset)
-
+get.count.ratios(dataset,'SOX10+ PDL1-','SOX10+ PDL1+')
 
 
 #run the nearest neighbor analysis
