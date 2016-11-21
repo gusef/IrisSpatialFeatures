@@ -86,7 +86,7 @@ extractCountsF <- function(x,counter){
 
 setGeneric("extract.counts.noncollapsed", function(object, ...) standardGeneric("extract.counts.noncollapsed"))
 setMethod("extract.counts.noncollapsed",
-          signature = "Sample",
+          signature = "Iris",
           definition = function(object){
               counts <- object@counts
               nams <- unique(unlist(lapply(counts,colnames)))

@@ -198,6 +198,9 @@ collapseMatrices <- function(mat,fun){
     return(collapsed)
 }
 
+################################################################
+##### Interaction getters
+
 setGeneric("get.all.interactions", function(object, ...) standardGeneric("get.all.interactions"))
 setMethod("get.all.interactions",
           signature = "Iris",
@@ -222,7 +225,6 @@ setMethod("get.interactions",
               }
               return(marker_int)
 })
-
 
 ################################################################
 ##### Interaction summary plotting functions

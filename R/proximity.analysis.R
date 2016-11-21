@@ -2,8 +2,8 @@ setGeneric("extract.proximity", function(object, ...) standardGeneric("extract.p
 setMethod("extract.proximity",
           signature = "Iris",
           definition = function(object, radii=c('Entire.Cell.Major.Axis', 'Entire.Cell.Minor.Axis'),
-                                uncertainty_margin=1, only_closest=T){
-              all_levels <- sort(rownames(object@counts))
+                                uncertainty_margin=1, only_closest=F){
+              all_levels <- object@markers
               object@proximity <- lapply(object@samples, touches.per.sample, radii, 
                                              uncertainty_margin, all_levels, only_closest)
               return(object)
@@ -26,11 +26,9 @@ setMethod("touching.events",
           signature = "Coordinate",
           definition = function(object, all_levels, radii, uncertainty_margin, only_closest){
               gc(verbose = F)
-              total <- matrix(NA,nrow=length(all_levels),ncol=length(all_levels))
+              total <- matrix(0,nrow=length(all_levels),ncol=length(all_levels))
               colnames(total) <- rownames(total) <- all_levels
-    
               for (from in all_levels){
-        
                   #extract the 'from' cells
                   f <- object@ppp[object@ppp$marks==from]
                   fr <- object@raw@data[object@ppp$marks==from,]
@@ -41,12 +39,9 @@ setMethod("touching.events",
                           #extract the 'to' cells
                           t <- object@ppp[object@ppp$marks==to]
                           tr <- object@raw@data[object@ppp$marks==to,]
-                          
+                    
                           #if there are no to cells, just count 0
-                          if (t$n == 0){
-                              total[to,from] <- 0
-                          }else{
-                              #get the distances between 'from' and 'to' cells
+                          if (t$n >0){                              #get the distances between 'from' and 'to' cells
                               d <- dist2(cbind(t$x, t$y),
                                          cbind(f$x, f$y))
                               #in case we look for connections with same cell-type we need to remove the self distances
@@ -55,14 +50,10 @@ setMethod("touching.events",
                               }
                               total[to,from] <- extract_proximity(d, fr, tr, radii, uncertainty_margin, only_closest)
                           }
-                        
                       }
-                     
                   }
-                
               }
               gc()
-            
               #getting the average number of interactions
               counts <- table(object@ppp$marks)[all_levels]
               avg_touching_events <- sweep(total,2,counts,'/')
@@ -99,7 +90,106 @@ extract_proximity <- function(d, fr, tr, radii, uncertainty_margin, only_closest
     return(counts)
 }
 
+################################################################
+##### Getter functions
 
 
+setGeneric("get.all.proximities", function(object, ...) standardGeneric("get.all.proximities"))
+setMethod("get.all.proximities",
+          signature = "Iris",
+          definition = function(object){
+              return(object@proximity)
+          })
 
+
+setGeneric("get.proximities", function(object, ...) standardGeneric("get.proximities"))
+setMethod("get.proximities",
+          signature = "Iris",
+          definition = function(object,marker,normalize=T){
+              if (!marker %in% object@markers){
+                  stop(paste('There is no celltype: ',marker))
+              }
+              
+              int <- lapply(object@proximity,function(x)x$avg_proximities)
+              marker_int <- sapply(int,function(x)x[,marker])
+              
+              if (normalize){
+                  marker_int <- sweep(marker_int,2,colSums(marker_int),'/')
+              }
+              return(marker_int)
+          })
+
+################################################################
+##### Interaction summary plotting functions
+
+setGeneric("plot.proximities", function(object, ...) standardGeneric("plot.proximities"))
+setMethod("plot.proximities",
+          signature = "Iris",
+          definition = function(object, label, ordering=NULL, normalize=T, palette=NULL,
+                                celltype_order=NULL, xlim_fix=13, topbar_cols='darkgrey'){
+              if (length(object@proximity)==0){
+                  stop(paste('Please run extract.proximity before plotting the interactions.'))
+              }
+              
+              int <- lapply(object@proximity,function(x)x$avg_proximities)
+              dat <- sapply(int,function(x)x[,label])
+              count <- get.counts.collapsed(object)[label,]
+              labels <- rownames(dat)
+              
+              if (normalize){
+                  dat <- sweep(dat,2,colSums(dat),'/')
+                  ylab <- 'Proportions of cells in proximity'
+                  
+              }else{
+                  ylab <- 'Average number of cells in proximity'
+              }
+              
+              if (!is.null(ordering)){
+                  if(length(ordering)==1){
+                      ordering <- order(colSums(dat[grep(ordering,rownames(dat),fixed=T),]),decreasing=T)
+                  }
+                  dat <- dat[,ordering]
+                  count <- count[ordering]
+              }
+              
+              if (!is.null(celltype_order)){
+                  dat <- dat[celltype_order,]
+              }
+              
+              if (is.null(palette)){
+                  palette <- brewer.pal(length(labels),"Spectral") 
+              }
+              
+              #generate the plots
+              op <- par(no.readonly = TRUE)
+              layout(as.matrix(2:1), widths = c(1), heights = c(0.2,0.8), respect = FALSE)
+              
+              par(mar = c(6, 4, 0, 0))
+              bp <- barplot(dat,
+                            cex.names = 1, # makes x-axis labels small enough to show all
+                            col = palette, # colors
+                            xlab = 'Sample',
+                            ylab = ylab,
+                            las=2,
+                            xaxt="n",
+                            xlim = c(0,ncol(dat)+xlim_fix),
+                            width = 1) 
+              text(cex=1, x=bp+0.8, y=-0.05, colnames(dat), xpd=TRUE, srt=45, pos=2)
+              
+              legend("right", 
+                     legend = labels, 
+                     fill = palette)
+              
+              par(mar = c(0.5, 4, 4, 0))
+              p <- barplot(count,
+                           xlim = c(0,ncol(dat)+xlim_fix),
+                           col = topbar_cols,
+                           axisnames = FALSE,
+                           axes=F,
+                           cex.names = 0.5,
+                           main=paste('In proximity to',label)) 
+              axis(side = 2,tick = T, labels = T,line = -1,las=1,cex.axis=0.5)
+              par(op)
+              return(dat)
+          })
 
