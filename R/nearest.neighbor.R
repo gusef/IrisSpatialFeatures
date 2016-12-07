@@ -207,4 +207,160 @@ buildLabel <- function(from,to,ext,transposed){
     return(label)
 }
 
+#####################################
+#ray plots 
+
+setGeneric("neighbor.ray.plot", function(object, ...) standardGeneric("neighbor.ray.plot"))
+setMethod("neighbor.ray.plot",
+          signature = "Iris",
+          definition = function(object,
+                                from_type,
+                                to_type,
+                                from_col='#EE7600',
+                                to_col='#028482',
+                                format='.pdf',
+                                plot_dir='plots'){
+              #generate the mapping directory
+              out_dir <- file.path(getwd(),plot_dir)
+              if (!file.exists(out_dir)){
+                  dir.create(out_dir, showWarnings = FALSE)
+              }
+              
+              #generate ray plots for each sample
+              lapply(object@samples, neighbor.ray.plot.sample, from_type, to_type, from_col, to_col, out_dir, format)
+              return('Done!')
+              
+          })
+
+setGeneric("neighbor.ray.plot.sample", function(object, ...) standardGeneric("neighbor.ray.plot.sample"))
+setMethod("neighbor.ray.plot.sample",
+          signature = "Sample",
+          definition = function(object, from_type, to_type, from_col, to_col, out_dir, format){
+              lapply(object@coordinates, neighbor.ray.plot.coord, from_type, to_type, from_col, to_col, out_dir, format)
+          })    
+
+setGeneric("neighbor.ray.plot.coord", function(object, ...) standardGeneric("neighbor.ray.plot.coord"))
+setMethod("neighbor.ray.plot.coord",
+          signature = "Coordinate",
+          definition = function(object, from_type, to_type, from_col, to_col, out_dir, format){
+              
+              nams <- paste(samp_name,object@coordinate_name,sep='_')
+              #extract all data    
+              int <- interactions$ints[[object@coordinate_name]]
+              ppp <- interactions$ppp[[object@coordinate_name]]                  
+              
+              #get the marker prefix
+              marker_prefix <- paste0(c(int_markers,silent_markers), collapse = '__')
+              
+              #extract membrane map and set membranes to -1
+              if (is.null(object@raw@mem_seg_map)){
+                  stop('The interaction maps can only be created on datasets that include the membrane maps.')
+              }
+              mem <- t(object@raw@mem_seg_map)
+              mem[mem>0] <- -1
+              
+              if (use_dapi){
+                  #extract membrane map and set membranes to -1
+                  if (is.null(object@raw@dapi_map)){
+                      stop('No DAPI map available, please set dapi_map flag to FALSE')
+                  } 
+                  dapi_map <- t(as.matrix(object@raw@dapi_map))
+                  dapi_map <- dapi_map/max(dapi_map)
+              }else{
+                  dapi_map <- mem
+                  dapi_map[dapi_map!=0] <- 0
+              }
+              
+              if (all(int_markers %in% ppp$marks)){
+                  
+                  #generate the masks
+                  #first the interaction ones
+                  int_marker_masks <- lapply(int_markers,generate_mask,mem,ppp)
+                  names(int_marker_masks) <- int_markers
+                  
+                  #then the ones we don't fill out
+                  sil_marker_masks <- lapply(silent_markers,generate_mask,mem,ppp)
+                  names(sil_marker_masks) <- silent_markers
+                  
+                  #fill in the marker masks that are relevant for interactions
+                  int_marker_masks <- lapply(int_markers,fill_in_maps,int_markers,int_marker_masks,mem,int,ppp)
+                  
+                  #make the outlines transparent to increase the contrast
+                  int_marker_cols2 <- unlist(lapply(int_marker_cols,function(x)c(rgb2hex(col2rgb(x)[,1]*outline_transparency),x)))
+                  silent_col <- unlist(lapply(silent_col,function(x)rgb2hex(col2rgb(x)[,1]*outline_transparency)))
+                  
+                  #color panel
+                  cols <- c(colorpanel(10,'black','blue'),silent_col,int_marker_cols2)
+                  breaks <- c(seq(0,1,0.1),(1:(length(silent_col)+length(int_marker_cols2)))+1.5)
+                  
+                  #add up all the outlines
+                  if (length(sil_marker_masks)>0){
+                      for (i in 1:length(sil_marker_masks)){
+                          dapi_map[sil_marker_masks[[i]]==1] <- i+1;
+                      }
+                  }
+                  
+                  col_count <- length(sil_marker_masks)
+                  #add up all the masks that have interactions
+                  for (i in 1:length(int_marker_masks)){
+                      dapi_map[int_marker_masks[[i]]==1] <- col_count + i+1;
+                      dapi_map[int_marker_masks[[i]]==2] <- col_count + i+2;
+                      col_count <- col_count+1
+                  }
+                  if (format=='.png'){
+                      png(file.path(map_dir,paste0(nams,'_',marker_prefix,'.png')),width=nrow(dapi_map),height=ncol(dapi_map))
+                      image(dapi_map[,ncol(dapi_map):1],col = cols,breaks=breaks,yaxt='n',xaxt='n')    
+                      legend('bottomleft',c(int_markers,silent_markers),col=c(int_marker_cols,silent_col),cex=1.5,pch=18)
+                      dev.off()
+                  }else if (format=='.tiff'){
+                      dapi_map[dapi_map>1] <- 1
+                      writeTIFF(t(dapi_map),file.path(map_dir,paste0(nams,'_',marker_prefix,'.tiff')))
+                  }
+              }
+          })
+
+
+
+make_NN_plot <- function(pheno1,pheno2,labels,main='',palette=c('#EE7600','#3182bd')){
+    #get distances
+    distance <- nncross(pheno1,pheno2)
+    nn <- cbind(data.frame(pheno1), 
+                distance$dist, 
+                data.frame(pheno2[distance$which,]))
+    colnames(nn) <- c('p1x','p1y','marks_p1','dist','p2x','p2y','marks_p2')
+    nn <- data.frame(nn)
+    
+    #get limits
+    superset <- superimpose(pheno1,pheno2)
+    xlim <- max(data.frame(superset)$x)
+    ylim <- max(data.frame(superset)$y)
+    
+    #generate the plot
+    plot <- nnPlot(nn,
+                   pheno2,
+                   pnames=labels,
+                   pcols=c(palette[1],palette[2]),
+                   xlim,
+                   ylim,
+                   main=main)
+}
+
+
+nnPlot <- function (nn, pheno2, pnames, pcols, xlim, ylim,main,lineColor='gray40') {
+    title = paste(main,'NN from',pnames[1],'to',pnames[2])
+    p = ggplot(data=data.frame(x=0, y=0), aes(x=x, y=y)) # Fake d.f needed to get background to draw...
+    p = p + labs(x='Cell X Position', y='Cell Y Position', title=title)
+    addScalesAndBackground(p,xlim,ylim)
+    p = p + geom_segment(data = data.frame(nn),
+                         aes(x=`p1x`, y=`p1y`, xend=`p2x`, yend=`p2y`), color=lineColor)
+    p = p + geom_point(data=data.frame(nn), 
+                       aes(x=`p1x`, y=`p1y`),
+                       color=pcols[1])
+    p = p + geom_point(data=data.frame(pheno2), 
+                       aes(`x`, `y`), 
+                       color=pcols[2])
+    p = p + scale_y_reverse()
+    p
+}
+
 

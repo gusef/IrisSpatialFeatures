@@ -59,22 +59,6 @@ plot.interactions(tumor_area,"SOX10+ PDL1-",xlim_fix=4)
 
 
 ############################################################################
-### Extract annotation
-
-#correlation with outcome
-annotation <- read.xlsx('Case list with response.xlsx',1)
-annotation$sample_name <- paste0('MEL',annotation$Case)
-annotation <- annotation[match(colnames(dat),annotation$sample_name),]
-
-
-res <- feature_selection(dat,annotation$Response)
-
-write.xlsx(res$t_test,file='automatic_feature_selection/Automatic_feature_selection_Mike_bond.xlsx',sheetName = 'Limma')
-write.xlsx(res$wilcox,file='automatic_feature_selection/Automatic_feature_selection_Mike_bond.xlsx',sheetName = 'Wilcox',append = T)
-
-topbar_cols <- col <- c('#af8dc3','#7fbf7b')[as.numeric(annotation$Response)]
-markers <- as.character(res$wilcox[1:20,1])
-
-
-
+### Extract spatial features for downstream processing
+spat_features <- extract.features(dataset)
 

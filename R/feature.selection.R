@@ -1,11 +1,16 @@
-
 ##############################################################################################################
 feature_selection <- function(dat,lab){
-
-    design <- model.matrix(~1+lab)
-    fit <- lmFit(dat, design)
-    fit <- eBayes(fit)
-    top_features <- topTable(fit, number=nrow(dat), adjust = "fdr",coef='labPR')
+    res <- sapply(1:nrow(dat),
+                  function(x,dat,lab)t.test(dat[x,lab==unique(lab)[1]],
+                                            dat[x,lab==unique(lab)[2]])$p.value,
+                  dat,
+                  lab)
+    ttest_res <- data.frame(Feature=rownames(dat),
+                            p.value=res,
+                            adj.p.Val=p.adjust(res,
+                                               method = 'BH',
+                                               n = length(res)))
+    ttest_res <- ttest_res[order(ttest_res$p.value),]
     
     #using a wilcoxon test
     res <- sapply(1:nrow(dat),
@@ -20,7 +25,7 @@ feature_selection <- function(dat,lab){
                                                 n = length(res)))
     wilcox_res <- wilcox_res[order(wilcox_res$p.value),]
     rownames(wilcox_res) <- NULL
-    return(list(t_test=top_features,
+    return(list(t_test=ttest_res,
                 wilcox=wilcox_res))
 }
 
@@ -28,7 +33,7 @@ feature_selection <- function(dat,lab){
 setGeneric("extract.features", function(object, ...) standardGeneric("extract.features"))
 setMethod("extract.features",
           signature = "Iris",
-          definition = function(object, name=''){
+          definition = function(object, name='',rm.na=F){
 
               counts <- extract_count_combinations(sapply(object@counts,colSums))
               dat <- extract_count_features(counts,'Counts')
@@ -50,6 +55,11 @@ setMethod("extract.features",
                   message('Skipping nearest neighbors .. please run extract.nearest.neighbor to include them.')
               }
               dat <- dat[!duplicated(rownames(dat)),]
+              #some of the ratios cause infinte values
+              dat[is.infinite(dat)]<-NA
+              if (rm.na){
+                  dat <- dat[rowSums(is.na(dat))==0,]
+              }
               return(dat)
 })
 
@@ -104,11 +114,6 @@ extractRatios <- function(mat,nam){
                                mat[grep(x,indices)[1],]/mat[grep(x,indices)[2],],
                            indices,
                            mat))
-        #if a ratio is NA that means both were 0 so the ratio is 1
-        ratios[is.nan(ratios)] <- 1
-        #if a ratio is inf it means that the denominator was 0 -> in this case we just set it to the maximum value of the dataset
-        ratios[is.infinite(ratios)] <- max(ratios[!is.infinite(ratios)])
-        
         #log2 to get a nicer behavior
         ratios <- log2(ratios)
         if (COUNTS){
