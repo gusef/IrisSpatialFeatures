@@ -19,6 +19,10 @@ dataset <- threshold.dataset(dataset,
                              marker_name='PD1',
                              base=c('CD8+','OTHER'))
 
+#generate overview plots
+overview.plot(dataset,outdir='overview/',palette=NULL,type='pdf')
+overview.plot(dataset,outdir='overview/',palette=NULL,type='png')
+
 #get the counts
 get.counts.per.mm2(dataset)
 get.counts.collapsed(dataset)
@@ -27,10 +31,16 @@ get.count.ratios(dataset,'SOX10+ PDL1-','SOX10+ PDL1+')
 
 
 #run the nearest neighbor analysis
-dataset <- extract.nearest.neighbor(dataset)
+dataset <- extract.nearest.neighbor(dataset,min_num_cells=2)
 get.nearest.neighbors(dataset,"SOX10+ PDL1+")
-plot.nearest.neighbor(dataset,'CD8+ PD1+','SOX10+ PDL1')
-plot.nearest.neighbor(dataset,'SOX10+ PDL1+','SOX10+ PDL1-')
+plot_nearest.neighbor(dataset,'CD8+ PD1+','SOX10+ PDL1')
+plot_nearest.neighbor(dataset,'SOX10+ PDL1+','SOX10+ PDL1-')
+
+dataset <- extract.nearest.neighbor(dataset,norm=F,min_num_cells=2)
+get.nearest.neighbors(dataset,"SOX10+ PDL1+")
+plot_nearest.neighbor(dataset,'CD8+ PD1+','SOX10+ PDL1')
+plot_nearest.neighbor(dataset,'SOX10+ PDL1+','SOX10+ PDL1-')
+
 
 #run the interaction analysis
 dataset <- extract.interactions(dataset)
@@ -48,13 +58,13 @@ interaction.maps(dataset,int_markers,int_marker_cols,silent_markers,silent_col)
 
 #running the proximity / touching analysis
 dataset <- extract.proximity(dataset)
-plot.proximities(dataset,"SOX10+ PDL1-",xlim_fix=4)
+plot_proximities(dataset,"SOX10+ PDL1-",xlim_fix=4)
 
 #get interactions again
 tumor_area <- extract.ROI(dataset,ROI='tumor')
 get.counts.per.mm2(tumor_area)
 tumor_area <- extract.interactions(tumor_area)
-plot.interactions(tumor_area,"SOX10+ PDL1-",xlim_fix=4)
+plot_interactions(tumor_area,"SOX10+ PDL1-",xlim_fix=4)
 
 
 

@@ -122,8 +122,8 @@ setMethod("get.proximities",
 ################################################################
 ##### Interaction summary plotting functions
 
-setGeneric("plot.proximities", function(object, ...) standardGeneric("plot.proximities"))
-setMethod("plot.proximities",
+setGeneric("plot_proximities", function(object, ...) standardGeneric("plot_proximities"))
+setMethod("plot_proximities",
           signature = "Iris",
           definition = function(object, label, ordering=NULL, normalize=T, palette=NULL,
                                 celltype_order=NULL, xlim_fix=13, topbar_cols='darkgrey'){

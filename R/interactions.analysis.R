@@ -229,8 +229,8 @@ setMethod("get.interactions",
 ################################################################
 ##### Interaction summary plotting functions
 
-setGeneric("plot.interactions", function(object, ...) standardGeneric("plot.interactions"))
-setMethod("plot.interactions",
+setGeneric("plot_interactions", function(object, ...) standardGeneric("plot_interactions"))
+setMethod("plot_interactions",
           signature = "Iris",
           definition = function(object, label, ordering=NULL, normalize=T, palette=NULL,
                                 celltype_order=NULL, xlim_fix=13, topbar_cols='darkgrey'){

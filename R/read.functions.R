@@ -183,8 +183,7 @@ setGeneric("extract_mask_data", function(object,...) standardGeneric("extract_ma
 setMethod("extract_mask_data",
           signature = "Coordinate",
           definition = function(object, img_names, sample_dir){
-             
-             inv_mar <- img_names[grep('_Invasive Margin.tif',img_names)]
+             inv_mar <- img_names[grep('_Invasive_Margin.tif',img_names)]
              if (length(inv_mar)>0){
                  object@mask$invasive_margin <- extract_mask(file.path(sample_dir, inv_mar))
                  object@mask$filled_margin <- growMarginC(object@mask$invasive_margin, 80)

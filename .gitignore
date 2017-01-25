@@ -33,8 +33,9 @@ vignettes/*.pdf
 *.knit.md
 .Rproj.user
 
-# interaction map outputs
+# plotting outputs
 .png
+.pdf
 
 # cpp files
 .o
