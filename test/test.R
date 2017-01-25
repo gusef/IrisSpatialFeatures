@@ -13,7 +13,7 @@ raw_data<- read.raw(raw_data,
 dataset <- threshold.dataset(raw_data,
                              marker='PD-Ligand-1 (Opal 690)',
                              marker_name='PDL1',
-                             base=c('SOX10+','OTHER'))
+                             base=c('SOX10+'))
 dataset <- threshold.dataset(dataset,
                              marker='PD-1 (Opal 540)',
                              marker_name='PD1',
@@ -36,12 +36,15 @@ get.nearest.neighbors(dataset,"SOX10+ PDL1+")
 plot_nearest.neighbor(dataset,'CD8+ PD1+','SOX10+ PDL1')
 plot_nearest.neighbor(dataset,'SOX10+ PDL1+','SOX10+ PDL1-')
 
-dataset <- extract.nearest.neighbor(dataset,norm=F,min_num_cells=2)
+dataset <- extract.nearest.neighbor(dataset,min_num_cells=2)
 get.nearest.neighbors(dataset,"SOX10+ PDL1+")
 plot_nearest.neighbor(dataset,'CD8+ PD1+','SOX10+ PDL1')
 plot_nearest.neighbor(dataset,'SOX10+ PDL1+','SOX10+ PDL1-')
 
+#ray plots for 
+neighbor.ray.plot(dataset,from_type='SOX10+ PDL1-',to_type='OTHER PD1-')
 
+                  
 #run the interaction analysis
 dataset <- extract.interactions(dataset)
 get.interactions(dataset,'CD8+ PD1+')
