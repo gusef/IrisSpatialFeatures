@@ -29,7 +29,10 @@ feature_selection <- function(dat,lab){
                 wilcox=wilcox_res))
 }
 
-
+#' Extract all spatial features
+#' @export
+#' 
+#' 
 setGeneric("extract.features", function(object, ...) standardGeneric("extract.features"))
 setMethod("extract.features",
           signature = "Iris",

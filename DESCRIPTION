@@ -1,12 +1,31 @@
 Package: Iris
 Type: Package
-Title: An R package to extract spatial features based on multiplex IF images 
+Title: A package to extract spatial features based on multiplex IF images
 Version: 0.99
 Date: 2016-11-03
 Author: Daniel Gusenleitner
 Maintainer: Daniel Gusenleitner <Daniel_Gusenleitner@dfci.harvard.edu>
-Depends: R (>= 3.2.0), methods
-Imports: Biobase, gplots, grDevices, RColorBrewer, Rcpp (>= 0.12.7), SpatialTools, spatstat, stats, tiff
-Description: Iris reads the output of the PerkinElmer inForm software and calculates a variety of spatial statistics. In addition to simple counts, it can derive average nearest neighbors for each cell-type and interaction summary profiles for each celltype. These statistics are derived across images, both overall and regions of interest as defined by user defined masks.
+Depends:
+    R (>= 3.2.0),
+    methods
+Imports:
+    Biobase,
+    gplots,
+    grDevices,
+    knitr,
+    RColorBrewer,
+    Rcpp (>= 0.12.7),
+    SpatialTools,
+    spatstat,
+    stats,
+    tiff
+Description: Iris reads the output of the PerkinElmer inForm software and
+    calculates a variety of spatial statistics. In addition to simple counts, it
+    can derive average nearest neighbors for each cell-type and interaction summary
+    profiles for each celltype. These statistics are derived across images, both
+    overall and regions of interest as defined by user defined masks.
 License: MIT + file LICENSE
 LinkingTo: Rcpp
+LazyData: true
+VignetteBuilder: knitr
+RoxygenNote: 5.0.1

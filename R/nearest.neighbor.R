@@ -1,7 +1,10 @@
 
 
 
-
+#' Extract the distance to each nearest neighbor for each cell-type
+#' @export
+#' 
+#' 
 setGeneric("extract.nearest.neighbor", function(object, ...) standardGeneric("extract.nearest.neighbor"))
 setMethod("extract.nearest.neighbor",
           signature = "Iris",
@@ -79,6 +82,11 @@ getToNeighbors <- function(to,classes,ppp,min_num_cells){
 ################################################################
 ##### Nearest Neighbors getters
 
+
+#' Get the nearest neighbor for each cell-type
+#' @export
+#' 
+#' 
 setGeneric("get.all.nearest.neighbors", function(object, ...) standardGeneric("get.all.nearest.neighbors"))
 setMethod("get.all.nearest.neighbors",
           signature = "Iris",
@@ -86,6 +94,10 @@ setMethod("get.all.nearest.neighbors",
               return(object@nearest_neighbors)
           })
 
+#' Get the nearest neighbor for a specified cell-type
+#' @export
+#' 
+#' 
 setGeneric("get.nearest.neighbors", function(object, ...) standardGeneric("get.nearest.neighbors"))
 setMethod("get.nearest.neighbors",
           signature = "Iris",
@@ -99,8 +111,13 @@ setMethod("get.nearest.neighbors",
               return(list(mean=nn,SE=se))
           })
 
-setGeneric("plot_nearest.neighbor", function(object, ...) standardGeneric("plot_nearest.neighbor"))
-setMethod("plot_nearest.neighbor",
+
+#' Plot nearest neighbor barplots for two cell types
+#' @export
+#' 
+#' 
+setGeneric("plot.nearest.neighbor", function(object, ...) standardGeneric("plot.nearest.neighbor"))
+setMethod("plot.nearest.neighbor",
           signature = "Iris",
           definition = function(object, from, to, ttest=TRUE, transposed=FALSE){
     marker_names <- object@markers
@@ -218,6 +235,11 @@ buildLabel <- function(from,to,ext,transposed){
 #####################################
 #ray plots 
 
+
+#' Plot nearest neighbor ray plots for each samples
+#' @export
+#' 
+#' 
 setGeneric("neighbor.ray.plot", function(object, ...) standardGeneric("neighbor.ray.plot"))
 setMethod("neighbor.ray.plot",
           signature = "Iris",

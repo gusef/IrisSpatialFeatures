@@ -1,3 +1,8 @@
+
+#' Run a proximity analysis on all samples
+#' @export
+#' 
+#' 
 setGeneric("extract.proximity", function(object, ...) standardGeneric("extract.proximity"))
 setMethod("extract.proximity",
           signature = "Iris",
@@ -93,7 +98,10 @@ extract_proximity <- function(d, fr, tr, radii, uncertainty_margin, only_closest
 ################################################################
 ##### Getter functions
 
-
+#' Get all proximity data for all cell-types in a sample
+#' @export
+#' 
+#' 
 setGeneric("get.all.proximities", function(object, ...) standardGeneric("get.all.proximities"))
 setMethod("get.all.proximities",
           signature = "Iris",
@@ -101,7 +109,10 @@ setMethod("get.all.proximities",
               return(object@proximity)
           })
 
-
+#' Get proximity data for a given cell-type
+#' @export
+#' 
+#' 
 setGeneric("get.proximities", function(object, ...) standardGeneric("get.proximities"))
 setMethod("get.proximities",
           signature = "Iris",
@@ -122,8 +133,12 @@ setMethod("get.proximities",
 ################################################################
 ##### Interaction summary plotting functions
 
-setGeneric("plot_proximities", function(object, ...) standardGeneric("plot_proximities"))
-setMethod("plot_proximities",
+#' Plot proximity analysis data
+#' @export
+#' 
+#' 
+setGeneric("plot.proximities", function(object, ...) standardGeneric("plot.proximities"))
+setMethod("plot.proximities",
           signature = "Iris",
           definition = function(object, label, ordering=NULL, normalize=T, palette=NULL,
                                 celltype_order=NULL, xlim_fix=13, topbar_cols='darkgrey'){

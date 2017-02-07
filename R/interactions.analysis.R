@@ -1,4 +1,9 @@
 
+
+#' Extract interactions between all cell-types
+#' @export
+#' 
+#' 
 setGeneric("extract.interactions", function(object, ...) standardGeneric("extract.interactions"))
 setMethod("extract.interactions",
           signature = "Iris",
@@ -201,6 +206,10 @@ collapseMatrices <- function(mat,fun){
 ################################################################
 ##### Interaction getters
 
+#' Get all interactions between all cell-types
+#' @export
+#' 
+#' 
 setGeneric("get.all.interactions", function(object, ...) standardGeneric("get.all.interactions"))
 setMethod("get.all.interactions",
           signature = "Iris",
@@ -208,7 +217,10 @@ setMethod("get.all.interactions",
               return(object@interactions)
 })
 
-
+#' Get interactions for a specific marker
+#' @export
+#' 
+#' 
 setGeneric("get.interactions", function(object, ...) standardGeneric("get.interactions"))
 setMethod("get.interactions",
           signature = "Iris",
@@ -229,8 +241,13 @@ setMethod("get.interactions",
 ################################################################
 ##### Interaction summary plotting functions
 
-setGeneric("plot_interactions", function(object, ...) standardGeneric("plot_interactions"))
-setMethod("plot_interactions",
+
+#' Interaction summary plot for all cell-types and all samples in a dataset
+#' @export
+#' 
+#' 
+setGeneric("plot.interactions", function(object, ...) standardGeneric("plot.interactions"))
+setMethod("plot.interactions",
           signature = "Iris",
           definition = function(object, label, ordering=NULL, normalize=T, palette=NULL,
                                 celltype_order=NULL, xlim_fix=13, topbar_cols='darkgrey'){
@@ -303,6 +320,11 @@ setMethod("plot_interactions",
 ################################################################
 ##### Interaction maps
 
+
+#' Plot interaction maps for all samples
+#' @export
+#' 
+#' 
 setGeneric("interaction.maps", function(object, ...) standardGeneric("interaction.maps"))
 setMethod("interaction.maps",
           signature = "Iris",

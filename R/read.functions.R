@@ -10,6 +10,29 @@
 #   ***_cell_seg_data_summary.txt
 #   ***_score_data.txt
 
+
+
+
+
+#' Read inForm output and store it in an Iris object.
+#' 
+#' @param object Iris object.
+#' @param raw_dir_name Directory that contains the raw files
+#' @param label_fix List of length 2 character vector that is used to fix filenames.
+#' @param format Output format: Currently only "Vectra" and "Mantra" are supported. 
+#' @param dir_filter Filter to select only certain directory names.
+#' @param read_nuc_seg_map Flag indicating whether the nuclear map should be read.
+#' @param read_dapi_map Flag indicating whether the dapi layer should be read.
+#' @param MicronsPerPixel Length of one pixel. Default: 0.496, corresponding to a 20x Mantra/Vectra images
+#' 
+#' @return Iris object.
+#' @examples
+#' raw_data <- Iris()
+#' raw_data<- read.raw(raw_data,
+#'                     raw_dir_name=system.file("extdata", package = "Iris"),
+#'                     format='Mantra')
+#' @docType methods
+#' @export
 setGeneric("read.raw", function(object, ...) standardGeneric("read.raw"))
 setMethod("read.raw",
           signature = "Iris",
@@ -20,12 +43,14 @@ setMethod("read.raw",
                                 dir_filter='',
                                 read_nuc_seg_map=F,
                                 read_dapi_map=F,
-                                MicronsPerPixel=0.496){
+                                MicronsPerPixel=0.496,
+                                invasive_margin_in_px=80,
+                                readMasks=T){
               object@microns_per_pixel=MicronsPerPixel
               raw_directories <- dir(raw_dir_name)
               object@samples <- lapply(raw_directories,function(x)Sample(sample_name=x))
               object@samples <- lapply(object@samples,read.raw.sample,raw_dir_name,label_fix,
-                                       format,dir_filter,read_nuc_seg_map,read_dapi_map)
+                                       format,dir_filter,read_nuc_seg_map,read_dapi_map,invasive_margin_in_px,readMasks)
               names(object@samples) <- toupper(raw_directories)
               
               if(length(object@samples)==0){
@@ -37,7 +62,23 @@ setMethod("read.raw",
 })
 
 
-
+#' Read inForm output and store it in an Iris object.
+#' 
+#' @param object Iris object.
+#' @param raw_dir_name Directory that contains the raw files
+#' @param label_fix List of length 2 character vector that is used to fix filenames.
+#' @param format Output format: Currently only "Vectra" and "Mantra" are supported. 
+#' @param dir_filter Filter to select only certain directory names.
+#' @param read_nuc_seg_map Flag indicating whether the nuclear map should be read.
+#' @param read_dapi_map Flag indicating whether the dapi layer should be read.
+#' @param MicronsPerPixel Length of one pixel. Default: 0.496, corresponding to a 20x Mantra/Vectra images
+#' 
+#' @return Iris object.
+#' @examples
+#' raw_data <- Iris()
+#' raw_data<- read.raw(raw_data,
+#'                     raw_dir_name=system.file("extdata", package = "Iris"),
+#'                     format='Mantra')
 setGeneric("read.raw.sample", function(object, ...) standardGeneric("read.raw.sample"))
 setMethod("read.raw.sample",
           signature = "Sample",
@@ -47,7 +88,9 @@ setMethod("read.raw.sample",
                                 format,
                                 dir_filter,
                                 read_nuc_seg_map,
-                                read_dapi_map){
+                                read_dapi_map,
+                                invasive_margin_in_px,
+                                readMasks){
               print(paste('Sample:', object@sample_name))
         
               #get sample directory
@@ -71,15 +114,21 @@ setMethod("read.raw.sample",
                   }else{
                       coordinates <- sub('^[^_]+_','',coords)
                   }
+              }else{
+                  stop('Unknown image format')
               }
               object@coordinates <- lapply(coordinates,function(x)Coordinate(coordinate_name=x))
               object@coordinates <-lapply(object@coordinates, read.raw.coordinate, sample_dir, image_names,
-                                          label_fix, format, read_nuc_seg_map, read_dapi_map)
+                                          label_fix, format, read_nuc_seg_map, read_dapi_map,invasive_margin_in_px,readMasks)
                                   
               names(object@coordinates) <- coordinates
               return(object)
 })
 
+#' Read inForm output from a single coordinate
+#' 
+#' @importFrom tiff readTIFF
+#' @importFrom spatstat owin
 setGeneric("read.raw.coordinate", function(object,...) standardGeneric("read.raw.coordinate"))
 setMethod("read.raw.coordinate",
           signature = "Coordinate",
@@ -89,7 +138,9 @@ setMethod("read.raw.coordinate",
                                 label_fix,
                                 format,
                                 read_nuc_seg_map,
-                                read_dapi_map){
+                                read_dapi_map,
+                                invasive_margin_in_px,
+                                readMasks){
               if (format == 'Vectra'){
                   img_names <- image_names[grep(object@coordinate_name,image_names)]
               }else if (format == 'Mantra'){
@@ -107,6 +158,7 @@ setMethod("read.raw.coordinate",
                                                     img_names[grep('cell_seg_data.txt$',img_names)]),
                                           sep='\t',
                                           as.is=T)
+              object@raw@data <- object@raw@data[object@raw@data$Phenotype!='',]
                   
               if (length(grep('_cell_seg_data_summary.txt$',img_names))>0){
                   object@raw@summary <- t(read.csv(file.path(sample_dir,
@@ -165,8 +217,17 @@ setMethod("read.raw.coordinate",
                                                    window = window, 
                                                    marks=factor(object@raw@data$Phenotype)))
               
-              #extract mask data
-              object <- extract_mask_data(object, img_names, sample_dir)
+              if (readMasks){
+                  #extract mask data
+                  object <- extract_mask_data(object, img_names, sample_dir, object@coordinate_name, invasive_margin_in_px)
+              }
+              
+              if (length(object@mask)>0){
+                  di <- dim(object@mask[[1]])
+                  object@size_in_px <- di[1]*di[2]
+              }else{
+                  object@size_in_px <- c(max(object@ppp$x),max(object@ppp$y))
+              }
               return(object)
               
 })
@@ -179,39 +240,67 @@ extract_mask <- function(filename){
     return(mask)    
 }
 
+#' Read and process all masks
+#' 
+#' @useDynLib Iris
+#' @importFrom Rcpp sourceCpp
 setGeneric("extract_mask_data", function(object,...) standardGeneric("extract_mask_data"))
 setMethod("extract_mask_data",
           signature = "Coordinate",
-          definition = function(object, img_names, sample_dir){
+          definition = function(object, img_names, sample_dir, coordinate_name, invasive_margin_in_px){
+              
+             #invasive margin
              inv_mar <- img_names[grep('_Invasive_Margin.tif',img_names)]
-             if (length(inv_mar)>0){
-                 object@mask$invasive_margin <- extract_mask(file.path(sample_dir, inv_mar))
-                 object@mask$filled_margin <- growMarginC(object@mask$invasive_margin, 80)
+             if (length(inv_mar)==0){
+                 stop(paste('_Invasive_Margin.tif for',coordinate_name, 'in',
+                            sample_dir, 'does not exists!'))
              }
+             inv_mar <- file.path(sample_dir, inv_mar)
+             object@mask$invasive_margin <- extract_mask(inv_mar)
+             object@mask$invasive_margin <- growMarginC(object@mask$invasive_margin, invasive_margin_in_px)
              
+             #tumor mask
              tumor_tif <- img_names[grep('_Tumor.tif', img_names)]
-             if (length(tumor_tif) > 0){
-                 object@mask$tumor <- extract_mask(file.path(sample_dir,tumor_tif))
+             if (length(tumor_tif)==0){
+                 stop(paste('_Tumor.tif for',coordinate_name, 'in',
+                            sample_dir, 'does not exists!'))
              }
-             
-             if (length(tumor_tif) > 0 && length(inv_mar) > 0){
-                 object@mask$tumor[object@mask$filled_margin > 0] <- 0
-             }
+             tumor_tif <- file.path(sample_dir,tumor_tif)
+             object@mask$tumor <- extract_mask(tumor_tif)
+             object@mask$tumor[object@mask$invasive_margin > 0] <- 0
+                 
+             #also add the stroma
+             object@mask$stroma <- object@mask$tumor
+             object@mask$stroma[object@mask$stroma==0] <- 1
+             object@mask$stroma[object@mask$tumor>0] <- 0
+             object@mask$stroma[object@mask$invasive_margin>0] <- 0
+
              return(object)
-    
 })
 
 ###########################################
 ######### Thresholding functions
 
-#Apply the thresholds on the entire dataset
-#raw data: is the object generated by readRawData
-#marker: is the name of the marker used in the score file
-#marker_name: is the corresponding name for the marker that should be used in the Phenotype column
-#base: is the cells for which a certain marker should be called
-#pheno_name: is the name of the phenotype column to be used
-#remove_blanks: indicates whether or not not called cells are to be removed
-
+#' This function reads the manually determined thresholds of certain markers (e.g. PD1, PD-L1) and splits selected celltypes into marker+ and marker- celltypes.
+#' 
+#' @param object Iris object.
+#' @param marker Name of the marker used in the score file.
+#' @param marker_name corresponding name, which should be appended at the selected cell types.
+#' @param base Vector of cell types for which the marker should be used.
+#' @param pheno_name Name of the phenotype column to be used. Default from inForm is "Phenotype".
+#' @param remove_blanks Flag that indicates whether or not not called cells are to be removed.
+#' 
+#' @return Iris object.
+#' @examples
+#' dataset <- threshold.dataset(raw_data,
+#'                              marker='PD-Ligand-1 (Opal 690)',
+#'                              marker_name='PDL1',
+#'                              base=c('SOX10+'))
+#' dataset <- threshold.dataset(dataset,
+#'                              marker='PD-1 (Opal 540)',
+#'                              marker_name='PD1',
+#'                              base=c('CD8+','OTHER'))
+#' @export
 setGeneric("threshold.dataset", function(object,...) standardGeneric("threshold.dataset"))
 setMethod("threshold.dataset",
           signature = "Iris",
@@ -234,7 +323,8 @@ setMethod("threshold_samples",
           signature = "Sample",
           definition = function (object, marker, marker_name, base, pheno_name, remove_blanks){
               #for each coordinate
-              object@coordinates <- lapply(object@coordinates,threshold_coords,marker,marker_name,base,pheno_name,remove_blanks)
+              object@coordinates <- lapply(object@coordinates,threshold_coords,marker,marker_name,
+                                           base,pheno_name,object@sample_name,remove_blanks)
               names(object@coordinates) <- sapply(object@coordinates,function(x)x@coordinate_name)
               return(object)
 })
@@ -242,7 +332,7 @@ setMethod("threshold_samples",
 setGeneric("threshold_coords", function(object,...) standardGeneric("threshold_coords"))
 setMethod("threshold_coords",
           signature = "Coordinate",
-          definition = function (object, marker, marker_name, base, pheno_name, remove_blanks){
+          definition = function (object, marker, marker_name, base, pheno_name, sample_name, remove_blanks){
               #remove the cells that are not called by inForm (usually not very many!)
               if (remove_blanks){
                   object@raw@data <- object@raw@data[object@raw@data[[pheno_name]]!='',] 
@@ -256,17 +346,20 @@ setMethod("threshold_coords",
               }
             
               #make a combined phenotype column in the rawdata
-              if (!'Phenotype.combined'%in%colnames(object@raw@data)){
-                  object@raw@data$Phenotype.combined <- object@raw@data[[pheno_name]]
+              if (!paste0(pheno_name,'.combined')%in%colnames(object@raw@data)){
+                  object@raw@data[[paste0(pheno_name,'.combined')]] <- object@raw@data[[pheno_name]]
               }
               
               #get the thresholds for the marker we want to score
               scoring <- getScoring(object)
               #r automatically replaces special characters with '.' when they are used for names so I'm fixing this
-              marker <- gsub('[ \\(\\)]','.',marker)
-              marker <- gsub('-','.',marker)
+              mark <- gsub('[ \\(\\)]','.',marker)
+              mark <- gsub('-','.',mark)
               
-              scoring <- scoring[scoring$Component==marker,]
+              if(sum(scoring$Component==mark) == 0){
+                 stop('Could not find Score for: ',marker,' for Sample: ',sample_name,' Coordinate: ',object@coordinate_name)
+              }
+              scoring <- scoring[scoring$Component==mark,]
             
               #extract the current marker expression
               expression <- object@raw@data[[paste(scoring$Compartment,
@@ -329,39 +422,20 @@ setMethod("getScoring",
 ########################################################################################################################
 ###ROI functions
 
-setGeneric("extract.ROI.Coordinate", function(object,...) standardGeneric("extract.ROI.Coordinate"))
-setMethod("extract.ROI.Coordinate",
-          signature = "Coordinate",
-          definition = function(object, ROI, normalize, all_levels){
-              #reduce to the filter
-              mask <- object@mask[[ROI]]
-              filter <- sapply(1:length(object@ppp$x),function(i,dat,mask)mask[dat$x[i],dat$y[i]]==1,object@ppp,mask)
-              object@ppp <- object@ppp[filter,]
-              object@raw@data <- object@raw@data[filter,]
-              
-              #get the ROI counts
-              ROI.counts <- table(object@ppp$marks)
-              ROI.counts <- ROI.counts[all_levels]
-              ROI.counts[is.na(ROI.counts)] <- 0
-              
-              #normalize the counts by the ROI size to make them comparable across images
-              if (normalize){
-                  size <- sum(mask)/length(mask)
-                  ROI.counts <- ROI.counts/size
-              }
-              return(list(object=object,ROI.counts=ROI.counts))
-          })
 
+#' Extract ROI
+#' @export
+#' 
+#' 
 setGeneric("extract.ROI", function(object, ...) standardGeneric("extract.ROI"))
 setMethod("extract.ROI",
           signature = "Iris",
-          definition = function(object, ROI='filled_margin', normalize=T){
+          definition = function(object, ROI='invasive_margin'){
               all_levels <- sort(unique(unlist(lapply(object@counts,colnames))))
-              ret <- lapply(object@samples, extract.ROI.sample, ROI, normalize, all_levels)
-              object@samples <- lapply(ret,function(x)x$object)
+              object@samples <- lapply(object@samples, extract.ROI.sample, ROI, all_levels)
               
               #update the counts
-              object@counts <- lapply(ret,function(x)x$ROI.counts)
+              object <- extract.counts(object)
               
               #reset all spatial stats
               object@nearest_neighbors <- list()
@@ -372,16 +446,25 @@ setMethod("extract.ROI",
           })
 
 
-
 setGeneric("extract.ROI.sample", function(object, ...) standardGeneric("extract.ROI.sample"))
 setMethod("extract.ROI.sample",
           signature = "Sample",
-          definition = function(object, ROI, normalize, all_levels){
-              ret <-lapply(object@coordinates, extract.ROI.Coordinate, ROI, normalize, all_levels)
-              object@coordinates <- lapply(ret,function(x)x$object)
-              ROI.counts <- t(sapply(ret,function(x)x$ROI.counts))
-              colnames(ROI.counts) <- all_levels
-              return(list(object=object, ROI.counts=ROI.counts))
+          definition = function(object, ROI, all_levels){
+              object@coordinates <- lapply(object@coordinates, extract.ROI.Coordinate, ROI, all_levels)
+              return(object)
           })
 
 
+setGeneric("extract.ROI.Coordinate", function(object,...) standardGeneric("extract.ROI.Coordinate"))
+setMethod("extract.ROI.Coordinate",
+          signature = "Coordinate",
+          definition = function(object, ROI, all_levels){
+              #reduce to the filter
+              mask <- object@mask[[ROI]]
+              filter <- sapply(1:length(object@ppp$x),function(i,dat,mask)mask[dat$x[i],dat$y[i]]==1,object@ppp,mask)
+              object@ppp <- object@ppp[filter,]
+              object@raw@data <- object@raw@data[filter,]
+              object@size_in_px <- sum(mask>0) 
+              
+              return(object)
+          })

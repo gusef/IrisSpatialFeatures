@@ -1,4 +1,7 @@
-
+#' Plot all coordinates in a given dataset
+#' @export
+#' 
+#' 
 setGeneric("overview.plot", function(object, ...) standardGeneric("overview.plot"))
 setMethod("overview.plot",
           signature = "Iris",
@@ -28,6 +31,21 @@ setMethod("overview.plot.sample",
                  height)        
 })
 
+
+#' Plot a single coordinate
+#' 
+#' @importFrom RColorBrewer brewer.pal
+#' @param object A coordinate object
+#' @param sample_name Name of the current sample.
+#' @param all_levels All the cell types analyzed in the dataset.
+#' @param outdir Output directory.
+#' @param palette Vector of colors
+#' @param type Type of output file type, either 'pdf' or 'png'
+#' @param width Width of the plot (inches for pdf and pixels for png)
+#' @param height Height of the plot (inches for pdf and pixels for png)
+#' 
+#' @examples
+#' plotting
 setGeneric("overview.plot.coord", function(object, ...) standardGeneric("overview.plot.coord"))
 setMethod("overview.plot.coord",
           signature = "Coordinate",
