@@ -1,14 +1,23 @@
+
 #' Plot all coordinates in a given dataset
+#' 
+#' @param x Sample object of the Iris package.
+#' @param outdir Output directory (default: './')
+#' @param palette Color palette used for the different cell-types. (default: NULL)
+#' @param type File format for the plots. Can bei either 'pdf' or 'png'. (default: 'pdf')
+#' @param width Width of the plot in inches for pdf and pixels for png. (default: 10)
+#' @param height Heigth of the plot in inches for pdf and pixels for png. (default: 7)
+#' 
+#' @docType methods
 #' @export
 #' 
-#' 
-setGeneric("overview.plot", function(object, ...) standardGeneric("overview.plot"))
+setGeneric("overview.plot", function(x, ...) standardGeneric("overview.plot"))
 setMethod("overview.plot",
           signature = "Iris",
-          definition = function(object,outdir='./',palette=NULL,type='pdf',width=10,height=7){
-          lapply(object@samples,
+          definition = function(x,outdir='./',palette=NULL,type='pdf',width=10,height=7){
+          lapply(x@samples,
                  overview.plot.sample,
-                 all_levels=object@markers,
+                 all_levels=x@markers,
                  outdir,
                  palette,
                  type,
@@ -16,13 +25,13 @@ setMethod("overview.plot",
                  height)
 })
 
-setGeneric("overview.plot.sample", function(object, ...) standardGeneric("overview.plot.sample"))
+setGeneric("overview.plot.sample", function(x, ...) standardGeneric("overview.plot.sample"))
 setMethod("overview.plot.sample",
           signature = "Sample",
-          definition = function(object,all_levels,outdir,palette,type,width,height){
-          lapply(object@coordinates,
+          definition = function(x,all_levels,outdir,palette,type,width,height){
+          lapply(x@coordinates,
                  overview.plot.coord,
-                 sample_name=object@sample_name,
+                 sample_name=x@sample_name,
                  all_levels,
                  outdir,
                  palette,
@@ -34,8 +43,16 @@ setMethod("overview.plot.sample",
 
 #' Plot a single coordinate
 #' 
+#' @importFrom graphics legend
+#' @importFrom graphics par
+#' @importFrom graphics plot
+#' @importFrom graphics layout
+#' @importFrom grDevices dev.off
+#' @importFrom grDevices pdf
+#' @importFrom grDevices png
 #' @importFrom RColorBrewer brewer.pal
-#' @param object A coordinate object
+#' 
+#' @param x A coordinate object
 #' @param sample_name Name of the current sample.
 #' @param all_levels All the cell types analyzed in the dataset.
 #' @param outdir Output directory.
@@ -43,13 +60,12 @@ setMethod("overview.plot.sample",
 #' @param type Type of output file type, either 'pdf' or 'png'
 #' @param width Width of the plot (inches for pdf and pixels for png)
 #' @param height Height of the plot (inches for pdf and pixels for png)
-#' 
-#' @examples
-#' plotting
-setGeneric("overview.plot.coord", function(object, ...) standardGeneric("overview.plot.coord"))
+
+
+setGeneric("overview.plot.coord", function(x, ...) standardGeneric("overview.plot.coord"))
 setMethod("overview.plot.coord",
           signature = "Coordinate",
-          definition = function(object,sample_name,all_levels,outdir,palette,type,width,height){
+          definition = function(x,sample_name,all_levels,outdir,palette,type,width,height){
   
      if (is.null(palette)){
          palette <- brewer.pal(length(all_levels),'Spectral')
@@ -57,11 +73,11 @@ setMethod("overview.plot.coord",
      mapping <- data.frame(col=palette,lvl=all_levels)
      
      #preprocess data
-     df <- data.frame(object@ppp)
+     df <- data.frame(x@ppp)
      df$cols <- mapping$col[match(df$marks,mapping$lvl)]
      
      #build the filename
-     file_stub <- paste0(sample_name,'_',object@coordinate_name)
+     file_stub <- paste0(sample_name,'_',x@coordinate_name)
             
      if (type == 'pdf'){
          pdf(file = file.path(outdir,paste0(file_stub,'.pdf')),width=width,height=height)
@@ -76,7 +92,7 @@ setMethod("overview.plot.coord",
           pch=18,
           ylab='y',
           xlab='x',
-          main=paste(sample_name,'-',object@coordinate_name))             
+          main=paste(sample_name,'-',x@coordinate_name))             
      par(mar=c(1,1,1,1))
      image(matrix(c(1,1,1,1),ncol=2),col='white',axes=F)
      legend('left',col = palette,legend = all_levels,pch=18,cex = 0.8)

@@ -1,28 +1,31 @@
 
 
-
 #' Extract the distance to each nearest neighbor for each cell-type
+#' 
+#' @param x Iris object
+#' @param ... Additional arguments
+#' 
+#' @docType methods
 #' @export
 #' 
-#' 
-setGeneric("extract.nearest.neighbor", function(object, ...) standardGeneric("extract.nearest.neighbor"))
+setGeneric("extract.nearest.neighbor", function(x, ...) standardGeneric("extract.nearest.neighbor"))
 setMethod("extract.nearest.neighbor",
           signature = "Iris",
-          definition = function(object, min_num_cells=10){
-    all_levels <- object@markers
-    object@nearest_neighbors <- lapply(object@samples,
+          definition = function(x, min_num_cells=10){
+    all_levels <- x@markers
+    x@nearest_neighbors <- lapply(x@samples,
                                        nearest.neighbor.sample,
                                        all_levels,
                                        min_num_cells)
-    return(object)
+    return(x)
 })
 
 
-setGeneric("nearest.neighbor.sample", function(object, ...) standardGeneric("nearest.neighbor.sample"))
+setGeneric("nearest.neighbor.sample", function(x, ...) standardGeneric("nearest.neighbor.sample"))
 setMethod("nearest.neighbor.sample",
           signature = "Sample",
-          definition = function(object, all_levels, min_num_cells){
-    res <- lapply(object@coordinates,nearest.neighbor.coord.raw,all_levels,min_num_cells)
+          definition = function(x, all_levels, min_num_cells){
+    res <- lapply(x@coordinates,nearest.neighbor.coord.raw,all_levels,min_num_cells)
 
     means <- lapply(res,function(x)x$means)
     vars <- lapply(res,function(x)x$vars)
@@ -42,11 +45,11 @@ setMethod("nearest.neighbor.sample",
     return(list(means=means,SE=ses))
 })
 
-setGeneric("nearest.neighbor.coord.raw", function(object, ...) standardGeneric("nearest.neighbor.coord.raw"))
+setGeneric("nearest.neighbor.coord.raw", function(x, ...) standardGeneric("nearest.neighbor.coord.raw"))
 setMethod("nearest.neighbor.coord.raw",
           signature = "Coordinate",
-          definition = function(object, all_levels, min_num_cells){
-              ppp <- object@ppp
+          definition = function(x, all_levels, min_num_cells){
+              ppp <- x@ppp
               res <- lapply(all_levels,getToNeighbors,all_levels,ppp,min_num_cells)
               means <- t(sapply(res,function(x)x['means',]))
               vars <- t(sapply(res,function(x)x['vars',]))
@@ -62,6 +65,9 @@ setMethod("nearest.neighbor.coord.raw",
               return(list(means=means,vars=vars,nums=nums))
 })
 
+
+#' @importFrom spatstat nncross
+#' @importFrom stats var
 getNearestNeighbor <- function(from,to,ppp,min_num_cells){
     if (sum(ppp$marks==from) < min_num_cells | sum(ppp$marks==to) < min_num_cells){
         dis <- NA
@@ -87,40 +93,52 @@ getToNeighbors <- function(to,classes,ppp,min_num_cells){
 #' @export
 #' 
 #' 
-setGeneric("get.all.nearest.neighbors", function(object, ...) standardGeneric("get.all.nearest.neighbors"))
+setGeneric("get.all.nearest.neighbors", function(x, ...) standardGeneric("get.all.nearest.neighbors"))
 setMethod("get.all.nearest.neighbors",
           signature = "Iris",
-          definition = function(object){
-              return(object@nearest_neighbors)
+          definition = function(x){
+              return(x@nearest_neighbors)
           })
 
 #' Get the nearest neighbor for a specified cell-type
 #' @export
 #' 
 #' 
-setGeneric("get.nearest.neighbors", function(object, ...) standardGeneric("get.nearest.neighbors"))
+setGeneric("get.nearest.neighbors", function(x, ...) standardGeneric("get.nearest.neighbors"))
 setMethod("get.nearest.neighbors",
           signature = "Iris",
-          definition = function(object,marker,normalize=T){
-              if (!marker %in% object@markers){
+          definition = function(x,marker,normalize=T){
+              if (!marker %in% x@markers){
                   stop(paste('There is no celltype: ',marker))
               }
               
-              nn <- sapply(object@nearest_neighbors,function(x,y)x$means[,y],marker)
-              se <- sapply(object@nearest_neighbors,function(x,y)x$SE[,y],marker)
+              nn <- sapply(x@nearest_neighbors,function(x,y)x$means[,y],marker)
+              se <- sapply(x@nearest_neighbors,function(x,y)x$SE[,y],marker)
               return(list(mean=nn,SE=se))
           })
 
 
-#' Plot nearest neighbor barplots for two cell types
-#' @export
+#' Plot average nearest neighbor barplots for two cell types. This measurement is not symmetric, so if 'from' and 'to' are switched it will result in different results.
+#' For the 'to' parameter this function allows a cell-type without '+' or '-' in the end. Indicating that the distances from the first cell-type should be calculated 
+#' against both '+/-' and a paired t-test should be calculated. For example we want to calculate the average distance between SOX10 PDL1+ melanoma cells against
+#' both CD8 PD1+ and CD8 PD1- cells, the 'CD8 PD1' would be speficified as 'to' parameter, 2 distances would be calculated for each sample and a two-sided paired t-test calculated
+#' to test for significant differences. 
 #' 
+#' @param x Iris object.
+#' @param from Cell-type from which the nearest neighbor is calculated.
+#' @param to Cell-type to which the nearest neighbor is calculated.
+#' @param ttest Flag indicating whether a paired t-test should be calculated. (default: TRUE)
+#' @param transposed Switches 'from' and 'to' cell-type. This way the (default: FALSE)
+#' @importFrom graphics barplot
+#' @importFrom graphics mtext
+#' @importFrom stats t.test
+#' @export 
 #' 
-setGeneric("plot.nearest.neighbor", function(object, ...) standardGeneric("plot.nearest.neighbor"))
+setGeneric("plot.nearest.neighbor", function(x, ...) standardGeneric("plot.nearest.neighbor"))
 setMethod("plot.nearest.neighbor",
           signature = "Iris",
-          definition = function(object, from, to, ttest=TRUE, transposed=FALSE){
-    marker_names <- object@markers
+          definition = function(x, from, to, ttest=TRUE, transposed=FALSE){
+    marker_names <- x@markers
     
     #grab the relevant markers
     comp <- grep(to,marker_names,fixed = T)
@@ -132,12 +150,12 @@ setMethod("plot.nearest.neighbor",
     #drop distances to self
     comp <- comp[!marker_names[comp]%in%from]
     
-    x.mean <- extractNNVals(object@nearest_neighbors,'means',from,comp[1],transposed)
-    x.se <- extractNNVals(object@nearest_neighbors,'SE',from,comp[1],transposed)
+    x.mean <- extractNNVals(x@nearest_neighbors,'means',from,comp[1],transposed)
+    x.se <- extractNNVals(x@nearest_neighbors,'SE',from,comp[1],transposed)
     
     if (length(comp)>1){
-        y.mean <- extractNNVals(object@nearest_neighbors,'means',from,comp[2],transposed)
-        y.se <- extractNNVals(object@nearest_neighbors,'SE',from,comp[2],transposed)
+        y.mean <- extractNNVals(x@nearest_neighbors,'means',from,comp[2],transposed)
+        y.se <- extractNNVals(x@nearest_neighbors,'SE',from,comp[2],transposed)
         current.mean <- (t(cbind(x.mean,y.mean)))
         current.se <- (t(cbind(x.se,y.se)))
     }else{
@@ -198,7 +216,7 @@ setMethod("plot.nearest.neighbor",
                 pval=pval))
 })
 
-#plot the arrows for the standard error
+#' @importFrom graphics arrows
 plotSE <- function(bp,current.mean,current.se,idx){
     arrows(bp[idx,],
            current.mean[idx,]+current.se[idx,],
@@ -237,13 +255,14 @@ buildLabel <- function(from,to,ext,transposed){
 
 
 #' Plot nearest neighbor ray plots for each samples
+#' @importFrom spatstat superimpose
 #' @export
 #' 
 #' 
-setGeneric("neighbor.ray.plot", function(object, ...) standardGeneric("neighbor.ray.plot"))
+setGeneric("neighbor.ray.plot", function(x, ...) standardGeneric("neighbor.ray.plot"))
 setMethod("neighbor.ray.plot",
           signature = "Iris",
-          definition = function(object,
+          definition = function(x,
                                 from_type,
                                 to_type,
                                 from_col='#EE7600',
@@ -260,17 +279,17 @@ setMethod("neighbor.ray.plot",
               }
               
               #generate ray plots for each sample
-              lapply(object@samples, neighbor.ray.plot.sample, from_type, to_type, 
+              lapply(x@samples, neighbor.ray.plot.sample, from_type, to_type, 
                      from_col, to_col, out_dir, format, lineColor, height, width)
           })
 
-setGeneric("neighbor.ray.plot.sample", function(object, ...) standardGeneric("neighbor.ray.plot.sample"))
+setGeneric("neighbor.ray.plot.sample", function(x, ...) standardGeneric("neighbor.ray.plot.sample"))
 setMethod("neighbor.ray.plot.sample",
           signature = "Sample",
-          definition = function(object, from_type, to_type, from_col, to_col, out_dir, format, lineColor, height, width){
-              lapply(object@coordinates, 
+          definition = function(x, from_type, to_type, from_col, to_col, out_dir, format, lineColor, height, width){
+              lapply(x@coordinates, 
                      neighbor.ray.plot.coord, 
-                     object@sample_name,
+                     x@sample_name,
                      from_type, 
                      to_type, 
                      from_col, 
@@ -282,16 +301,26 @@ setMethod("neighbor.ray.plot.sample",
                      width)
           })    
 
-setGeneric("neighbor.ray.plot.coord", function(object, ...) standardGeneric("neighbor.ray.plot.coord"))
+
+#' @importFrom spatstat nncross
+#' @importFrom graphics legend
+#' @importFrom graphics par
+#' @importFrom graphics plot
+#' @importFrom graphics segments
+#' @importFrom grDevices dev.off
+#' @importFrom grDevices pdf
+#' @importFrom grDevices png
+#' 
+setGeneric("neighbor.ray.plot.coord", function(x, ...) standardGeneric("neighbor.ray.plot.coord"))
 setMethod("neighbor.ray.plot.coord",
           signature = "Coordinate",
-          definition = function(object, samp_name, from_type, to_type, from_col, to_col, out_dir, format, lineColor, height, width){
+          definition = function(x, samp_name, from_type, to_type, from_col, to_col, out_dir, format, lineColor, height, width){
     
     #extract the relevant cells 
-    if (sum(object@ppp$marks == from_type)>0 && 
-        sum(object@ppp$marks == to_type)>0){
-        from <- object@ppp[object@ppp$marks == from_type,]
-        to <- object@ppp[object@ppp$marks == to_type,]
+    if (sum(x@ppp$marks == from_type)>0 && 
+        sum(x@ppp$marks == to_type)>0){
+        from <- x@ppp[x@ppp$marks == from_type,]
+        to <- x@ppp[x@ppp$marks == to_type,]
         #get limits
         overlap <- superimpose(from,to)
         xlim <- max(data.frame(overlap)$x)
@@ -312,11 +341,11 @@ setMethod("neighbor.ray.plot.coord",
         df$cols[df$cols==to_type] <- to_col    
                   
                   
-        file_stub <- paste0(samp_name,'_',object@coordinate_name)
+        file_stub <- paste0(samp_name,'_',x@coordinate_name)
         if (format == '.pdf'){
             pdf(file = file.path(out_dir,paste0(file_stub,'.pdf')),width=width,height=height)
         }else if(format == '.png'){
-            png(file.path(outdir,paste0(file_stub,'.png')),width = 800, height=600)
+            png(file.path(out_dir,paste0(file_stub,'.png')),width = 800, height=600)
         }
     
         par(mar=c(4,4,4,1))
@@ -326,7 +355,7 @@ setMethod("neighbor.ray.plot.coord",
              pch=18,
              ylab='y (pixels)',
              xlab='x (pixels)',
-             main=paste(samp_name,'-',object@coordinate_name))      
+             main=paste(samp_name,'-',x@coordinate_name))      
         segments(nearest$from_x,
                  nearest$from_y,
                  nearest$to_x,

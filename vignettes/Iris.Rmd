@@ -1,0 +1,131 @@
+---
+title: "Iris - An R package to quantify the tumor microenvironment based on multiplex IF data"
+author: "Daniel Gusenleitner"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+# Short example on how to use the Iris package
+
+## Reading the dataset
+
+This is a toy example, based on 2 sample with 5 coordinates each. The 20x images were acquired on the Mantra system of PerkinElmer, analyzed in inForm and cropped to 200x200 px to reduce the runtime. There are three different phenotypes present in this example, SOX10 or melanoma cell, CD8 cells indicating cytotoxic T-cells and other or undefined cells which have neither SOX10 or CD8 protein expression, but show up as cells according to the nuclear stain.
+In addition, PD1 and PD-L1 expression was scored in each sample and a threshold was determined in inForm that let's us distinguish between PD1+ and PD1- cells as well as PD-L1+/-. PD-L1 is only relevant in melanoma cells, whereas PD1 is relevant in the other two cell types. 
+Since the toy example only shows the area of a very small image, the resulting statistics often contain NA value, because cell types are not present, which is especially the case in ROI analyses. Look at the full example datasets for more realistic examples.
+
+
+```{r reading}
+require(Iris)
+raw_data <- Iris()
+raw_data<- read.raw(raw_data,
+                    raw_dir_name='../inst/extdata/',
+                    format='Mantra')
+
+#apply all the thresholds PD1 for T and other cells, PD-L1 for macrophages and tumor cells
+dataset <- threshold.dataset(raw_data,
+                             marker='PD-Ligand-1 (Opal 690)',
+                             marker_name='PDL1',
+                             base=c('SOX10+'))
+dataset <- threshold.dataset(dataset,
+                             marker='PD-1 (Opal 540)',
+                             marker_name='PD1',
+                             base=c('CD8+','OTHER'))
+```
+
+## Overview plots
+Next we plot all the cell coordinates color coordinated in .pdf format
+```{r overview_plots}
+plot_dir <- file.path('./plots')
+if (!file.exists(plot_dir)){
+    dir.create(file.path(plot_dir))
+}
+p <- overview.plot(dataset,outdir=plot_dir,palette=NULL,type='png')
+```
+
+![Example of an Overview plot](plots/MEL29822_080416_1.png?raw=true "Overview Example")
+
+## Extract counts and ratios
+Here we extract counts per mm2 for each marker, both for each coordinate and collapsed across the multiple images per sample.
+```{r counts}
+get.counts.per.mm2(dataset)
+get.counts.per.mm2.noncollapsed(dataset)
+get.count.ratios(dataset,'SOX10+ PDL1-','SOX10+ PDL1+')
+```
+
+## Nearest neighbor analysis
+Next step we calculate the average nearest neighbor distances for each cell-type, plot barplots compare different distances and finally generate ray plots that show a visual representation of these distances for each coordinate.
+
+```{r nearest_neighbor, fig.width=5, fig.height=5}
+dataset <- extract.nearest.neighbor(dataset,min_num_cells=2)
+get.nearest.neighbors(dataset,"SOX10+ PDL1+")
+p <- plot.nearest.neighbor(dataset,'CD8+ PD1+','SOX10+ PDL1')
+p <- plot.nearest.neighbor(dataset,'SOX10+ PDL1+','SOX10+ PDL1-')
+
+#ray plots for 
+plot_dir <- file.path('./ray_plots')
+if (!file.exists(plot_dir)){
+    dir.create(file.path(plot_dir))
+}
+neighbor.ray.plot(dataset,from_type='SOX10+ PDL1-',to_type='OTHER PD1-',plot_dir=plot_dir)
+```
+                  
+## Interaction analysis
+Here we extract the interactions between different cell types, generate an interaction profile for CD8+ PD1+ cells and also generate interaction maps for each coordinate showing the interactions between CD8+ PD1+ cells and SOX10+ PD-L1+ cells.
+```{r interaction_analysis, fig.width=7, fig.height=7}
+dataset <- extract.interactions(dataset)
+get.interactions(dataset,'CD8+ PD1+')
+
+#plotting interaction summaries
+p <- plot.interactions(dataset,'CD8+ PD1+',xlim_fix=4)
+
+#plotting interaction maps
+int_markers <- c('CD8+ PD1+','SOX10+ PDL1+')
+int_marker_cols <- c('#dd1c77','#99d8c9')
+silent_markers <- c('CD8+ PD1-')
+silent_col=c('yellow')
+p <- interaction.maps(dataset,int_markers,int_marker_cols,silent_markers,silent_col)
+```
+
+##Running the proximity analysis
+Calculating the number of cells within 25 pixels distance for each cell and then showing the the profile for SOX10+ PDL1-
+```{r proximity_analysis, fig.width=7, fig.height=7}
+dataset <- extract.proximity(dataset,only_closest=T,radii=25)
+p <- plot.proximities(dataset,"SOX10+ PDL1-",xlim_fix=3)
+
+
+```
+
+## Looking into regions of interest
+```{r ROI, fig.width=7, fig.height=7}
+tumor_area <- extract.ROI(dataset,ROI='tumor')
+get.counts.per.mm2(tumor_area)
+tumor_area <- extract.interactions(tumor_area)
+
+p <- plot.interactions(tumor_area,"SOX10+ PDL1-",xlim_fix=4)
+
+#get counts in all vs different areas
+get.counts.per.mm2(dataset)
+get.counts.per.mm2.noncollapsed(dataset)
+get.counts.per.mm2(extract.ROI(dataset,ROI='tumor'))
+get.counts.per.mm2.noncollapsed(extract.ROI(dataset,ROI='tumor'))
+get.counts.per.mm2(extract.ROI(dataset,ROI='invasive_margin'))
+get.counts.per.mm2.noncollapsed(extract.ROI(dataset,ROI='invasive_margin'))
+get.counts.per.mm2(extract.ROI(dataset,ROI='stroma'))
+get.counts.per.mm2.noncollapsed(extract.ROI(dataset,ROI='stroma'))
+```
+
+## Extract spatial features for downstream processing
+```{r spatial_features}
+spat_features <- extract.features(dataset)
+spat_features[1:10,]
+```
+
+
+
+
+

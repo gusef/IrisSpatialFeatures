@@ -1,4 +1,11 @@
 ##############################################################################################################
+
+#' Function to extract all numeric features
+#'
+#' @importFrom stats t.test
+#' @importFrom stats wilcox.test
+#' @importFrom stats p.adjust
+
 feature_selection <- function(dat,lab){
     res <- sapply(1:nrow(dat),
                   function(x,dat,lab)t.test(dat[x,lab==unique(lab)[1]],
@@ -30,19 +37,23 @@ feature_selection <- function(dat,lab){
 }
 
 #' Extract all spatial features
+#' @param x Iris object
+#' @param name Prefix for all features, e.g. 'invasive_margin' (Default: '')
+#' @param rm.na Should features with NA values be removed (Default: FALSE)
+#' @param ... Additional arguments
 #' @export
 #' 
 #' 
-setGeneric("extract.features", function(object, ...) standardGeneric("extract.features"))
+setGeneric("extract.features", function(x, ...) standardGeneric("extract.features"))
 setMethod("extract.features",
           signature = "Iris",
-          definition = function(object, name='',rm.na=F){
+          definition = function(x, name='', rm.na=F){
 
-              counts <- extract_count_combinations(sapply(object@counts,colSums))
+              counts <- extract_count_combinations(sapply(x@counts,colSums))
               dat <- extract_count_features(counts,'Counts')
               
-              if (length(object@interactions) > 0){
-                  interactions <- extract_interaction_combinations(object@interactions)
+              if (length(x@interactions) > 0){
+                  interactions <- extract_interaction_combinations(x@interactions)
                   f_inter <- lapply(interactions,extract_interaction_features,'Interaction')
                   f_inter <- do.call(rbind, f_inter)
                   dat <- rbind(dat, f_inter)
@@ -50,8 +61,8 @@ setMethod("extract.features",
                   message('Skipping interactions .. please run extract.interactions to include them.')
               }
               
-              if (length(object@nearest_neighbors) > 0){
-                  f_nn <- lapply(object@nearest_neighbors,extract_interaction_features,'NN')
+              if (length(x@nearest_neighbors) > 0){
+                  f_nn <- lapply(x@nearest_neighbors,extract_interaction_features,'NN')
                   f_nn <- do.call(rbind, f_nn)
                   dat <- rbind(dat, f_nn)
               }else{
@@ -242,4 +253,49 @@ extract_count_features <- function(f_counts,nam){
     f_count_ratios <- extractRatios(mat=f_counts,nam)
     dat <- rbind(f_counts,f_count_ratios)
     return(dat)
+}
+
+nearestNeighborCoord <- function(coord,classes){
+    ppp <- coord$ppp
+    res <- lapply(classes,getToNeighbors,classes,ppp)
+    means <- t(sapply(res,function(x)x['means',]))
+    vars <- t(sapply(res,function(x)x['vars',]))
+    nums <- t(sapply(res,function(x)x['nums',]))
+    
+    rownames(nums) <- rownames(means) <- rownames(vars) <- colnames(means)
+    
+    #in some cases there are not all samples represented
+    means[!is.finite(means)] <- NA
+    vars[!is.finite(vars)] <- NA
+    nums[!is.finite(nums)] <- NA
+    
+    return(list(means=means,vars=vars,nums=nums))
+}
+
+nearestNeighborSample <- function(sample,classes){
+    res <- lapply(sample,nearestNeighborCoord,classes)
+
+    means <- lapply(res,function(x)x$means)
+    vars <- lapply(res,function(x)x$vars)
+    nums <- lapply(res,function(x)x$nums)
+    
+    #collapse the different coordinates
+    means <- collapseMatrices(means,rowMeans)
+    vars <- collapseMatrices(vars,rowMeans)
+    nums <- collapseMatrices(nums,rowSums)
+    
+    #there is a special case where there is only 1 cell of a type
+    #this leads to an NA variance. In this case the means are set to NA as well
+    means[is.na(vars)] <- NA
+    
+    #calculate the standard error on the combined coordinates
+    ses <- sqrt(vars)/sqrt(nums)
+    return(list(means=means,SE=ses))
+}
+
+
+generate_NN <- function(dataset){
+    classes <- sort(unique(unlist(lapply(unlist(dataset,recursive = F),function(x)levels(x$ppp$marks)))))
+    nn <- lapply(dataset,nearestNeighborSample,classes)
+    return(nn)
 }

@@ -7,6 +7,7 @@
 #' @slot mem_seg_map Membrane map as output by inForm
 #' @slot nuc_seg_map Nuclear map as output by inForm (optional)
 #' @slot dapi_map DAPI stain map as output by inForm (optional)
+#' @docType class
 raw_data <- setClass("raw_data",
                      slots = c(data='data.frame',
                                summary='matrix',
@@ -31,6 +32,7 @@ setOldClass("ppp")
 #' @slot mask List of user defined masks that define regions of interest
 #' @slot coordinate_name Name of the current coordinate
 #' @slot size_in_px Size of the image in pixel, accounting for mask size
+#' @docType class
 #' 
 #' @importFrom spatstat ppp
 Coordinate <- setClass("Coordinate",
@@ -46,7 +48,8 @@ Coordinate <- setClass("Coordinate",
 #'
 #' @slot coordinates A list of coordinate objects that contain all of the raw and coordinate data.
 #' @slot sample_name Name of the contained sample.
-
+#' @docType class
+#' 
 Sample <- setClass("Sample",
                    slots = c(coordinates = "list",
                              sample_name="character"))
@@ -58,8 +61,13 @@ Sample <- setClass("Sample",
 #' @slot nearest_neighbors A list of mean and std of nearest neighbor distances for each samples.
 #' @slot interactions A list of interaction information for each sample.
 #' @slot proximity A list of mean and std of nearest neighbor distances for each sample. 
-#' @slot micron_per_pixel Scalar value that indicates the length of a pixel in micrometers.
+#' @slot microns_per_pixel Scalar value that indicates the length of a pixel in micrometers.
 #' @slot markers A vector of strings indicating all different cell types considered.
+#' @slot invasive_margin_in_px The width of the invasive margin in pixels
+#' @slot readMasks Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: True)
+#' @slot ignore_scoring Flag indicating whether the scoring file should be ignored (default: False)
+#' @docType class
+#' @aliases NULL
 #' @export
 Iris <- setClass("Iris",
                  slots = c(samples = "list",
@@ -69,5 +77,11 @@ Iris <- setClass("Iris",
                            interactions = "list",
                            proximity = "list",
                            microns_per_pixel="numeric",
-                           markers="character"))
+                           markers="character",
+                           invasive_margin_in_px='numeric'))
+
+#' @param x Iris Object
+#' @param ... Additional arguments
+setGeneric("read.raw", function(x, ...) standardGeneric("read.raw"))
+
 

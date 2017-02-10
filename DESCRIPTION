@@ -7,12 +7,12 @@ Author: Daniel Gusenleitner
 Maintainer: Daniel Gusenleitner <Daniel_Gusenleitner@dfci.harvard.edu>
 Depends:
     R (>= 3.2.0),
-    methods
 Imports:
     Biobase,
     gplots,
     grDevices,
     knitr,
+    methods,
     RColorBrewer,
     Rcpp (>= 0.12.7),
     SpatialTools,
@@ -29,3 +29,5 @@ LinkingTo: Rcpp
 LazyData: true
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1
+Suggests: knitr,
+    rmarkdown

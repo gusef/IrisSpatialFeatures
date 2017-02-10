@@ -4,4 +4,5 @@
 #' @docType package
 #' @name Iris
 #' @export
+#' @aliases NULL
 NULL

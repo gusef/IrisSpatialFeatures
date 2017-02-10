@@ -1,24 +1,28 @@
 
 
 #' Extract interactions between all cell-types
+#' 
+#' @param x Iris object
+#' @param ... Additional arguments
+#' 
+#' @docType methods
 #' @export
 #' 
-#' 
-setGeneric("extract.interactions", function(object, ...) standardGeneric("extract.interactions"))
+setGeneric("extract.interactions", function(x, ...) standardGeneric("extract.interactions"))
 setMethod("extract.interactions",
           signature = "Iris",
-          definition = function(object){
-              object@interactions <- lapply(object@samples,interactions.per.sample,object@markers)
-              names(object@interactions) <- names(object@samples)
-              return(object)
+          definition = function(x){
+              x@interactions <- lapply(x@samples,interactions.per.sample,x@markers)
+              names(x@interactions) <- names(x@samples)
+              return(x)
 })
 
-setGeneric("interactions.per.sample", function(object, ...) standardGeneric("interactions.per.sample"))
+setGeneric("interactions.per.sample", function(x, ...) standardGeneric("interactions.per.sample"))
 setMethod("interactions.per.sample",
           signature = "Sample",
-          definition = function(object, all_levels){
-              message(paste(object@sample_name,' ... processing...'))              
-              interactions <- lapply(object@coordinates,interaction.events,all_levels)
+          definition = function(x, all_levels){
+              message(paste(x@sample_name,' ... processing...'))              
+              interactions <- lapply(x@coordinates,interaction.events,all_levels)
             
               areas_with_counts <- sapply(interactions,length) > 0
               if (sum(areas_with_counts)==0){
@@ -61,51 +65,51 @@ setMethod("interactions.per.sample",
                           nums=nums))
 })
 
-setGeneric("interaction.events", function(object, ...) standardGeneric("interaction.events"))
+setGeneric("interaction.events", function(x, ...) standardGeneric("interaction.events"))
 setMethod("interaction.events",
           signature = "Coordinate",
-          definition = function(object, all_levels){
+          definition = function(x, all_levels){
               #extract membrane map and set membranes to -1
-              if (is.null(object@raw@mem_seg_map)){
+              if (is.null(x@raw@mem_seg_map)){
                   stop('The interaction analysis can only be run on datasets that include the membrane maps. Try the proximity analysis instead.')
               }
               
-              if (length(object@ppp$x)==0){
+              if (length(x@ppp$x)==0){
                   return(list())
               }
 
               #fill in all of the cells in the membrane map using the cell ID
-              ret <- watershed(object)
+              ret <- watershed(x)
             
               #update the values
               filled_map <- ret$map
-              object <- ret$object
+              x <- ret$x
             
               #extract the interactions
               interactions <- getNeighbors(filled_map) 
             
               #extract the means and variances
-              inter_stats <- extract.interaction.stats(object,interactions,all_levels)
+              inter_stats <- extract.interaction.stats(x,interactions,all_levels)
             
               return(list(stats=inter_stats,
-                          ppp=object@ppp,
+                          ppp=x@ppp,
                           ints=interactions)) 
 })
 
 
-setGeneric("watershed", function(object, ...) standardGeneric("watershed"))
+setGeneric("watershed", function(x, ...) standardGeneric("watershed"))
 setMethod("watershed",
           signature = "Coordinate",
-          definition = function(object){
-              mem_map <- t(object@raw@mem_seg_map)
+          definition = function(x){
+              mem_map <- t(x@raw@mem_seg_map)
               mem_map[mem_map>0] <- -1
               #watershed filling in all cells with their cell ID
               padded_map <- rbind(-1,cbind(-1,mem_map,-1),-1)
     
               #need to offset the coordinates because of the padding
-              cell_coords <- cbind(1:length(object@ppp$x),
-                                   object@ppp$x,
-                                   object@ppp$y)
+              cell_coords <- cbind(1:length(x@ppp$x),
+                                   x@ppp$x,
+                                   x@ppp$y)
     
               #run the watershed algorithm and fill up all cells
               ret <- watershedC(padded_map, cell_coords)
@@ -114,16 +118,16 @@ setMethod("watershed",
               padded_map <- ret[[1]]
                
               #updated coordinates 
-              object@ppp$x <- ret[[2]][,2]
-              object@ppp$y <- ret[[2]][,3]
+              x@ppp$x <- ret[[2]][,2]
+              x@ppp$y <- ret[[2]][,3]
                 
               #remove the padding
               padded_map <- padded_map[-c(1,nrow(padded_map)),-c(1,ncol(padded_map))]
                 
-              return(list(map=padded_map,object=object))
+              return(list(map=padded_map,x=x))
 })
 
-
+#' @importFrom stats var
 get_single_int <- function(lvl, int, labels, all_levels){
     #generate a per cell summary
     ints <- lapply(int[labels==lvl],function(i,lev)factor(i,levels=lev),all_levels)
@@ -155,12 +159,12 @@ get_single_int <- function(lvl, int, labels, all_levels){
                 nums=num_cells))
 }
 
-setGeneric("extract.interaction.stats", function(object, ...) standardGeneric("extract.interaction.stats"))
+setGeneric("extract.interaction.stats", function(x, ...) standardGeneric("extract.interaction.stats"))
 setMethod("extract.interaction.stats",
           signature = "Coordinate",
-          definition = function(object,interactions,all_levels){
+          definition = function(x,interactions,all_levels){
         
-          labels <- as.character(object@ppp$marks)
+          labels <- as.character(x@ppp$marks)
             
           #translate the coordinates in the lists to labels
           int <- lapply(interactions,function(x,lab)lab[x],labels)
@@ -210,26 +214,25 @@ collapseMatrices <- function(mat,fun){
 #' @export
 #' 
 #' 
-setGeneric("get.all.interactions", function(object, ...) standardGeneric("get.all.interactions"))
+setGeneric("get.all.interactions", function(x, ...) standardGeneric("get.all.interactions"))
 setMethod("get.all.interactions",
           signature = "Iris",
-          definition = function(object){
-              return(object@interactions)
+          definition = function(x){
+              return(x@interactions)
 })
 
 #' Get interactions for a specific marker
+#' @docType methods
 #' @export
-#' 
-#' 
-setGeneric("get.interactions", function(object, ...) standardGeneric("get.interactions"))
+setGeneric("get.interactions", function(x, ...) standardGeneric("get.interactions"))
 setMethod("get.interactions",
           signature = "Iris",
-          definition = function(object,marker,normalize=T){
-              if (!marker %in% object@markers){
+          definition = function(x,marker,normalize=T){
+              if (!marker %in% x@markers){
                   stop(paste('There is no celltype: ',marker))
               }
 
-              int <- lapply(object@interactions,function(x)x$avg$mean)
+              int <- lapply(x@interactions,function(x)x$avg$mean)
               marker_int <- sapply(int,function(x)x[,marker])
 
               if (normalize){
@@ -241,23 +244,40 @@ setMethod("get.interactions",
 ################################################################
 ##### Interaction summary plotting functions
 
-
 #' Interaction summary plot for all cell-types and all samples in a dataset
+#'
+#' @param x Iris object to be plotted
+#' @param label The cell type the interaction profile should be plotted for
+#' @param ordering Ordering of the samples (default: NULL)
+#' @param normalize Normalize the interactions with a given cell-type, so they sum up to 1 (default: TRUE)
+#' @param palette Color palette for all the cell-types (default: Spectral scheme from RColorbrewer)
+#' @param celltype_order Order in which the cell-types are displayed. (default: Alphabethically)
+#' @param xlim_fix Whitespace on the right side so the legend can be displayed clearly. (default: 13)
+#' @param topbar_cols Color of the barplots that are shown on top. (default: 'darkgrey')
+#' 
+#' @importFrom graphics axis
+#' @importFrom graphics layout
+#' @importFrom graphics legend
+#' @importFrom graphics par
+#' @importFrom graphics text
+#' @importFrom grDevices dev.off
+#' @importFrom grDevices pdf
+#' @importFrom grDevices png
+#' 
+#' @docType methods 
 #' @export
-#' 
-#' 
-setGeneric("plot.interactions", function(object, ...) standardGeneric("plot.interactions"))
+setGeneric("plot.interactions", function(x, ...) standardGeneric("plot.interactions"))
 setMethod("plot.interactions",
           signature = "Iris",
-          definition = function(object, label, ordering=NULL, normalize=T, palette=NULL,
+          definition = function(x, label, ordering=NULL, normalize=T, palette=NULL,
                                 celltype_order=NULL, xlim_fix=13, topbar_cols='darkgrey'){
-          if (length(object@interactions)==0){
+          if (length(x@interactions)==0){
               stop(paste('Please run extract.interactions before plotting the interactions.'))
           }
               
-          int <- lapply(object@interactions,function(x)x$avg$mean)
+          int <- lapply(x@interactions,function(x)x$avg$mean)
           dat <- sapply(int,function(x)x[,label])
-          count <- get.counts.collapsed(object)[label,]
+          count <- get.counts.collapsed(x)[label,]
           labels <- rownames(dat)
           
           if (normalize){
@@ -325,10 +345,10 @@ setMethod("plot.interactions",
 #' @export
 #' 
 #' 
-setGeneric("interaction.maps", function(object, ...) standardGeneric("interaction.maps"))
+setGeneric("interaction.maps", function(x, ...) standardGeneric("interaction.maps"))
 setMethod("interaction.maps",
           signature = "Iris",
-          definition = function(object,
+          definition = function(x,
                                 int_markers,
                                 int_marker_cols,
                                 silent_markers=c(),
@@ -344,51 +364,62 @@ setMethod("interaction.maps",
     }
 
     #generate a map for each sample
-    lapply(object@samples, interaction.map.sample, object@interactions, int_markers, int_marker_cols,
+    lapply(x@samples, interaction.map.sample, x@interactions, int_markers, int_marker_cols,
            silent_markers, silent_col, map_dir, outline_transparency, use_dapi, format)
     return('Done!')
     
 })
 
-setGeneric("interaction.map.sample", function(object, ...) standardGeneric("interaction.map.sample"))
+setGeneric("interaction.map.sample", function(x, ...) standardGeneric("interaction.map.sample"))
 setMethod("interaction.map.sample",
           signature = "Sample",
-          definition = function(object, interactions, int_markers, int_marker_cols, silent_markers,
+          definition = function(x, interactions, int_markers, int_marker_cols, silent_markers,
                                 silent_col, map_dir, outline_transparency, use_dapi, format){
               
-              message("Working on sample: ",object@sample_name)
-              lapply(object@coordinates, generate.interaction.map, object@sample_name, 
-                     interactions[[object@sample_name]], int_markers, int_marker_cols, 
+              message("Working on sample: ",x@sample_name)
+              lapply(x@coordinates, generate.interaction.map, x@sample_name, 
+                     interactions[[x@sample_name]], int_markers, int_marker_cols, 
                      silent_markers, silent_col, map_dir, outline_transparency, use_dapi, format)
 })    
     
-setGeneric("generate.interaction.map", function(object, ...) standardGeneric("generate.interaction.map"))
+
+#' @importFrom gplots colorpanel
+#' @importFrom graphics image
+#' @importFrom graphics legend
+#' @importFrom grDevices col2rgb
+#' @importFrom grDevices dev.off
+#' @importFrom grDevices png
+#' @importFrom spatstat rgb2hex
+#' @importFrom tiff writeTIFF
+setGeneric("generate.interaction.map", function(x, ...) standardGeneric("generate.interaction.map"))
 setMethod("generate.interaction.map",
               signature = "Coordinate",
-              definition = function(object, samp_name, interactions, int_markers, int_marker_cols, silent_markers,
+              definition = function(x, samp_name, interactions, int_markers, int_marker_cols, silent_markers,
                                     silent_col, map_dir, outline_transparency, use_dapi, format){
 
-                  nams <- paste(samp_name,object@coordinate_name,sep='_')
+                  nams <- paste(samp_name,x@coordinate_name,sep='_')
                   #extract all data    
-                  int <- interactions$ints[[object@coordinate_name]]
-                  ppp <- interactions$ppp[[object@coordinate_name]]                  
+                  int <- interactions$ints[[x@coordinate_name]]
+                  ppp <- interactions$ppp[[x@coordinate_name]]                  
 
                   #get the marker prefix
                   marker_prefix <- paste0(c(int_markers,silent_markers), collapse = '__')
+                  #remove spaces from prefix so R CMD check does not mope
+                  marker_prefix <- gsub(' ','_',marker_prefix)
                   
                   #extract membrane map and set membranes to -1
-                  if (is.null(object@raw@mem_seg_map)){
+                  if (is.null(x@raw@mem_seg_map)){
                       stop('The interaction maps can only be created on datasets that include the membrane maps.')
                   }
-                  mem <- t(object@raw@mem_seg_map)
+                  mem <- t(x@raw@mem_seg_map)
                   mem[mem>0] <- -1
                 
                   if (use_dapi){
                       #extract membrane map and set membranes to -1
-                      if (is.null(object@raw@dapi_map)){
+                      if (is.null(x@raw@dapi_map)){
                           stop('No DAPI map available, please set dapi_map flag to FALSE')
                       } 
-                      dapi_map <- t(as.matrix(object@raw@dapi_map))
+                      dapi_map <- t(as.matrix(x@raw@dapi_map))
                       dapi_map <- dapi_map/max(dapi_map)
                   }else{
                       dapi_map <- mem
