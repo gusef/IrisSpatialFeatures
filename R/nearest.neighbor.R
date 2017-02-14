@@ -9,27 +9,27 @@
 #' @docType methods
 #' @export
 #' @rdname Iris-methods
-setGeneric("extract.nearest.neighbor", function(x, ...) standardGeneric("extract.nearest.neighbor"))
+setGeneric("extract_nearest_neighbor", function(x, ...) standardGeneric("extract_nearest_neighbor"))
 
 #' @rdname Iris-methods
 #' @aliases extract.nearest.neighbor,ANY,ANY-method
-setMethod("extract.nearest.neighbor",
+setMethod("extract_nearest_neighbor",
           signature = "Iris",
           definition = function(x, min_num_cells=10){
     all_levels <- x@markers
     x@nearest_neighbors <- lapply(x@samples,
-                                       nearest.neighbor.sample,
+                                       nearest_neighbor_sample,
                                        all_levels,
                                        min_num_cells)
     return(x)
 })
 
 
-setGeneric("nearest.neighbor.sample", function(x, ...) standardGeneric("nearest.neighbor.sample"))
-setMethod("nearest.neighbor.sample",
+setGeneric("nearest_neighbor_sample", function(x, ...) standardGeneric("nearest_neighbor_sample"))
+setMethod("nearest_neighbor_sample",
           signature = "Sample",
           definition = function(x, all_levels, min_num_cells){
-    res <- lapply(x@coordinates,nearest.neighbor.coord.raw,all_levels,min_num_cells)
+    res <- lapply(x@coordinates,nearest_neighbor_coord_raw,all_levels,min_num_cells)
 
     means <- lapply(res,function(x)x$means)
     vars <- lapply(res,function(x)x$vars)
@@ -49,8 +49,8 @@ setMethod("nearest.neighbor.sample",
     return(list(means=means,SE=ses))
 })
 
-setGeneric("nearest.neighbor.coord.raw", function(x, ...) standardGeneric("nearest.neighbor.coord.raw"))
-setMethod("nearest.neighbor.coord.raw",
+setGeneric("nearest_neighbor_coord_raw", function(x, ...) standardGeneric("nearest_neighbor_coord_raw"))
+setMethod("nearest_neighbor_coord_raw",
           signature = "Coordinate",
           definition = function(x, all_levels, min_num_cells){
               ppp <- x@ppp
@@ -101,11 +101,11 @@ getToNeighbors <- function(to,classes,ppp,min_num_cells){
 #' @docType methods
 #' @export
 #' @rdname Iris-methods
-setGeneric("get.all.nearest.neighbors", function(x, ...) standardGeneric("get.all.nearest.neighbors"))
+setGeneric("get_all_nearest_neighbors", function(x, ...) standardGeneric("get_all_nearest_neighbors"))
 
 #' @rdname Iris-methods
-#' @aliases get.all.nearest.neighbors,ANY,ANY-method
-setMethod("get.all.nearest.neighbors",
+#' @aliases get_all_nearest_neighbors,ANY,ANY-method
+setMethod("get_all_nearest_neighbors",
           signature = "Iris",
           definition = function(x){
               return(x@nearest_neighbors)
@@ -119,11 +119,11 @@ setMethod("get.all.nearest.neighbors",
 #' @export
 #' @rdname Iris-methods
 #' 
-setGeneric("get.nearest.neighbors", function(x, ...) standardGeneric("get.nearest.neighbors"))
+setGeneric("get_nearest_neighbors", function(x, ...) standardGeneric("get_nearest_neighbors"))
 
 #' @rdname Iris-methods
-#' @aliases get.nearest.neighbors,ANY,ANY-method
-setMethod("get.nearest.neighbors",
+#' @aliases get_nearest_neighbors,ANY,ANY-method
+setMethod("get_nearest_neighbors",
           signature = "Iris",
           definition = function(x,marker,normalize=T){
               if (!marker %in% x@markers){
@@ -155,11 +155,11 @@ setMethod("get.nearest.neighbors",
 #' @docType methods
 #' @export 
 #' @rdname Iris-methods
-setGeneric("plot.nearest.neighbor", function(x, ...) standardGeneric("plot.nearest.neighbor"))
+setGeneric("plot_nearest_neighbor", function(x, ...) standardGeneric("plot_nearest_neighbor"))
 
 #' @rdname Iris-methods
-#' @aliases plot.nearest.neighbor,ANY,ANY-method
-setMethod("plot.nearest.neighbor",
+#' @aliases plot_nearest_neighbor,ANY,ANY-method
+setMethod("plot_nearest_neighbor",
           signature = "Iris",
           definition = function(x, from, to, ttest=TRUE, transposed=FALSE){
     marker_names <- x@markers
@@ -296,11 +296,11 @@ buildLabel <- function(from,to,ext,transposed){
 #' @export
 #' @importFrom spatstat superimpose
 #' @rdname Iris-methods
-setGeneric("neighbor.ray.plot", function(x, ...) standardGeneric("neighbor.ray.plot"))
+setGeneric("neighbor_ray_plot", function(x, ...) standardGeneric("neighbor_ray_plot"))
 
 #' @rdname Iris-methods
 #' @aliases neighbor.ray.plot,ANY,ANY-method
-setMethod("neighbor.ray.plot",
+setMethod("neighbor_ray_plot",
           signature = "Iris",
           definition = function(x,
                                 from_type,
@@ -319,16 +319,16 @@ setMethod("neighbor.ray.plot",
               }
               
               #generate ray plots for each sample
-              lapply(x@samples, neighbor.ray.plot.sample, from_type, to_type, 
+              lapply(x@samples, neighbor_ray_plot_sample, from_type, to_type, 
                      from_col, to_col, out_dir, format, lineColor, height, width)
           })
 
-setGeneric("neighbor.ray.plot.sample", function(x, ...) standardGeneric("neighbor.ray.plot.sample"))
-setMethod("neighbor.ray.plot.sample",
+setGeneric("neighbor_ray_plot_sample", function(x, ...) standardGeneric("neighbor_ray_plot_sample"))
+setMethod("neighbor_ray_plot_sample",
           signature = "Sample",
           definition = function(x, from_type, to_type, from_col, to_col, out_dir, format, lineColor, height, width){
               lapply(x@coordinates, 
-                     neighbor.ray.plot.coord, 
+                     neighbor_ray_plot_coord, 
                      x@sample_name,
                      from_type, 
                      to_type, 
@@ -350,8 +350,8 @@ setMethod("neighbor.ray.plot.sample",
 #' @importFrom grDevices dev.off
 #' @importFrom grDevices pdf
 #' @importFrom grDevices png
-setGeneric("neighbor.ray.plot.coord", function(x, ...) standardGeneric("neighbor.ray.plot.coord"))
-setMethod("neighbor.ray.plot.coord",
+setGeneric("neighbor_ray_plot_coord", function(x, ...) standardGeneric("neighbor_ray_plot_coord"))
+setMethod("neighbor_ray_plot_coord",
           signature = "Coordinate",
           definition = function(x, samp_name, from_type, to_type, from_col, to_col, out_dir, format, lineColor, height, width){
     

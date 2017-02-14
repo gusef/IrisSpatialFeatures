@@ -26,18 +26,18 @@
 #' @return Iris object.
 #' @examples
 #' raw_data <- Iris()
-#' raw_data <- read.raw(raw_data,
+#' raw_data <- read_raw(raw_data,
 #'                      raw_dir_name=system.file("extdata", package = "Iris"),
 #'                      format='Mantra')
 #' @docType methods
 #' @export
 #' @importFrom methods new 
 #' @rdname Iris-methods
-setGeneric("read.raw", function(x, ...) standardGeneric("read.raw"))
+setGeneric("read_raw", function(x, ...) standardGeneric("read_raw"))
 
 #' @rdname Iris-methods
-#' @aliases read.raw,ANY,ANY-method
-setMethod("read.raw",
+#' @aliases read_raw,ANY,ANY-method
+setMethod("read_raw",
           signature = "Iris",
           definition = function(x,
                                 raw_dir_name,
@@ -53,7 +53,7 @@ setMethod("read.raw",
               x@microns_per_pixel=MicronsPerPixel
               raw_directories <- dir(raw_dir_name)
               x@samples <- lapply(raw_directories,function(x)Sample(sample_name=x))
-              x@samples <- lapply(x@samples,read.raw.sample,raw_dir_name,label_fix,
+              x@samples <- lapply(x@samples,read_raw_sample,raw_dir_name,label_fix,
                                        format,dir_filter,read_nuc_seg_map,read_dapi_map,
                                        invasive_margin_in_px, readMasks, ignore_scoring)
               names(x@samples) <- toupper(raw_directories)
@@ -62,12 +62,12 @@ setMethod("read.raw",
                   stop('No images files found in :',raw_dir_name)
               }
               #automatically extract the counts
-              x <- extract.counts(x)
+              x <- extract_counts(x)
               return(x)
 })
 
-setGeneric("read.raw.sample", function(x, ...) standardGeneric("read.raw.sample"))
-setMethod("read.raw.sample",
+setGeneric("read_raw_sample", function(x, ...) standardGeneric("read_raw_sample"))
+setMethod("read_raw_sample",
           signature = "Sample",
           definition = function(x,
                                 raw_dir_name,
@@ -106,7 +106,7 @@ setMethod("read.raw.sample",
                   stop('Unknown image format')
               }
               x@coordinates <- lapply(coordinates,function(x)Coordinate(coordinate_name=x))
-              x@coordinates <-lapply(x@coordinates, read.raw.coordinate, sample_dir, image_names,
+              x@coordinates <-lapply(x@coordinates, read_raw_coordinate, sample_dir, image_names,
                                           label_fix, format, read_nuc_seg_map, read_dapi_map,
                                           invasive_margin_in_px, readMasks, ignore_scoring)
                                   
@@ -117,8 +117,8 @@ setMethod("read.raw.sample",
 #' @importFrom tiff readTIFF
 #' @importFrom spatstat owin
 #' @importFrom utils read.csv
-setGeneric("read.raw.coordinate", function(x, ...) standardGeneric("read.raw.coordinate"))
-setMethod("read.raw.coordinate",
+setGeneric("read_raw_coordinate", function(x, ...) standardGeneric("read_raw_coordinate"))
+setMethod("read_raw_coordinate",
           signature = "Coordinate",
           definition = function(x,
                                 sample_dir,
@@ -296,24 +296,24 @@ setMethod("extract_mask_data",
 #' @return Iris object.
 #' @examples
 #' raw_data <- Iris()
-#' raw_data <- read.raw(raw_data,
+#' raw_data <- read_raw(raw_data,
 #'                      raw_dir_name=system.file("extdata", package = "Iris"),
 #'                      format='Mantra')
-#' dataset <- threshold.dataset(raw_data,
+#' dataset <- threshold_dataset(raw_data,
 #'                              marker='PD-Ligand-1 (Opal 690)',
 #'                              marker_name='PDL1',
 #'                              base=c('SOX10+'))
-#' dataset <- threshold.dataset(dataset,
+#' dataset <- threshold_dataset(dataset,
 #'                              marker='PD-1 (Opal 540)',
 #'                              marker_name='PD1',
 #'                              base=c('CD8+','OTHER'))
 #' @export
 #' @rdname Iris-methods
-setGeneric("threshold.dataset", function(x, ...) standardGeneric("threshold.dataset"))
+setGeneric("threshold_dataset", function(x, ...) standardGeneric("threshold_dataset"))
 
 #' @rdname Iris-methods
-#' @aliases threshold.dataset,ANY,ANY-method
-setMethod("threshold.dataset",
+#' @aliases threshold_dataset,ANY,ANY-method
+setMethod("threshold_dataset",
           signature = "Iris",
           definition = function (x, 
                                  marker, 
@@ -324,7 +324,7 @@ setMethod("threshold.dataset",
               #for each sample
               x@samples <- lapply(x@samples, threshold_samples, marker, marker_name, base, pheno_name, remove_blanks)
               names(x@samples) <- sapply(x@samples,function(x)x@sample_name)
-              x <- extract.counts(x)
+              x <- extract_counts(x)
               return(x)
 })
 
@@ -441,35 +441,35 @@ setMethod("getScoring",
 #' @return Iris object
 #' @examples
 #' raw_data <- Iris()
-#' raw_data <- read.raw(raw_data,
+#' raw_data <- read_raw(raw_data,
 #'                      raw_dir_name=system.file("extdata", package = "Iris"),
 #'                      format='Mantra')
-#' dataset <- threshold.dataset(raw_data,
+#' dataset <- threshold_dataset(raw_data,
 #'                              marker='PD-Ligand-1 (Opal 690)',
 #'                              marker_name='PDL1',
 #'                              base=c('SOX10+'))
-#' dataset <- threshold.dataset(dataset,
+#' dataset <- threshold_dataset(dataset,
 #'                              marker='PD-1 (Opal 540)',
 #'                              marker_name='PD1',
 #'                              base=c('CD8+','OTHER'))                     
 #' @docType methods
 #' @export
 #' @rdname Iris-methods 
-setGeneric("extract.ROI", function(x, ...) standardGeneric("extract.ROI"))
+setGeneric("extract_ROI", function(x, ...) standardGeneric("extract_ROI"))
 
 #' @rdname Iris-methods
-#' @aliases extract.ROI,ANY,ANY-method
-setMethod("extract.ROI",
+#' @aliases extract_ROI,ANY,ANY-method
+setMethod("extract_ROI",
           signature = "Iris",
           definition = function(x, ROI='invasive_margin'){
               if (length(x@samples[[1]]@coordinates[[1]]@mask[[ROI]])==0){
                   stop('There is no mask for "',ROI,'"')
               }
              
-              x@samples <- lapply(x@samples, extract.ROI.sample, ROI)
+              x@samples <- lapply(x@samples, extract_ROI_sample, ROI)
               
               #update the counts
-              x <- extract.counts(x)
+              x <- extract_counts(x)
               
               #reset all spatial stats
               x@nearest_neighbors <- list()
@@ -479,17 +479,17 @@ setMethod("extract.ROI",
               return(x)
           })
 
-setGeneric("extract.ROI.sample", function(x, ...) standardGeneric("extract.ROI.sample"))
-setMethod("extract.ROI.sample",
+setGeneric("extract_ROI_sample", function(x, ...) standardGeneric("extract_ROI_sample"))
+setMethod("extract_ROI_sample",
           signature = "Sample",
           definition = function(x, ROI){
-              x@coordinates <- lapply(x@coordinates, extract.ROI.Coordinate, ROI)
+              x@coordinates <- lapply(x@coordinates, extract_ROI_Coordinate, ROI)
               return(x)
           })
 
 
-setGeneric("extract.ROI.Coordinate", function(x, ...) standardGeneric("extract.ROI.Coordinate"))
-setMethod("extract.ROI.Coordinate",
+setGeneric("extract_ROI_Coordinate", function(x, ...) standardGeneric("extract_ROI_Coordinate"))
+setMethod("extract_ROI_Coordinate",
           signature = "Coordinate",
           definition = function(x, ROI){
               #reduce to the filter

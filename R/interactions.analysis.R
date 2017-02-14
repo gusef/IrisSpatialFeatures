@@ -9,24 +9,24 @@
 #' @export
 #' @rdname Iris-methods
 #' 
-setGeneric("extract.interactions", function(x, ...) standardGeneric("extract.interactions"))
+setGeneric("extract_interactions", function(x, ...) standardGeneric("extract_interactions"))
 
 #' @rdname Iris-methods
-#' @aliases extract.interactions,ANY,ANY-method
-setMethod("extract.interactions",
+#' @aliases extract_interactions,ANY,ANY-method
+setMethod("extract_interactions",
           signature = "Iris",
           definition = function(x){
-              x@interactions <- lapply(x@samples,interactions.per.sample,x@markers)
+              x@interactions <- lapply(x@samples,interactions_per_sample,x@markers)
               names(x@interactions) <- names(x@samples)
               return(x)
 })
 
-setGeneric("interactions.per.sample", function(x, ...) standardGeneric("interactions.per.sample"))
-setMethod("interactions.per.sample",
+setGeneric("interactions_per_sample", function(x, ...) standardGeneric("interactions_per_sample"))
+setMethod("interactions_per_sample",
           signature = "Sample",
           definition = function(x, all_levels){
               message(paste(x@sample_name,' ... processing...'))              
-              interactions <- lapply(x@coordinates,interaction.events,all_levels)
+              interactions <- lapply(x@coordinates,interaction_events,all_levels)
             
               areas_with_counts <- sapply(interactions,length) > 0
               if (sum(areas_with_counts)==0){
@@ -69,8 +69,8 @@ setMethod("interactions.per.sample",
                           nums=nums))
 })
 
-setGeneric("interaction.events", function(x, ...) standardGeneric("interaction.events"))
-setMethod("interaction.events",
+setGeneric("interaction_events", function(x, ...) standardGeneric("interaction_events"))
+setMethod("interaction_events",
           signature = "Coordinate",
           definition = function(x, all_levels){
               #extract membrane map and set membranes to -1
@@ -93,7 +93,7 @@ setMethod("interaction.events",
               interactions <- getNeighbors(filled_map) 
             
               #extract the means and variances
-              inter_stats <- extract.interaction.stats(x,interactions,all_levels)
+              inter_stats <- extract_interaction_stats(x,interactions,all_levels)
             
               return(list(stats=inter_stats,
                           ppp=x@ppp,
@@ -163,8 +163,8 @@ get_single_int <- function(lvl, int, labels, all_levels){
                 nums=num_cells))
 }
 
-setGeneric("extract.interaction.stats", function(x, ...) standardGeneric("extract.interaction.stats"))
-setMethod("extract.interaction.stats",
+setGeneric("extract_interaction_stats", function(x, ...) standardGeneric("extract_interaction_stats"))
+setMethod("extract_interaction_stats",
           signature = "Coordinate",
           definition = function(x,interactions,all_levels){
         
@@ -222,11 +222,11 @@ collapseMatrices <- function(mat,fun){
 #' @docType methods
 #' @export
 #' @rdname Iris-methods 
-setGeneric("get.all.interactions", function(x, ...) standardGeneric("get.all.interactions"))
+setGeneric("get_all_interactions", function(x, ...) standardGeneric("get_all_interactions"))
 
 #' @rdname Iris-methods
-#' @aliases get.all.interactions,ANY,ANY-method
-setMethod("get.all.interactions",
+#' @aliases get_all_interactions,ANY,ANY-method
+setMethod("get_all_interactions",
           signature = "Iris",
           definition = function(x){
               return(x@interactions)
@@ -242,11 +242,11 @@ setMethod("get.all.interactions",
 #' @docType methods
 #' @export
 #' @rdname Iris-methods
-setGeneric("get.interactions", function(x, ...) standardGeneric("get.interactions"))
+setGeneric("get_interactions", function(x, ...) standardGeneric("get_interactions"))
 
 #' @rdname Iris-methods
-#' @aliases get.interactions,ANY,ANY-method
-setMethod("get.interactions",
+#' @aliases get_interactions,ANY,ANY-method
+setMethod("get_interactions",
           signature = "Iris",
           definition = function(x,marker,normalize=T){
               if (!marker %in% x@markers){
@@ -286,14 +286,14 @@ setMethod("get.interactions",
 #' @importFrom grDevices pdf
 #' @importFrom grDevices png
 #' 
-#' @docType methods 
+#' @docType methods
 #' @export
 #' @rdname Iris-methods
-setGeneric("plot.interactions", function(x, ...) standardGeneric("plot.interactions"))
+setGeneric("plot_interactions", function(x, ...) standardGeneric("plot_interactions"))
 
 #' @rdname Iris-methods
-#' @aliases plot.interactions,ANY,ANY-method
-setMethod("plot.interactions",
+#' @aliases plot_interactions,ANY,ANY-method
+setMethod("plot_interactions",
           signature = "Iris",
           definition = function(x, label, ordering=NULL, normalize=T, palette=NULL,
                                 celltype_order=NULL, xlim_fix=13, topbar_cols='darkgrey'){
@@ -303,7 +303,7 @@ setMethod("plot.interactions",
               
           int <- lapply(x@interactions,function(x)x$avg$mean)
           dat <- sapply(int,function(x)x[,label])
-          count <- get.counts.collapsed(x)[label,]
+          count <- get_counts_collapsed(x)[label,]
           labels <- rownames(dat)
           
           if (normalize){
@@ -382,11 +382,11 @@ setMethod("plot.interactions",
 #' @docType methods
 #' @export
 #' @rdname Iris-methods 
-setGeneric("interaction.maps", function(x, ...) standardGeneric("interaction.maps"))
+setGeneric("interaction_maps", function(x, ...) standardGeneric("interaction_maps"))
 
 #' @rdname Iris-methods
-#' @aliases interaction.maps,ANY,ANY-method
-setMethod("interaction.maps",
+#' @aliases interaction_maps,ANY,ANY-method
+setMethod("interaction_maps",
           signature = "Iris",
           definition = function(x,
                                 int_markers,
@@ -404,20 +404,20 @@ setMethod("interaction.maps",
     }
 
     #generate a map for each sample
-    lapply(x@samples, interaction.map.sample, x@interactions, int_markers, int_marker_cols,
+    lapply(x@samples, interaction_map_sample, x@interactions, int_markers, int_marker_cols,
            silent_markers, silent_col, map_dir, outline_transparency, use_dapi, format)
     return('Done!')
     
 })
 
-setGeneric("interaction.map.sample", function(x, ...) standardGeneric("interaction.map.sample"))
-setMethod("interaction.map.sample",
+setGeneric("interaction_map_sample", function(x, ...) standardGeneric("interaction_map_sample"))
+setMethod("interaction_map_sample",
           signature = "Sample",
           definition = function(x, interactions, int_markers, int_marker_cols, silent_markers,
                                 silent_col, map_dir, outline_transparency, use_dapi, format){
               
               message("Working on sample: ",x@sample_name)
-              lapply(x@coordinates, generate.interaction.map, x@sample_name, 
+              lapply(x@coordinates, generate_interaction_map, x@sample_name, 
                      interactions[[x@sample_name]], int_markers, int_marker_cols, 
                      silent_markers, silent_col, map_dir, outline_transparency, use_dapi, format)
 })    
@@ -431,8 +431,8 @@ setMethod("interaction.map.sample",
 #' @importFrom grDevices png
 #' @importFrom spatstat rgb2hex
 #' @importFrom tiff writeTIFF
-setGeneric("generate.interaction.map", function(x, ...) standardGeneric("generate.interaction.map"))
-setMethod("generate.interaction.map",
+setGeneric("generate_interaction_map", function(x, ...) standardGeneric("generate_interaction_map"))
+setMethod("generate_interaction_map",
               signature = "Coordinate",
               definition = function(x, samp_name, interactions, int_markers, int_marker_cols, silent_markers,
                                     silent_col, map_dir, outline_transparency, use_dapi, format){

@@ -14,26 +14,26 @@
 #' @docType methods
 #' @export
 #' @rdname Iris-methods
-setGeneric("extract.proximity", function(x, ...) standardGeneric("extract.proximity"))
+setGeneric("extract_proximity", function(x, ...) standardGeneric("extract_proximity"))
 
 #' @rdname Iris-methods
-#' @aliases extract.proximity,ANY,ANY-method
-setMethod("extract.proximity",
+#' @aliases run_proximity,ANY,ANY-method
+setMethod("extract_proximity",
           signature = "Iris",
           definition = function(x, radii=c('Entire.Cell.Major.Axis', 'Entire.Cell.Minor.Axis'),
                                 uncertainty_margin=1, only_closest=F){
               all_levels <- x@markers
-              x@proximity <- lapply(x@samples, touches.per.sample, radii, 
+              x@proximity <- lapply(x@samples, touches_per_sample, radii, 
                                              uncertainty_margin, all_levels, only_closest)
               return(x)
 })
               
-setGeneric("touches.per.sample", function(x, ...) standardGeneric("touches.per.sample"))
-setMethod("touches.per.sample",
+setGeneric("touches_per_sample", function(x, ...) standardGeneric("touches_per_sample"))
+setMethod("touches_per_sample",
           signature = "Sample",
           definition = function(x, radii, uncertainty_margin, all_levels, only_closest){
               message(paste(x@sample_name,' ... processing...'))           
-              proximities <- lapply(x@coordinates, touching.events, all_levels, 
+              proximities <- lapply(x@coordinates, touching_events, all_levels, 
                                        radii, uncertainty_margin, only_closest)
               avg_proxies <- collapseMatrices(lapply(proximities,function(x)x$avg_touching),rowMeans)
               total <- collapseMatrices(lapply(proximities,function(x)x$total_touching),rowSums)
@@ -42,8 +42,8 @@ setMethod("touches.per.sample",
 
 
 #' @importFrom SpatialTools dist2              
-setGeneric("touching.events", function(x, ...) standardGeneric("touching.events"))
-setMethod("touching.events",
+setGeneric("touching_events", function(x, ...) standardGeneric("touching_events"))
+setMethod("touching_events",
           signature = "Coordinate",
           definition = function(x, all_levels, radii, uncertainty_margin, only_closest){
               gc(verbose = F)
@@ -69,7 +69,7 @@ setMethod("touching.events",
                               if (from == to){
                                   diag(d) <- 9999
                               }
-                              total[to,from] <- extract_proximity(d, fr, tr, radii, uncertainty_margin, only_closest)
+                              total[to,from] <- extract_proximity_single(d, fr, tr, radii, uncertainty_margin, only_closest)
                           }
                       }
                   }
@@ -84,7 +84,7 @@ setMethod("touching.events",
 })
              
 
-extract_proximity <- function(d, fr, tr, radii, uncertainty_margin, only_closest){
+extract_proximity_single <- function(d, fr, tr, radii, uncertainty_margin, only_closest){
     if (class(radii) =='character' && c( c('Entire.Cell.Major.Axis', 'Entire.Cell.Minor.Axis') %in% radii)){
         
         #remove average ((minor+major)/2) radius from both cell. 
@@ -123,11 +123,11 @@ extract_proximity <- function(d, fr, tr, radii, uncertainty_margin, only_closest
 #' @docType methods
 #' @export
 #' @rdname Iris-methods
-setGeneric("get.all.proximities", function(x, ...) standardGeneric("get.all.proximities"))
+setGeneric("get_all_proximities", function(x, ...) standardGeneric("get_all_proximities"))
 
 #' @rdname Iris-methods
-#' @aliases get.all.proximities,ANY,ANY-method
-setMethod("get.all.proximities",
+#' @aliases get_all_proximities,ANY,ANY-method
+setMethod("get_all_proximities",
           signature = "Iris",
           definition = function(x){
               return(x@proximity)
@@ -143,11 +143,11 @@ setMethod("get.all.proximities",
 #' @docType methods
 #' @export
 #' @rdname Iris-methods
-setGeneric("get.proximities", function(x, ...) standardGeneric("get.proximities"))
+setGeneric("get_proximities", function(x, ...) standardGeneric("get_proximities"))
 
 #' @rdname Iris-methods
-#' @aliases get.proximities,ANY,ANY-method
-setMethod("get.proximities",
+#' @aliases get_proximities,ANY,ANY-method
+setMethod("get_proximities",
           signature = "Iris",
           definition = function(x,marker,normalize=T){
               if (!marker %in% x@markers){
@@ -174,8 +174,8 @@ setMethod("get.proximities",
 #' @param palette Color palette, by default it uses Spectral from RColorbrewer (Default:NULL)
 #' @param celltype_order Ordering of the cell-type. (Default: NULL)
 #' @param xlim_fix Space on the right side to show the legend (Default: 13)
-#' @param topbar_cols Color of the barplots on top (Default: 'darkgrey')
-#' @param ... Additional arguments.
+#' @param topbar_cols Color of the barplots on top (Default: 'darkgrey'
+#' @param ... Additional parameters. 
 #' 
 #' @importFrom graphics axis
 #' @importFrom graphics barplot
@@ -186,11 +186,11 @@ setMethod("get.proximities",
 #' @docType methods
 #' @export
 #' @rdname Iris-methods
-setGeneric("plot.proximities", function(x, ...) standardGeneric("plot.proximities"))
+setGeneric("plot_proximities", function(x, ...) standardGeneric("plot_proximities"))
 
 #' @rdname Iris-methods
-#' @aliases plot.proximities,ANY,ANY-method
-setMethod("plot.proximities",
+#' @aliases plot_proximities,ANY,ANY-method
+setMethod("plot_proximities",
           signature = "Iris",
           definition = function(x, label, ordering=NULL, normalize=T, palette=NULL,
                                 celltype_order=NULL, xlim_fix=13, topbar_cols='darkgrey'){
@@ -200,7 +200,7 @@ setMethod("plot.proximities",
               
               int <- lapply(x@proximity,function(x)x$avg_proximities)
               dat <- sapply(int,function(x)x[,label])
-              count <- get.counts.collapsed(x)[label,]
+              count <- get_counts_collapsed(x)[label,]
               labels <- rownames(dat)
               
               if (normalize){

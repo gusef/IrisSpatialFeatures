@@ -2,8 +2,8 @@
 ####### Get all count data
 
 
-setGeneric("get.counts.collapsed", function(x, ...) standardGeneric("get.counts.collapsed"))
-setMethod("get.counts.collapsed",
+setGeneric("get_counts_collapsed", function(x, ...) standardGeneric("get_counts_collapsed"))
+setMethod("get_counts_collapsed",
           signature = "Iris",
           definition = function(x){
               combined <- sapply(x@counts,colSums,na.rm=T)
@@ -31,12 +31,11 @@ setMethod("get.counts.collapsed",
 #' @return Iris object.
 #' @docType methods
 #' @export
-#' @importFrom methods new 
 #' @rdname Iris-methods
-setGeneric("get.counts.per.mm2.noncollapsed", function(x, ...) standardGeneric("get.counts.per.mm2.noncollapsed"))
+setGeneric("get_counts_per_mm2_noncollapsed", function(x, ...) standardGeneric("get_counts_per_mm2_noncollapsed"))
 #' @rdname Iris-methods
-#' @aliases get.counts.per.mm2.noncollapsed,ANY,ANY-method
-setMethod("get.counts.per.mm2.noncollapsed",
+#' @aliases get_counts_per_mm2_noncollapsed,ANY,ANY-method
+setMethod("get_counts_per_mm2_noncollapsed",
           signature = "Iris",
           definition = function(x){
               
@@ -62,13 +61,13 @@ setMethod("get.counts.per.mm2.noncollapsed",
 #' @export
 #' @importFrom stats sd
 #' @rdname Iris-methods
-setGeneric("get.counts.per.mm2", function(x, ...) standardGeneric("get.counts.per.mm2"))
+setGeneric("get_counts_per_mm2", function(x, ...) standardGeneric("get_counts_per_mm2"))
 #' @rdname Iris-methods
-#' @aliases get.counts.per.mm2,ANY,ANY-method
-setMethod("get.counts.per.mm2",
+#' @aliases get_counts_per_mm2,ANY,ANY-method
+setMethod("get_counts_per_mm2",
           signature = "Iris",
           definition = function(x, digits=2){
-              counts <- get.counts.per.mm2.noncollapsed(x)
+              counts <- get_counts_per_mm2_noncollapsed(x)
               if (length(x@counts)>1){
                   means <- sapply(counts,colMeans,na.rm=T)
                   se <- sapply(counts,function(x)apply(x,2,function(y)sd(y,na.rm = T)/sqrt(length(y[!is.na(y)]))))
@@ -95,11 +94,11 @@ setMethod("get.counts.per.mm2",
 #' @export
 #' @importFrom stats sd
 #' @rdname Iris-methods
-setGeneric("get.count.ratios", function(x, ...) standardGeneric("get.count.ratios"))
+setGeneric("get_count_ratios", function(x, ...) standardGeneric("get_count_ratios"))
 
 #' @rdname Iris-methods
-#' @aliases get.count.ratios,ANY,ANY-method
-setMethod("get.count.ratios",
+#' @aliases get_count_ratios,ANY,ANY-method
+setMethod("get_count_ratios",
           signature = "Iris",
           definition = function(x, marker1, marker2, digits=2){
               ratios <- sapply(x@counts,function(x,m1,m2)x[,m1]/x[,m2],marker1,marker2)
@@ -113,11 +112,11 @@ setMethod("get.count.ratios",
               return(res)
  })
 
-setGeneric("extract.counts", function(x, ...) standardGeneric("extract.counts"))
-setMethod("extract.counts",
+setGeneric("extract_counts", function(x, ...) standardGeneric("extract_counts"))
+setMethod("extract_counts",
           signature = "Iris",
           definition = function(x){
-              counts <- lapply(x@samples,extract.counts.sample)
+              counts <- lapply(x@samples,extract_counts_sample)
               nams <- sort(unique(unlist(lapply(counts,colnames))))
               for (i in 1:length(counts)){
                   counts[[i]] <- counts[[i]][,match(nams,colnames(counts[[i]]))]
@@ -129,8 +128,8 @@ setMethod("extract.counts",
               return(x)
 })
 
-setGeneric("extract.counts.sample", function(x, ...) standardGeneric("extract.counts.sample"))
-setMethod("extract.counts.sample",
+setGeneric("extract_counts_sample", function(x, ...) standardGeneric("extract_counts_sample"))
+setMethod("extract_counts_sample",
           signature = "Sample",
           definition = function(x){
               counts <- lapply(x@coordinates,function(x)table(x@ppp$marks))
@@ -147,8 +146,8 @@ extractCountsF <- function(x,counter){
     return(counter)
 }
 
-setGeneric("get.counts.noncollapsed", function(x, ...) standardGeneric("get.counts.noncollapsed"))
-setMethod("get.counts.noncollapsed",
+setGeneric("get_counts_noncollapsed", function(x, ...) standardGeneric("get_counts_noncollapsed"))
+setMethod("get_counts_noncollapsed",
           signature = "Iris",
           definition = function(x){
               counts <- x@counts

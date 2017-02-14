@@ -22,16 +22,16 @@ Since the toy example only shows the area of a very small image, the resulting s
 ```{r reading}
 require(Iris)
 raw_data <- Iris()
-raw_data<- read.raw(raw_data,
+raw_data<- read_raw(raw_data,
                     raw_dir_name='../inst/extdata/',
                     format='Mantra')
 
 #apply all the thresholds PD1 for T and other cells, PD-L1 for macrophages and tumor cells
-dataset <- threshold.dataset(raw_data,
+dataset <- threshold_dataset(raw_data,
                              marker='PD-Ligand-1 (Opal 690)',
                              marker_name='PDL1',
                              base=c('SOX10+'))
-dataset <- threshold.dataset(dataset,
+dataset <- threshold_dataset(dataset,
                              marker='PD-1 (Opal 540)',
                              marker_name='PD1',
                              base=c('CD8+','OTHER'))
@@ -44,7 +44,7 @@ plot_dir <- file.path('./plots')
 if (!file.exists(plot_dir)){
     dir.create(file.path(plot_dir))
 }
-p <- overview.plot(dataset,outdir=plot_dir,palette=NULL,type='png')
+p <- overview_plot(dataset,outdir=plot_dir,palette=NULL,type='png')
 ```
 
 ![Example of an Overview plot](plots/MEL29822_080416_1.png?raw=true "Overview Example")
@@ -52,79 +52,53 @@ p <- overview.plot(dataset,outdir=plot_dir,palette=NULL,type='png')
 ## Extract counts and ratios
 Here we extract counts per mm2 for each marker, both for each coordinate and collapsed across the multiple images per sample.
 ```{r counts}
-get.counts.per.mm2(dataset)
-get.counts.per.mm2.noncollapsed(dataset)
-get.count.ratios(dataset,'SOX10+ PDL1-','SOX10+ PDL1+')
+get_counts_per_mm2(dataset)
+get_counts_per_mm2_noncollapsed(dataset)
+get_count_ratios(dataset,'SOX10+ PDL1-','SOX10+ PDL1+')
 ```
 
 ## Nearest neighbor analysis
 Next step we calculate the average nearest neighbor distances for each cell-type, plot barplots compare different distances and finally generate ray plots that show a visual representation of these distances for each coordinate.
 
 ```{r nearest_neighbor, fig.width=5, fig.height=5}
-dataset <- extract.nearest.neighbor(dataset,min_num_cells=2)
-get.nearest.neighbors(dataset,"SOX10+ PDL1+")
-p <- plot.nearest.neighbor(dataset,'CD8+ PD1+','SOX10+ PDL1')
-p <- plot.nearest.neighbor(dataset,'SOX10+ PDL1+','SOX10+ PDL1-')
+dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
+get_nearest_neighbors(dataset,"SOX10+ PDL1+")
+p <- plot_nearest_neighbor(dataset,'CD8+ PD1+','SOX10+ PDL1')
+p <- plot_nearest_neighbor(dataset,'SOX10+ PDL1+','SOX10+ PDL1-')
 
 #ray plots for 
 plot_dir <- file.path('./ray_plots')
 if (!file.exists(plot_dir)){
     dir.create(file.path(plot_dir))
 }
-neighbor.ray.plot(dataset,from_type='SOX10+ PDL1-',to_type='OTHER PD1-',plot_dir=plot_dir)
+neighbor_ray_plot(dataset,from_type='SOX10+ PDL1-',to_type='OTHER PD1-',plot_dir=plot_dir)
 ```
-                  
+
 ## Interaction analysis
 Here we extract the interactions between different cell types, generate an interaction profile for CD8+ PD1+ cells and also generate interaction maps for each coordinate showing the interactions between CD8+ PD1+ cells and SOX10+ PD-L1+ cells.
 ```{r interaction_analysis, fig.width=7, fig.height=7}
-dataset <- extract.interactions(dataset)
-get.interactions(dataset,'CD8+ PD1+')
+dataset <- extract_interactions(dataset)
+get_interactions(dataset,'CD8+ PD1+')
 
 #plotting interaction summaries
-p <- plot.interactions(dataset,'CD8+ PD1+',xlim_fix=4)
+#p <- plot_interactions(dataset,'CD8+ PD1+',xlim_fix=4)
 
 #plotting interaction maps
 int_markers <- c('CD8+ PD1+','SOX10+ PDL1+')
 int_marker_cols <- c('#dd1c77','#99d8c9')
 silent_markers <- c('CD8+ PD1-')
 silent_col=c('yellow')
-p <- interaction.maps(dataset,int_markers,int_marker_cols,silent_markers,silent_col)
+p <- interaction_maps(dataset,int_markers,int_marker_cols,silent_markers,silent_col)
 ```
 
 ##Running the proximity analysis
 Calculating the number of cells within 25 pixels distance for each cell and then showing the the profile for SOX10+ PDL1-
 ```{r proximity_analysis, fig.width=7, fig.height=7}
-dataset <- extract.proximity(dataset,only_closest=T,radii=25)
-p <- plot.proximities(dataset,"SOX10+ PDL1-",xlim_fix=3)
+dataset <- extract_proximity(dataset,only_closest=T,radii=25)
+p <- plot_proximities(dataset,"SOX10+ PDL1-",xlim_fix=3)
 
 
 ```
-
-## Looking into regions of interest
-```{r ROI, fig.width=7, fig.height=7}
-tumor_area <- extract.ROI(dataset,ROI='tumor')
-get.counts.per.mm2(tumor_area)
-tumor_area <- extract.interactions(tumor_area)
-
-p <- plot.interactions(tumor_area,"SOX10+ PDL1-",xlim_fix=4)
-
-#get counts in all vs different areas
-get.counts.per.mm2(dataset)
-get.counts.per.mm2.noncollapsed(dataset)
-get.counts.per.mm2(extract.ROI(dataset,ROI='tumor'))
-get.counts.per.mm2.noncollapsed(extract.ROI(dataset,ROI='tumor'))
-get.counts.per.mm2(extract.ROI(dataset,ROI='invasive_margin'))
-get.counts.per.mm2.noncollapsed(extract.ROI(dataset,ROI='invasive_margin'))
-get.counts.per.mm2(extract.ROI(dataset,ROI='stroma'))
-get.counts.per.mm2.noncollapsed(extract.ROI(dataset,ROI='stroma'))
-```
-
-## Extract spatial features for downstream processing
-```{r spatial_features}
-spat_features <- extract.features(dataset)
-spat_features[1:10,]
-```
-
 
 
 

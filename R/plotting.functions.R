@@ -12,15 +12,15 @@
 #' @docType methods
 #' @export
 #' @rdname Iris-methods
-setGeneric("overview.plot", function(x, ...) standardGeneric("overview.plot"))
+setGeneric("overview_plot", function(x, ...) standardGeneric("overview_plot"))
 
 #' @rdname Iris-methods
-#' @aliases overview.plot,ANY,ANY-method
-setMethod("overview.plot",
+#' @aliases overview_plot,ANY,ANY-method
+setMethod("overview_plot",
           signature = "Iris",
           definition = function(x,outdir='./',palette=NULL,type='pdf',width=10,height=7){
           lapply(x@samples,
-                 overview.plot.sample,
+                 overview_plot_sample,
                  all_levels=x@markers,
                  outdir,
                  palette,
@@ -29,12 +29,12 @@ setMethod("overview.plot",
                  height)
 })
 
-setGeneric("overview.plot.sample", function(x, ...) standardGeneric("overview.plot.sample"))
-setMethod("overview.plot.sample",
+setGeneric("overview_plot_sample", function(x, ...) standardGeneric("overview_plot_sample"))
+setMethod("overview_plot_sample",
           signature = "Sample",
           definition = function(x,all_levels,outdir,palette,type,width,height){
           lapply(x@coordinates,
-                 overview.plot.coord,
+                 overview_plot_coord,
                  sample_name=x@sample_name,
                  all_levels,
                  outdir,
@@ -52,8 +52,8 @@ setMethod("overview.plot.sample",
 #' @importFrom grDevices pdf
 #' @importFrom grDevices png
 #' @importFrom RColorBrewer brewer.pal
-setGeneric("overview.plot.coord", function(x, ...) standardGeneric("overview.plot.coord"))
-setMethod("overview.plot.coord",
+setGeneric("overview_plot_coord", function(x, ...) standardGeneric("overview_plot_coord"))
+setMethod("overview_plot_coord",
           signature = "Coordinate",
           definition = function(x,sample_name,all_levels,outdir,palette,type,width,height){
   

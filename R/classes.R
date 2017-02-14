@@ -1,5 +1,5 @@
 
-#' An S3 class to represent the raw data that is output by inForm
+#' Class to represent the raw data that is output by inForm
 #'
 #' @slot data Raw coordinate data sheet
 #' @slot summary Inform summary (optional)
@@ -23,9 +23,10 @@ raw_data <- setClass("raw_data",
 #' @family ppp
 #'
 #' @exportClass ppp
+#' @importFrom spatstat ppp
 setOldClass("ppp")
 
-#' An S3 class to represent a single imaging coordinate
+#' Class to represent a single imaging coordinate
 #'
 #' @slot ppp A spatstat ppp object that contains all coordinate information
 #' @slot raw Includes all raw data that is output from inForm
@@ -54,7 +55,7 @@ Sample <- setClass("Sample",
                    slots = c(coordinates = "list",
                              sample_name="character"))
 
-#' An S3 class to represent an imaging dataset.
+#' Class to represent an imaging dataset.
 #'
 #' @slot samples A list of samples each containing multiple coordinates.
 #' @slot counts A list of counts of different cell types for each coordinate in each sample.
@@ -66,8 +67,11 @@ Sample <- setClass("Sample",
 #' @slot invasive_margin_in_px The width of the invasive margin in pixels
 #' @slot readMasks Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: True)
 #' @slot ignore_scoring Flag indicating whether the scoring file should be ignored (default: False)
-#' @docType methods
-#' @export
+#' @docType class
+#' 
+#' @name Iris
+#' @rdname Iris-class
+#' @exportClass Iris
 #' @aliases NULL
 Iris <- setClass("Iris",
                  slots = c(samples = "list",

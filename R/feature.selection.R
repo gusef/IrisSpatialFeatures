@@ -46,11 +46,11 @@ feature_selection <- function(dat,lab){
 #' @docType methods
 #' @export
 #' @rdname Iris-methods
-setGeneric("extract.features", function(x, ...) standardGeneric("extract.features"))
+setGeneric("extract_features", function(x, ...) standardGeneric("extract_features"))
 
 #' @rdname Iris-methods
-#' @aliases extract.features,ANY,ANY-method
-setMethod("extract.features",
+#' @aliases extract_features,ANY,ANY-method
+setMethod("extract_features",
           signature = "Iris",
           definition = function(x, name='', rm.na=F){
 
