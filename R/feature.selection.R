@@ -1,11 +1,12 @@
 ##############################################################################################################
 
 #' Function to extract all numeric features
+#' @param dat A data matrix with features as rows and samples as columns
+#' @param lab Label annotation that contains 2 classes, which corresponds to the samples in the column
 #'
 #' @importFrom stats t.test
 #' @importFrom stats wilcox.test
 #' @importFrom stats p.adjust
-
 feature_selection <- function(dat,lab){
     res <- sapply(1:nrow(dat),
                   function(x,dat,lab)t.test(dat[x,lab==unique(lab)[1]],
@@ -41,10 +42,14 @@ feature_selection <- function(dat,lab){
 #' @param name Prefix for all features, e.g. 'invasive_margin' (Default: '')
 #' @param rm.na Should features with NA values be removed (Default: FALSE)
 #' @param ... Additional arguments
+#' 
+#' @docType methods
 #' @export
-#' 
-#' 
+#' @rdname Iris-methods
 setGeneric("extract.features", function(x, ...) standardGeneric("extract.features"))
+
+#' @rdname Iris-methods
+#' @aliases extract.features,ANY,ANY-method
 setMethod("extract.features",
           signature = "Iris",
           definition = function(x, name='', rm.na=F){

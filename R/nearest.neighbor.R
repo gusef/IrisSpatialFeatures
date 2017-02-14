@@ -3,12 +3,16 @@
 #' Extract the distance to each nearest neighbor for each cell-type
 #' 
 #' @param x Iris object
+#' @param min_num_cells Minimum number of cell that a coordinate needs to have in order to calculate the statistics (Default: 10)
 #' @param ... Additional arguments
 #' 
 #' @docType methods
 #' @export
-#' 
+#' @rdname Iris-methods
 setGeneric("extract.nearest.neighbor", function(x, ...) standardGeneric("extract.nearest.neighbor"))
+
+#' @rdname Iris-methods
+#' @aliases extract.nearest.neighbor,ANY,ANY-method
 setMethod("extract.nearest.neighbor",
           signature = "Iris",
           definition = function(x, min_num_cells=10){
@@ -90,10 +94,17 @@ getToNeighbors <- function(to,classes,ppp,min_num_cells){
 
 
 #' Get the nearest neighbor for each cell-type
+#' 
+#' @param x An Iris object
+#' @param ... Additional arguments
+#' 
+#' @docType methods
 #' @export
-#' 
-#' 
+#' @rdname Iris-methods
 setGeneric("get.all.nearest.neighbors", function(x, ...) standardGeneric("get.all.nearest.neighbors"))
+
+#' @rdname Iris-methods
+#' @aliases get.all.nearest.neighbors,ANY,ANY-method
 setMethod("get.all.nearest.neighbors",
           signature = "Iris",
           definition = function(x){
@@ -101,10 +112,17 @@ setMethod("get.all.nearest.neighbors",
           })
 
 #' Get the nearest neighbor for a specified cell-type
-#' @export
 #' 
+#' @param x An Iris object
+#' @param ... Additional arguments
+#' 
+#' @export
+#' @rdname Iris-methods
 #' 
 setGeneric("get.nearest.neighbors", function(x, ...) standardGeneric("get.nearest.neighbors"))
+
+#' @rdname Iris-methods
+#' @aliases get.nearest.neighbors,ANY,ANY-method
 setMethod("get.nearest.neighbors",
           signature = "Iris",
           definition = function(x,marker,normalize=T){
@@ -129,12 +147,18 @@ setMethod("get.nearest.neighbors",
 #' @param to Cell-type to which the nearest neighbor is calculated.
 #' @param ttest Flag indicating whether a paired t-test should be calculated. (default: TRUE)
 #' @param transposed Switches 'from' and 'to' cell-type. This way the (default: FALSE)
+#' @param ... Additional arguments. 
+#' 
 #' @importFrom graphics barplot
 #' @importFrom graphics mtext
 #' @importFrom stats t.test
+#' @docType methods
 #' @export 
-#' 
+#' @rdname Iris-methods
 setGeneric("plot.nearest.neighbor", function(x, ...) standardGeneric("plot.nearest.neighbor"))
+
+#' @rdname Iris-methods
+#' @aliases plot.nearest.neighbor,ANY,ANY-method
 setMethod("plot.nearest.neighbor",
           signature = "Iris",
           definition = function(x, from, to, ttest=TRUE, transposed=FALSE){
@@ -255,11 +279,27 @@ buildLabel <- function(from,to,ext,transposed){
 
 
 #' Plot nearest neighbor ray plots for each samples
-#' @importFrom spatstat superimpose
+#' 
+#' @param x An Iris object
+#' @param from_type Cell type from which the rays are drawn
+#' @param to_type Cell type to which the rays are drawn
+#' @param from_col Color for the 'from' cell-type (Default: '#EE7600')
+#' @param to_col Color for the 'to' cell-type  (Default: '#028482')
+#' @param format Format of the output file, can be '.pdf' or '.png' (Default: '.pdf')
+#' @param plot_dir Directory in which the images are written (Default: './')
+#' @param lineColor Color of the rays (Default: '#666666')
+#' @param height Height of the pdf. (Default: 7)
+#' @param width Width of the pdf. (Default: 10)
+#' @param ... Additional arguments.
+#' 
+#' @docType methods
 #' @export
-#' 
-#' 
+#' @importFrom spatstat superimpose
+#' @rdname Iris-methods
 setGeneric("neighbor.ray.plot", function(x, ...) standardGeneric("neighbor.ray.plot"))
+
+#' @rdname Iris-methods
+#' @aliases neighbor.ray.plot,ANY,ANY-method
 setMethod("neighbor.ray.plot",
           signature = "Iris",
           definition = function(x,
@@ -310,7 +350,6 @@ setMethod("neighbor.ray.plot.sample",
 #' @importFrom grDevices dev.off
 #' @importFrom grDevices pdf
 #' @importFrom grDevices png
-#' 
 setGeneric("neighbor.ray.plot.coord", function(x, ...) standardGeneric("neighbor.ray.plot.coord"))
 setMethod("neighbor.ray.plot.coord",
           signature = "Coordinate",

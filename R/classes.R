@@ -1,5 +1,5 @@
 
-#' An S4 class to represent the raw data that is output by inForm
+#' An S3 class to represent the raw data that is output by inForm
 #'
 #' @slot data Raw coordinate data sheet
 #' @slot summary Inform summary (optional)
@@ -25,7 +25,7 @@ raw_data <- setClass("raw_data",
 #' @exportClass ppp
 setOldClass("ppp")
 
-#' An S4 class to represent a single imaging coordinate
+#' An S3 class to represent a single imaging coordinate
 #'
 #' @slot ppp A spatstat ppp object that contains all coordinate information
 #' @slot raw Includes all raw data that is output from inForm
@@ -44,7 +44,7 @@ Coordinate <- setClass("Coordinate",
                        prototype=list(
                            ppp = ppp()))
 
-#' An S4 class to represent a single imaging sample with multiple coordinates.
+#' An S3 class to represent a single imaging sample with multiple coordinates.
 #'
 #' @slot coordinates A list of coordinate objects that contain all of the raw and coordinate data.
 #' @slot sample_name Name of the contained sample.
@@ -54,7 +54,7 @@ Sample <- setClass("Sample",
                    slots = c(coordinates = "list",
                              sample_name="character"))
 
-#' An S4 class to represent an imaging dataset.
+#' An S3 class to represent an imaging dataset.
 #'
 #' @slot samples A list of samples each containing multiple coordinates.
 #' @slot counts A list of counts of different cell types for each coordinate in each sample.
@@ -66,9 +66,9 @@ Sample <- setClass("Sample",
 #' @slot invasive_margin_in_px The width of the invasive margin in pixels
 #' @slot readMasks Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: True)
 #' @slot ignore_scoring Flag indicating whether the scoring file should be ignored (default: False)
-#' @docType class
-#' @aliases NULL
+#' @docType methods
 #' @export
+#' @aliases NULL
 Iris <- setClass("Iris",
                  slots = c(samples = "list",
                            pData = "data.frame",
@@ -80,8 +80,6 @@ Iris <- setClass("Iris",
                            markers="character",
                            invasive_margin_in_px='numeric'))
 
-#' @param x Iris Object
-#' @param ... Additional arguments
-setGeneric("read.raw", function(x, ...) standardGeneric("read.raw"))
+
 
 

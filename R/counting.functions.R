@@ -2,9 +2,6 @@
 ####### Get all count data
 
 
-#' Get all the counts on a per sample basis, collapsing the single coordinates
-#' 
-#' 
 setGeneric("get.counts.collapsed", function(x, ...) standardGeneric("get.counts.collapsed"))
 setMethod("get.counts.collapsed",
           signature = "Iris",
@@ -25,11 +22,20 @@ setMethod("get.counts.collapsed",
 })
 
 
+
 #' Get all the counts on a per mm2 basis non-collapsed
+#' 
+#' @param x Iris object.
+#' @param ... Additional arguments  
+#' 
+#' @return Iris object.
+#' @docType methods
 #' @export
-#' 
-#' 
+#' @importFrom methods new 
+#' @rdname Iris-methods
 setGeneric("get.counts.per.mm2.noncollapsed", function(x, ...) standardGeneric("get.counts.per.mm2.noncollapsed"))
+#' @rdname Iris-methods
+#' @aliases get.counts.per.mm2.noncollapsed,ANY,ANY-method
 setMethod("get.counts.per.mm2.noncollapsed",
           signature = "Iris",
           definition = function(x){
@@ -47,11 +53,18 @@ setMethod("get.counts.per.mm2.noncollapsed",
 
 
 #' Get all the counts on a per mm2 basis
-#' @importFrom stats sd
+#' @param x An Iris object
+#' @param digits Number of digits that are shown in the output (default: 2)
+#' @param ... Additional arguments
+#' @return counts per mm2 per sample, collapsing each coordinate and returning mean and standard error
+#' 
+#' @docType methods
 #' @export
-#' 
-#' 
+#' @importFrom stats sd
+#' @rdname Iris-methods
 setGeneric("get.counts.per.mm2", function(x, ...) standardGeneric("get.counts.per.mm2"))
+#' @rdname Iris-methods
+#' @aliases get.counts.per.mm2,ANY,ANY-method
 setMethod("get.counts.per.mm2",
           signature = "Iris",
           definition = function(x, digits=2){
@@ -71,11 +84,21 @@ setMethod("get.counts.per.mm2",
 
 
 #' Get ratio of counts between two markers
-#' @importFrom stats sd
+#' 
+#' @param x An Iris object
+#' @param marker1 First cell-type.
+#' @param marker2 Second cell-type.
+#' @param digits Number of digits that should be shown in the the results. (Default: 2)
+#' @param ... Additional arguments.
+#' 
+#' @docType methods
 #' @export
-#' 
-#' 
+#' @importFrom stats sd
+#' @rdname Iris-methods
 setGeneric("get.count.ratios", function(x, ...) standardGeneric("get.count.ratios"))
+
+#' @rdname Iris-methods
+#' @aliases get.count.ratios,ANY,ANY-method
 setMethod("get.count.ratios",
           signature = "Iris",
           definition = function(x, marker1, marker2, digits=2){
@@ -89,7 +112,6 @@ setMethod("get.count.ratios",
               names(res) <- sapply(x@samples,function(x)x@sample_name)
               return(res)
  })
-
 
 setGeneric("extract.counts", function(x, ...) standardGeneric("extract.counts"))
 setMethod("extract.counts",
@@ -131,7 +153,6 @@ setMethod("get.counts.noncollapsed",
           definition = function(x){
               counts <- x@counts
               nams <- unique(unlist(lapply(counts,colnames)))
-    
               standardize <- function(x,nams){
                   y <- matrix(0,nrow=nrow(x),ncol=length(nams))
                   colnames(y) <- nams

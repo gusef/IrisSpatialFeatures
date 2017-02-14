@@ -13,8 +13,11 @@
 #' 
 #' @docType methods
 #' @export
-#' 
+#' @rdname Iris-methods
 setGeneric("extract.proximity", function(x, ...) standardGeneric("extract.proximity"))
+
+#' @rdname Iris-methods
+#' @aliases extract.proximity,ANY,ANY-method
 setMethod("extract.proximity",
           signature = "Iris",
           definition = function(x, radii=c('Entire.Cell.Major.Axis', 'Entire.Cell.Minor.Axis'),
@@ -113,10 +116,17 @@ extract_proximity <- function(d, fr, tr, radii, uncertainty_margin, only_closest
 ##### Getter functions
 
 #' Get all proximity data for all cell-types in a sample
+#' 
+#' @param x An Iris object
+#' @param ... Additional arguments
+#' 
+#' @docType methods
 #' @export
-#' 
-#' 
+#' @rdname Iris-methods
 setGeneric("get.all.proximities", function(x, ...) standardGeneric("get.all.proximities"))
+
+#' @rdname Iris-methods
+#' @aliases get.all.proximities,ANY,ANY-method
 setMethod("get.all.proximities",
           signature = "Iris",
           definition = function(x){
@@ -124,10 +134,19 @@ setMethod("get.all.proximities",
           })
 
 #' Get proximity data for a given cell-type
+#' 
+#' @param x An Iris object.
+#' @param marker Cell type for which the proximity data should be extracted.
+#' @param normalize Flag indicating whether the populations should be normalized so that the sum of all is 1 (default: TRUE).
+#' @param ... Additional arguments.
+#' 
+#' @docType methods
 #' @export
-#' 
-#' 
+#' @rdname Iris-methods
 setGeneric("get.proximities", function(x, ...) standardGeneric("get.proximities"))
+
+#' @rdname Iris-methods
+#' @aliases get.proximities,ANY,ANY-method
 setMethod("get.proximities",
           signature = "Iris",
           definition = function(x,marker,normalize=T){
@@ -148,16 +167,29 @@ setMethod("get.proximities",
 ##### Interaction summary plotting functions
 
 #' Plot proximity analysis data
+#' @param x An Iris object
+#' @param label Cell-type for which the proximit profile is plotted
+#' @param ordering Ordering of the samples (Default: NULL)
+#' @param normalize Flag, should the populations of different cell-types sum up to one in each sample? (Default: TRUE)
+#' @param palette Color palette, by default it uses Spectral from RColorbrewer (Default:NULL)
+#' @param celltype_order Ordering of the cell-type. (Default: NULL)
+#' @param xlim_fix Space on the right side to show the legend (Default: 13)
+#' @param topbar_cols Color of the barplots on top (Default: 'darkgrey')
+#' @param ... Additional arguments.
+#' 
 #' @importFrom graphics axis
 #' @importFrom graphics barplot
 #' @importFrom graphics layout
 #' @importFrom graphics legend
 #' @importFrom graphics par
 #' @importFrom graphics text
+#' @docType methods
 #' @export
-#' 
-#' 
+#' @rdname Iris-methods
 setGeneric("plot.proximities", function(x, ...) standardGeneric("plot.proximities"))
+
+#' @rdname Iris-methods
+#' @aliases plot.proximities,ANY,ANY-method
 setMethod("plot.proximities",
           signature = "Iris",
           definition = function(x, label, ordering=NULL, normalize=T, palette=NULL,

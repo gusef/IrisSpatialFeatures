@@ -1,6 +1,3 @@
-###########################################
-######### Thresholding functions
-
 
 #This function assumes each sample has its own directory 
 #where it has one or more images. The image names include the coordinate of the image
@@ -35,7 +32,11 @@
 #' @docType methods
 #' @export
 #' @importFrom methods new 
+#' @rdname Iris-methods
 setGeneric("read.raw", function(x, ...) standardGeneric("read.raw"))
+
+#' @rdname Iris-methods
+#' @aliases read.raw,ANY,ANY-method
 setMethod("read.raw",
           signature = "Iris",
           definition = function(x,
@@ -65,23 +66,6 @@ setMethod("read.raw",
               return(x)
 })
 
-
-#' Read inForm output for one sample and store it in a sample object
-#' 
-#' @param x Sample object of the Iris package.
-#' @param raw_dir_name Directory that contains the raw files
-#' @param label_fix List of length 2 character vector that is used to fix filenames.
-#' @param format Output format: Currently only "Vectra" and "Mantra" are supported. 
-#' @param dir_filter Filter to select only certain directory names.
-#' @param read_nuc_seg_map Flag indicating whether the nuclear map should be read.
-#' @param read_dapi_map Flag indicating whether the dapi layer should be read.
-#' @param invasive_margin_in_px The width of the invasive margin in pixels
-#' @param readMasks Flag that indicates whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read
-#' @param ignore_scoring Flag indicating whether the scoring file should be ignored 
-#' @param ... Additional arguments  
-#' 
-#' @return Sample object.
-#' @docType methods
 setGeneric("read.raw.sample", function(x, ...) standardGeneric("read.raw.sample"))
 setMethod("read.raw.sample",
           signature = "Sample",
@@ -130,26 +114,10 @@ setMethod("read.raw.sample",
               return(x)
 })
 
-#' Read inForm output from a single coordinate
-#' 
-#' @param x Coordinate object of the Iris package.
-#' @param sample_dir Directory that contains the sample
-#' @param label_fix List of length 2 character vector that is used to fix filenames.
-#' @param format Output format: Currently only "Vectra" and "Mantra" are supported. 
-#' @param dir_filter Filter to select only certain directory names.
-#' @param read_nuc_seg_map Flag indicating whether the nuclear map should be read.
-#' @param read_dapi_map Flag indicating whether the dapi layer should be read.
-#' @param invasive_margin_in_px The width of the invasive margin in pixels.
-#' @param readMasks Flag that indicates whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read.
-#' @param ignore_scoring Flag indicating whether the scoring file should be ignored. 
-#' @param ... Additional arguments    
-#' 
-#' @return Sample object.
-#' @docType methods
 #' @importFrom tiff readTIFF
 #' @importFrom spatstat owin
 #' @importFrom utils read.csv
-setGeneric("read.raw.coordinate", function(x,...) standardGeneric("read.raw.coordinate"))
+setGeneric("read.raw.coordinate", function(x, ...) standardGeneric("read.raw.coordinate"))
 setMethod("read.raw.coordinate",
           signature = "Coordinate",
           definition = function(x,
@@ -275,23 +243,9 @@ extract_mask <- function(filename){
 }
 
 
-
-#' Read and processes all masks for a given coordinate. Currently this is fixed to the invasive margin, 
-#' tumor and stroma regions. The masks are stored within the coordinate object and can be used to reduce the 
-#' dataset to the ROIs.
-#' 
-#' @param x A coordinate object for the Iris package.
-#' @param img_names All filenames associated with the current coordinate.
-#' @param sample_dir Sample directory.
-#' @param coordinate_name Name of the current coordinate.
-#' @param invasive_margin_in_px The number of pixels that the invasive margin should be grown out from the manually drawn margin. 
-#' @param ... Additional arguments    
-#' 
-#' @return A coordinate object for the Iris package.
-#' @docType methods
 #' @useDynLib Iris
 #' @importFrom Rcpp sourceCpp
-setGeneric("extract_mask_data", function(x,...) standardGeneric("extract_mask_data"))
+setGeneric("extract_mask_data", function(x, ...) standardGeneric("extract_mask_data"))
 setMethod("extract_mask_data",
           signature = "Coordinate",
           definition = function(x, img_names, sample_dir, coordinate_name, invasive_margin_in_px){
@@ -354,7 +308,11 @@ setMethod("extract_mask_data",
 #'                              marker_name='PD1',
 #'                              base=c('CD8+','OTHER'))
 #' @export
-setGeneric("threshold.dataset", function(x,...) standardGeneric("threshold.dataset"))
+#' @rdname Iris-methods
+setGeneric("threshold.dataset", function(x, ...) standardGeneric("threshold.dataset"))
+
+#' @rdname Iris-methods
+#' @aliases threshold.dataset,ANY,ANY-method
 setMethod("threshold.dataset",
           signature = "Iris",
           definition = function (x, 
@@ -370,19 +328,7 @@ setMethod("threshold.dataset",
               return(x)
 })
 
-#' Method that applies the manually determined thresholds of certain markers on all coordinates of a sample
-#' 
-#' @param x Sample object of the Iris package.
-#' @param marker Name of the marker used in the score file.
-#' @param marker_name corresponding name, which should be appended at the selected cell types.
-#' @param base Vector of cell types for which the marker should be used.
-#' @param pheno_name Name of the phenotype column to be used.
-#' @param remove_blanks Flag that indicates whether or not not called cells are to be removed.
-#' @param ... Additional arguments    
-#' 
-#' @docType methods
-#' @return Sample object.
-setGeneric("threshold_samples", function(x,...) standardGeneric("threshold_samples"))
+setGeneric("threshold_samples", function(x, ...) standardGeneric("threshold_samples"))
 setMethod("threshold_samples",
           signature = "Sample",
           definition = function (x, marker, marker_name, base, pheno_name, remove_blanks){
@@ -394,19 +340,7 @@ setMethod("threshold_samples",
 })
 
 
-#' Method that applies the manually determined thresholds of certain markers on a single coordinate
-#'  
-#' @param x Coordinate object of the Iris package.
-#' @param marker Name of the marker used in the score file.
-#' @param marker_name corresponding name, which should be appended at the selected cell types.
-#' @param base Vector of cell types for which the marker should be used.
-#' @param pheno_name Name of the phenotype column to be used.
-#' @param remove_blanks Flag that indicates whether or not not called cells are to be removed.
-#' @param ... Additional arguments  
-#' 
-#' @docType methods
-#' @return Coordinate object.
-setGeneric("threshold_coords", function(x,...) standardGeneric("threshold_coords"))
+setGeneric("threshold_coords", function(x, ...) standardGeneric("threshold_coords"))
 setMethod("threshold_coords",
           signature = "Coordinate",
           definition = function (x, marker, marker_name, base, pheno_name, sample_name, remove_blanks){
@@ -458,14 +392,7 @@ setMethod("threshold_coords",
               return(x)
 })
 
-#' Method that extracts the thresholding scores from the raw data provided by inForm
-#'  
-#' @param x Coordinate object of the Iris package.
-#' @param ... Additional arguments     
-#' 
-#' @docType methods
-#' @return Coordinate object.
-setGeneric("getScoring", function(x,...) standardGeneric("getScoring"))
+setGeneric("getScoring", function(x, ...) standardGeneric("getScoring"))
 setMethod("getScoring",
           signature = "Coordinate",
           definition = function(x){
@@ -526,8 +453,12 @@ setMethod("getScoring",
 #'                              marker_name='PD1',
 #'                              base=c('CD8+','OTHER'))                     
 #' @docType methods
-#' @export 
+#' @export
+#' @rdname Iris-methods 
 setGeneric("extract.ROI", function(x, ...) standardGeneric("extract.ROI"))
+
+#' @rdname Iris-methods
+#' @aliases extract.ROI,ANY,ANY-method
 setMethod("extract.ROI",
           signature = "Iris",
           definition = function(x, ROI='invasive_margin'){
@@ -556,15 +487,8 @@ setMethod("extract.ROI.sample",
               return(x)
           })
 
-#' Method that reduces the current coordinate to a specific region of interest, discarding all cell coordinates outside of that region
-#'  
-#' @param x Coordinate object of the Iris package. 
-#' @param ROI Region of interest. 
-#' @param ... Additional arguments  
-#' 
-#' @return Coordinate object of the Iris package. 
-#' @docType methods
-setGeneric("extract.ROI.Coordinate", function(x,...) standardGeneric("extract.ROI.Coordinate"))
+
+setGeneric("extract.ROI.Coordinate", function(x, ...) standardGeneric("extract.ROI.Coordinate"))
 setMethod("extract.ROI.Coordinate",
           signature = "Coordinate",
           definition = function(x, ROI){

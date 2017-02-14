@@ -7,8 +7,12 @@
 #' 
 #' @docType methods
 #' @export
+#' @rdname Iris-methods
 #' 
 setGeneric("extract.interactions", function(x, ...) standardGeneric("extract.interactions"))
+
+#' @rdname Iris-methods
+#' @aliases extract.interactions,ANY,ANY-method
 setMethod("extract.interactions",
           signature = "Iris",
           definition = function(x){
@@ -211,10 +215,17 @@ collapseMatrices <- function(mat,fun){
 ##### Interaction getters
 
 #' Get all interactions between all cell-types
+#' 
+#' @param x An Iris object.
+#' @param ... Additional arguments.
+#' 
+#' @docType methods
 #' @export
-#' 
-#' 
+#' @rdname Iris-methods 
 setGeneric("get.all.interactions", function(x, ...) standardGeneric("get.all.interactions"))
+
+#' @rdname Iris-methods
+#' @aliases get.all.interactions,ANY,ANY-method
 setMethod("get.all.interactions",
           signature = "Iris",
           definition = function(x){
@@ -222,9 +233,19 @@ setMethod("get.all.interactions",
 })
 
 #' Get interactions for a specific marker
+#' 
+#' @param x An iris object
+#' @param marker Cell-type for which the interactions should be pulled
+#' @param normalize Flag to indicated whether to normalize each sample so all interactions sum up to 1 (Default: 1)
+#' @param ... Additional arguments.
+#' 
 #' @docType methods
 #' @export
+#' @rdname Iris-methods
 setGeneric("get.interactions", function(x, ...) standardGeneric("get.interactions"))
+
+#' @rdname Iris-methods
+#' @aliases get.interactions,ANY,ANY-method
 setMethod("get.interactions",
           signature = "Iris",
           definition = function(x,marker,normalize=T){
@@ -254,6 +275,7 @@ setMethod("get.interactions",
 #' @param celltype_order Order in which the cell-types are displayed. (default: Alphabethically)
 #' @param xlim_fix Whitespace on the right side so the legend can be displayed clearly. (default: 13)
 #' @param topbar_cols Color of the barplots that are shown on top. (default: 'darkgrey')
+#' @param ... Additional arguments
 #' 
 #' @importFrom graphics axis
 #' @importFrom graphics layout
@@ -266,7 +288,11 @@ setMethod("get.interactions",
 #' 
 #' @docType methods 
 #' @export
+#' @rdname Iris-methods
 setGeneric("plot.interactions", function(x, ...) standardGeneric("plot.interactions"))
+
+#' @rdname Iris-methods
+#' @aliases plot.interactions,ANY,ANY-method
 setMethod("plot.interactions",
           signature = "Iris",
           definition = function(x, label, ordering=NULL, normalize=T, palette=NULL,
@@ -342,10 +368,24 @@ setMethod("plot.interactions",
 
 
 #' Plot interaction maps for all samples
+#' @param x An Iris object
+#' @param int_markers Cell-types that should be considered. If two cells from different cell-types interact they are filled in, if a cell is not interacting it is just outlined.
+#' @param int_marker_cols Colors for the cell-types
+#' @param silent_markers Cell-types that should only be outlined (Default: c())
+#' @param silent_col Colors for silent markers (Default: c())
+#' @param outline_transparency Dimming factor for the outlines cells(Default: 0.9)
+#' @param use_dapi Use the DAPI channel as a background (Default: FALSE)
+#' @param outdir Output directory (Default: './interaction_maps')
+#' @param format Output format of the images. Can be '.png' or '.tiff' (Default: '.png')
+#' @param ... Additional arguments.
+#' 
+#' @docType methods
 #' @export
-#' 
-#' 
+#' @rdname Iris-methods 
 setGeneric("interaction.maps", function(x, ...) standardGeneric("interaction.maps"))
+
+#' @rdname Iris-methods
+#' @aliases interaction.maps,ANY,ANY-method
 setMethod("interaction.maps",
           signature = "Iris",
           definition = function(x,

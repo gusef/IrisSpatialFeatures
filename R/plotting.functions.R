@@ -7,11 +7,15 @@
 #' @param type File format for the plots. Can bei either 'pdf' or 'png'. (default: 'pdf')
 #' @param width Width of the plot in inches for pdf and pixels for png. (default: 10)
 #' @param height Heigth of the plot in inches for pdf and pixels for png. (default: 7)
+#' @param ... Additional arguments
 #' 
 #' @docType methods
 #' @export
-#' 
+#' @rdname Iris-methods
 setGeneric("overview.plot", function(x, ...) standardGeneric("overview.plot"))
+
+#' @rdname Iris-methods
+#' @aliases overview.plot,ANY,ANY-method
 setMethod("overview.plot",
           signature = "Iris",
           definition = function(x,outdir='./',palette=NULL,type='pdf',width=10,height=7){
@@ -40,9 +44,6 @@ setMethod("overview.plot.sample",
                  height)        
 })
 
-
-#' Plot a single coordinate
-#' 
 #' @importFrom graphics legend
 #' @importFrom graphics par
 #' @importFrom graphics plot
@@ -51,17 +52,6 @@ setMethod("overview.plot.sample",
 #' @importFrom grDevices pdf
 #' @importFrom grDevices png
 #' @importFrom RColorBrewer brewer.pal
-#' 
-#' @param x A coordinate object
-#' @param sample_name Name of the current sample.
-#' @param all_levels All the cell types analyzed in the dataset.
-#' @param outdir Output directory.
-#' @param palette Vector of colors
-#' @param type Type of output file type, either 'pdf' or 'png'
-#' @param width Width of the plot (inches for pdf and pixels for png)
-#' @param height Height of the plot (inches for pdf and pixels for png)
-
-
 setGeneric("overview.plot.coord", function(x, ...) standardGeneric("overview.plot.coord"))
 setMethod("overview.plot.coord",
           signature = "Coordinate",
