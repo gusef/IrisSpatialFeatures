@@ -8,10 +8,10 @@
 #' 
 #' @docType methods
 #' @export
-#' @rdname Iris-methods
+#' @rdname extract_nearest_neighbor
 setGeneric("extract_nearest_neighbor", function(x, ...) standardGeneric("extract_nearest_neighbor"))
 
-#' @rdname Iris-methods
+#' @rdname extract_nearest_neighbor
 #' @aliases extract.nearest.neighbor,ANY,ANY-method
 setMethod("extract_nearest_neighbor",
           signature = "Iris",
@@ -100,10 +100,10 @@ getToNeighbors <- function(to,classes,ppp,min_num_cells){
 #' 
 #' @docType methods
 #' @export
-#' @rdname Iris-methods
+#' @rdname get_all_nearest_neighbors
 setGeneric("get_all_nearest_neighbors", function(x, ...) standardGeneric("get_all_nearest_neighbors"))
 
-#' @rdname Iris-methods
+#' @rdname get_all_nearest_neighbors
 #' @aliases get_all_nearest_neighbors,ANY,ANY-method
 setMethod("get_all_nearest_neighbors",
           signature = "Iris",
@@ -114,18 +114,19 @@ setMethod("get_all_nearest_neighbors",
 #' Get the nearest neighbor for a specified cell-type
 #' 
 #' @param x An Iris object
+#' @param marker Cell type for which the nearest neighbor should be calculated
 #' @param ... Additional arguments
 #' 
 #' @export
-#' @rdname Iris-methods
+#' @rdname get_nearest_neighbors
 #' 
 setGeneric("get_nearest_neighbors", function(x, ...) standardGeneric("get_nearest_neighbors"))
 
-#' @rdname Iris-methods
+#' @rdname get_nearest_neighbors
 #' @aliases get_nearest_neighbors,ANY,ANY-method
 setMethod("get_nearest_neighbors",
           signature = "Iris",
-          definition = function(x,marker,normalize=T){
+          definition = function(x,marker){
               if (!marker %in% x@markers){
                   stop(paste('There is no celltype: ',marker))
               }
@@ -154,10 +155,10 @@ setMethod("get_nearest_neighbors",
 #' @importFrom stats t.test
 #' @docType methods
 #' @export 
-#' @rdname Iris-methods
+#' @rdname plot_nearest_neighbor
 setGeneric("plot_nearest_neighbor", function(x, ...) standardGeneric("plot_nearest_neighbor"))
 
-#' @rdname Iris-methods
+#' @rdname plot_nearest_neighbor
 #' @aliases plot_nearest_neighbor,ANY,ANY-method
 setMethod("plot_nearest_neighbor",
           signature = "Iris",
@@ -295,10 +296,10 @@ buildLabel <- function(from,to,ext,transposed){
 #' @docType methods
 #' @export
 #' @importFrom spatstat superimpose
-#' @rdname Iris-methods
+#' @rdname neighbor_ray_plot
 setGeneric("neighbor_ray_plot", function(x, ...) standardGeneric("neighbor_ray_plot"))
 
-#' @rdname Iris-methods
+#' @rdname neighbor_ray_plot
 #' @aliases neighbor.ray.plot,ANY,ANY-method
 setMethod("neighbor_ray_plot",
           signature = "Iris",

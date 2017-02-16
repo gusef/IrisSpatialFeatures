@@ -7,11 +7,11 @@
 #' 
 #' @docType methods
 #' @export
-#' @rdname Iris-methods
+#' @rdname extract_interactions
 #' 
 setGeneric("extract_interactions", function(x, ...) standardGeneric("extract_interactions"))
 
-#' @rdname Iris-methods
+#' @rdname extract_interactions
 #' @aliases extract_interactions,ANY,ANY-method
 setMethod("extract_interactions",
           signature = "Iris",
@@ -221,10 +221,10 @@ collapseMatrices <- function(mat,fun){
 #' 
 #' @docType methods
 #' @export
-#' @rdname Iris-methods 
+#' @rdname get_all_interactions
 setGeneric("get_all_interactions", function(x, ...) standardGeneric("get_all_interactions"))
 
-#' @rdname Iris-methods
+#' @rdname get_all_interactions
 #' @aliases get_all_interactions,ANY,ANY-method
 setMethod("get_all_interactions",
           signature = "Iris",
@@ -241,10 +241,10 @@ setMethod("get_all_interactions",
 #' 
 #' @docType methods
 #' @export
-#' @rdname Iris-methods
+#' @rdname get_interactions
 setGeneric("get_interactions", function(x, ...) standardGeneric("get_interactions"))
 
-#' @rdname Iris-methods
+#' @rdname get_interactions
 #' @aliases get_interactions,ANY,ANY-method
 setMethod("get_interactions",
           signature = "Iris",
@@ -288,10 +288,10 @@ setMethod("get_interactions",
 #' 
 #' @docType methods
 #' @export
-#' @rdname Iris-methods
+#' @rdname plot_interactions
 setGeneric("plot_interactions", function(x, ...) standardGeneric("plot_interactions"))
 
-#' @rdname Iris-methods
+#' @rdname plot_interactions
 #' @aliases plot_interactions,ANY,ANY-method
 setMethod("plot_interactions",
           signature = "Iris",
@@ -381,10 +381,10 @@ setMethod("plot_interactions",
 #' 
 #' @docType methods
 #' @export
-#' @rdname Iris-methods 
+#' @rdname interaction_maps
 setGeneric("interaction_maps", function(x, ...) standardGeneric("interaction_maps"))
 
-#' @rdname Iris-methods
+#' @rdname interaction_maps
 #' @aliases interaction_maps,ANY,ANY-method
 setMethod("interaction_maps",
           signature = "Iris",

@@ -11,10 +11,10 @@
 #' 
 #' @docType methods
 #' @export
-#' @rdname Iris-methods
+#' @rdname overview_plot
 setGeneric("overview_plot", function(x, ...) standardGeneric("overview_plot"))
 
-#' @rdname Iris-methods
+#' @rdname overview_plot
 #' @aliases overview_plot,ANY,ANY-method
 setMethod("overview_plot",
           signature = "Iris",

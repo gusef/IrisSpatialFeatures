@@ -13,10 +13,10 @@
 #' 
 #' @docType methods
 #' @export
-#' @rdname Iris-methods
+#' @rdname extract_proximity
 setGeneric("extract_proximity", function(x, ...) standardGeneric("extract_proximity"))
 
-#' @rdname Iris-methods
+#' @rdname extract_proximity
 #' @aliases run_proximity,ANY,ANY-method
 setMethod("extract_proximity",
           signature = "Iris",
@@ -122,10 +122,10 @@ extract_proximity_single <- function(d, fr, tr, radii, uncertainty_margin, only_
 #' 
 #' @docType methods
 #' @export
-#' @rdname Iris-methods
+#' @rdname get_all_proximities
 setGeneric("get_all_proximities", function(x, ...) standardGeneric("get_all_proximities"))
 
-#' @rdname Iris-methods
+#' @rdname get_all_proximities
 #' @aliases get_all_proximities,ANY,ANY-method
 setMethod("get_all_proximities",
           signature = "Iris",
@@ -142,10 +142,10 @@ setMethod("get_all_proximities",
 #' 
 #' @docType methods
 #' @export
-#' @rdname Iris-methods
+#' @rdname get_proximities
 setGeneric("get_proximities", function(x, ...) standardGeneric("get_proximities"))
 
-#' @rdname Iris-methods
+#' @rdname get_proximities
 #' @aliases get_proximities,ANY,ANY-method
 setMethod("get_proximities",
           signature = "Iris",
@@ -185,10 +185,10 @@ setMethod("get_proximities",
 #' @importFrom graphics text
 #' @docType methods
 #' @export
-#' @rdname Iris-methods
+#' @rdname plot_proximities
 setGeneric("plot_proximities", function(x, ...) standardGeneric("plot_proximities"))
 
-#' @rdname Iris-methods
+#' @rdname plot_proximities
 #' @aliases plot_proximities,ANY,ANY-method
 setMethod("plot_proximities",
           signature = "Iris",

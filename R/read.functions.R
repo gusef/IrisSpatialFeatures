@@ -32,10 +32,10 @@
 #' @docType methods
 #' @export
 #' @importFrom methods new 
-#' @rdname Iris-methods
+#' @rdname read_raw
 setGeneric("read_raw", function(x, ...) standardGeneric("read_raw"))
 
-#' @rdname Iris-methods
+#' @rdname read_raw
 #' @aliases read_raw,ANY,ANY-method
 setMethod("read_raw",
           signature = "Iris",
@@ -151,6 +151,8 @@ setMethod("read_raw_coordinate",
                                           sep='\t',
                                           as.is=T)
 
+              x@raw@data <- x@raw@data[x@raw@data$Phenotype!='',]
+              
               if (length(grep('_cell_seg_data_summary.txt$',img_names))>0){
                   x@raw@summary <- t(read.csv(file.path(sample_dir,
                                                              img_names[grep('_cell_seg_data_summary.txt$',img_names)]),
@@ -308,10 +310,10 @@ setMethod("extract_mask_data",
 #'                              marker_name='PD1',
 #'                              base=c('CD8+','OTHER'))
 #' @export
-#' @rdname Iris-methods
+#' @rdname threshold_dataset
 setGeneric("threshold_dataset", function(x, ...) standardGeneric("threshold_dataset"))
 
-#' @rdname Iris-methods
+#' @rdname threshold_dataset
 #' @aliases threshold_dataset,ANY,ANY-method
 setMethod("threshold_dataset",
           signature = "Iris",
@@ -454,10 +456,10 @@ setMethod("getScoring",
 #'                              base=c('CD8+','OTHER'))                     
 #' @docType methods
 #' @export
-#' @rdname Iris-methods 
+#' @rdname extract_ROI
 setGeneric("extract_ROI", function(x, ...) standardGeneric("extract_ROI"))
 
-#' @rdname Iris-methods
+#' @rdname extract_ROI
 #' @aliases extract_ROI,ANY,ANY-method
 setMethod("extract_ROI",
           signature = "Iris",

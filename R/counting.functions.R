@@ -31,9 +31,9 @@ setMethod("get_counts_collapsed",
 #' @return Iris object.
 #' @docType methods
 #' @export
-#' @rdname Iris-methods
+#' @rdname get_counts_per_mm2_noncollapsed
 setGeneric("get_counts_per_mm2_noncollapsed", function(x, ...) standardGeneric("get_counts_per_mm2_noncollapsed"))
-#' @rdname Iris-methods
+#' @rdname get_counts_per_mm2_noncollapsed
 #' @aliases get_counts_per_mm2_noncollapsed,ANY,ANY-method
 setMethod("get_counts_per_mm2_noncollapsed",
           signature = "Iris",
@@ -60,9 +60,9 @@ setMethod("get_counts_per_mm2_noncollapsed",
 #' @docType methods
 #' @export
 #' @importFrom stats sd
-#' @rdname Iris-methods
+#' @rdname get_counts_per_mm2
 setGeneric("get_counts_per_mm2", function(x, ...) standardGeneric("get_counts_per_mm2"))
-#' @rdname Iris-methods
+#' @rdname get_counts_per_mm2
 #' @aliases get_counts_per_mm2,ANY,ANY-method
 setMethod("get_counts_per_mm2",
           signature = "Iris",
@@ -93,10 +93,10 @@ setMethod("get_counts_per_mm2",
 #' @docType methods
 #' @export
 #' @importFrom stats sd
-#' @rdname Iris-methods
+#' @rdname get_count_ratios
 setGeneric("get_count_ratios", function(x, ...) standardGeneric("get_count_ratios"))
 
-#' @rdname Iris-methods
+#' @rdname get_count_ratios
 #' @aliases get_count_ratios,ANY,ANY-method
 setMethod("get_count_ratios",
           signature = "Iris",
