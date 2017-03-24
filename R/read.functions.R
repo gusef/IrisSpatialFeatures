@@ -237,6 +237,7 @@ setMethod("read_raw_coordinate",
 #' @param filename Name of the .tif file that contains the mask.
 #' 
 #' @return Mask matrix
+#' @export
 extract_mask <- function(filename){
     mask <- readTIFF(filename)
     mask <- as.matrix((mask[,,1]+mask[,,2]+mask[,,3])>0)
@@ -253,14 +254,18 @@ setMethod("extract_mask_data",
           definition = function(x, img_names, sample_dir, coordinate_name, invasive_margin_in_px){
               
              #invasive margin
-             inv_mar <- img_names[grep('_Invasive_Margin.tif',img_names)]
+             inv_mar <- img_names[grep('_Invasive.Margin.tif',img_names)]
              if (length(inv_mar)==0){
                  stop(paste('_Invasive_Margin.tif for',coordinate_name, 'in',
                             sample_dir, 'does not exists!'))
              }
              inv_mar <- file.path(sample_dir, inv_mar)
-             x@mask$invasive_margin <- extract_mask(inv_mar)
-             x@mask$invasive_margin <- growMarginC(x@mask$invasive_margin, invasive_margin_in_px)
+             x@mask$margin_line <- extract_mask(inv_mar)
+             if (sum(x@mask$margin_line)==0){
+                 stop(paste('_Invasive.Margin.tif for',coordinate_name, 'in',
+                            sample_dir, 'has no pixels, please check the mask file!'))
+             }
+             x@mask$invasive_margin <- growMarginC(x@mask$margin_line, invasive_margin_in_px)
              
              #tumor mask
              tumor_tif <- img_names[grep('_Tumor.tif', img_names)]
@@ -270,6 +275,14 @@ setMethod("extract_mask_data",
              }
              tumor_tif <- file.path(sample_dir,tumor_tif)
              x@mask$tumor <- extract_mask(tumor_tif)
+             if (sum(x@mask$margin_line)==0){
+                 stop(paste('_Tumor.tif for',coordinate_name, 'in',
+                            sample_dir, 'has no pixels, please check the mask file!'))
+             }
+             if (!all(dim(x@mask$invasive_margin)==dim(x@mask$tumor))){
+                 stop(paste('_Tumor.tif for',coordinate_name, 'in',
+                            sample_dir, 'does not have the same dimension as the invasive margin mask!'))
+             }
              x@mask$tumor[x@mask$invasive_margin > 0] <- 0
                  
              #also add the stroma

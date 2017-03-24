@@ -3,11 +3,15 @@
 #' Function to extract all numeric features
 #' @param dat A data matrix with features as rows and samples as columns
 #' @param lab Label annotation that contains 2 classes, which corresponds to the samples in the column
-#'
+#' 
+#' @export
 #' @importFrom stats t.test
 #' @importFrom stats wilcox.test
 #' @importFrom stats p.adjust
 feature_selection <- function(dat,lab){
+    if (length(unique(lab))!=2){
+        stop('the variable lab must have 2 classes')
+    }
     res <- sapply(1:nrow(dat),
                   function(x,dat,lab)t.test(dat[x,lab==unique(lab)[1]],
                                             dat[x,lab==unique(lab)[2]])$p.value,
@@ -54,7 +58,8 @@ setMethod("extract_features",
           signature = "Iris",
           definition = function(x, name='', rm.na=F){
 
-              counts <- extract_count_combinations(sapply(x@counts,colSums))
+              counts <- get_counts_per_mm2_noncollapsed(x)
+              counts <- extract_count_combinations(sapply(counts,colMeans))
               dat <- extract_count_features(counts,'Counts')
               
               if (length(x@interactions) > 0){
@@ -63,7 +68,7 @@ setMethod("extract_features",
                   f_inter <- do.call(rbind, f_inter)
                   dat <- rbind(dat, f_inter)
              }else{
-                  message('Skipping interactions .. please run extract.interactions to include them.')
+                  message('Skipping interactions .. please run extract_interactions to include them.')
               }
               
               if (length(x@nearest_neighbors) > 0){
@@ -71,7 +76,7 @@ setMethod("extract_features",
                   f_nn <- do.call(rbind, f_nn)
                   dat <- rbind(dat, f_nn)
               }else{
-                  message('Skipping nearest neighbors .. please run extract.nearest.neighbor to include them.')
+                  message('Skipping nearest neighbors .. please run extract_nearest_neighbor to include them.')
               }
               dat <- dat[!duplicated(rownames(dat)),]
               #some of the ratios cause infinte values
@@ -88,6 +93,8 @@ extractSimpleValues <- function(mat,remove_self=T){
     big_mat <- array(unlist(mat), dim = c(dim(mat[[1]]), length(mat)))
     phenos <- colnames(mat[[1]])
     combinations <- expand.grid(seq(length(phenos)),seq(length(phenos)))
+    combinations <- as.matrix(combinations)
+    combinations <- rbind(combinations,cbind(combinations[,2],combinations[,1]))
     if (remove_self){
         #remove combinations where both values are the sames (nearest neighbor with itself doesn't make sense)
         combinations <- combinations[combinations[,1]!=combinations[,2],]
@@ -153,7 +160,6 @@ extract_interaction_features <- function(interactions,nam){
                  f_int_ratios)
     return(dat)
 }
-
 
 
 collapse_marker_inter <- function(x,marker){

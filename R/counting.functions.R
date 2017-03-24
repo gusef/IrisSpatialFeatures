@@ -119,7 +119,14 @@ setMethod("extract_counts",
               counts <- lapply(x@samples,extract_counts_sample)
               nams <- sort(unique(unlist(lapply(counts,colnames))))
               for (i in 1:length(counts)){
-                  counts[[i]] <- counts[[i]][,match(nams,colnames(counts[[i]]))]
+                  if (nrow(counts[[i]])==1){
+                      temp <- t(as.matrix(counts[[i]][,match(nams,colnames(counts[[i]]))]))
+                      rownames(temp) <- rownames(counts[[i]])
+                      counts[[i]] <- temp
+                  }else{
+                      counts[[i]] <- counts[[i]][,match(nams,colnames(counts[[i]]))]
+                  }
+                  
                   colnames(counts[[i]]) <- nams
                   counts[[i]][is.na(counts[[i]])] <- 0
               }

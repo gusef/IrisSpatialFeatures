@@ -229,7 +229,9 @@ setGeneric("get_all_interactions", function(x, ...) standardGeneric("get_all_int
 setMethod("get_all_interactions",
           signature = "Iris",
           definition = function(x){
-              return(x@interactions)
+          ints <- lapply(x@interactions,function(y)y$avg$mean)
+          int_norm <- lapply(ints,function(y)sweep(y,2,colSums(y),'/'))
+      return(int_norm)
 })
 
 #' Get interactions for a specific marker
@@ -324,6 +326,8 @@ setMethod("plot_interactions",
     
           if (!is.null(celltype_order)){
               dat <- dat[celltype_order,]
+          }else{
+              celltype_order <- rownames(dat)
           }
 
           if (is.null(palette)){
@@ -338,7 +342,7 @@ setMethod("plot_interactions",
           bp <- barplot(dat,
                         cex.names = 1, # makes x-axis labels small enough to show all
                         col = palette, # colors
-                        xlab = 'Sample',
+                        xlab = '',
                         ylab = ylab,
                         las=2,
                         xaxt="n",
@@ -347,7 +351,7 @@ setMethod("plot_interactions",
           text(cex=1, x=bp+0.8, y=-0.05, colnames(dat), xpd=TRUE, srt=45, pos=2)
         
           legend("right", 
-                 legend = labels, 
+                 legend = celltype_order, 
                  fill = palette)
         
           par(mar = c(0.5, 4, 4, 0))
@@ -397,6 +401,10 @@ setMethod("interaction_maps",
                                 use_dapi=F,
                                 outdir='interaction_maps',
                                 format='.png'){
+    if (length(x@interactions)==0){
+        stop('Please run "extract_interactions" before plotting the interaction maps.')
+    }
+              
     #generate the mapping directory
     map_dir <- file.path(getwd(),outdir)
     if (!file.exists(map_dir)){
