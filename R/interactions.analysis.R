@@ -475,7 +475,6 @@ setMethod("generate_interaction_map",
                   }
 
                 if (all(int_markers %in% ppp$marks)){
-                    
                     #generate the masks
                     #first the interaction ones
                     int_marker_masks <- lapply(int_markers,generate_mask,mem,ppp)
@@ -516,8 +515,40 @@ setMethod("generate_interaction_map",
                         legend('bottomleft',c(int_markers,silent_markers),col=c(int_marker_cols,silent_col),cex=1.5,pch=18)
                         dev.off()
                     }else if (format=='.tiff'){
-                        dapi_map[dapi_map>1] <- 1
-                        writeTIFF(t(dapi_map),file.path(map_dir,paste0(nams,'_',marker_prefix,'.tiff')))
+                        img <- t(int_marker_masks[[1]])
+                        tif <- array(0,dim=c(nrow(img),ncol(img),4))
+                        tif[,,4] <- 0
+
+                        #actual markers
+                        for (i in 1:length(int_marker_masks)){
+                            current_col <- col2rgb(int_marker_cols[i])[,1]/255
+                            for (j in 1:3){
+                                tmp <- tif[,,j]
+                                tmp[t(int_marker_masks[[i]])>0] <- current_col[j]
+                                tif[,,j] <- tmp
+                            }
+                            tmp <- tif[,,4]
+                            tmp[t(int_marker_masks[[i]])==1] <- outline_transparency
+                            tmp[t(int_marker_masks[[i]])==2] <- 1
+                            tif[,,4] <- tmp
+                        }
+                        
+                        #silent markers
+                        if (length(sil_marker_masks)>0){
+                            for (i in 1:length(sil_marker_masks)){
+                                current_col <- col2rgb(silent_col[i])[,1]/255
+                                for (j in 1:3){
+                                    tmp <- tif[,,j]
+                                    tmp[t(sil_marker_masks[[i]])>0] <- current_col[j]
+                                    tif[,,j] <- tmp
+                                }
+                                tmp <- tif[,,4]
+                                tmp[t(sil_marker_masks[[i]])==1] <- outline_transparency
+                                tif[,,4] <- tmp
+                            }
+                        }
+                        writeTIFF(tif,file.path(map_dir,paste0(nams,'_',marker_prefix,'.tiff')))
+                        
                     }
                 }
 })
