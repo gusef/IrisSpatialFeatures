@@ -20,6 +20,7 @@
 #' @param MicronsPerPixel Length of one pixel. Default: 0.496, corresponding to a 20x Mantra/Vectra images
 #' @param invasive_margin_in_px The width of the invasive margin in pixels
 #' @param readMasks Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: True)
+#' @param ROI Flag indicating whether ROI was specified so the image is only analyzed within that region a '_ROI.tif' needs to be present. (default: False)
 #' @param ignore_scoring Flag indicating whether the scoring file should be ignored (default: False)
 #' @param ... Additional arguments  
 #' 
@@ -49,13 +50,14 @@ setMethod("read_raw",
                                 MicronsPerPixel=0.496,
                                 invasive_margin_in_px=80,
                                 readMasks=T,
+                                ROI=F,
                                 ignore_scoring=F){
               x@microns_per_pixel=MicronsPerPixel
               raw_directories <- dir(raw_dir_name)
               x@samples <- lapply(raw_directories,function(x)Sample(sample_name=x))
               x@samples <- lapply(x@samples,read_raw_sample,raw_dir_name,label_fix,
                                        format,dir_filter,read_nuc_seg_map,read_dapi_map,
-                                       invasive_margin_in_px, readMasks, ignore_scoring)
+                                       invasive_margin_in_px, readMasks, ROI, ignore_scoring)
               names(x@samples) <- toupper(raw_directories)
               
               if(length(x@samples)==0){
@@ -78,6 +80,7 @@ setMethod("read_raw_sample",
                                 read_dapi_map,
                                 invasive_margin_in_px,
                                 readMasks,
+                                ROI,
                                 ignore_scoring){
               print(paste('Sample:', x@sample_name))
         
@@ -108,7 +111,7 @@ setMethod("read_raw_sample",
               x@coordinates <- lapply(coordinates,function(x)Coordinate(coordinate_name=x))
               x@coordinates <-lapply(x@coordinates, read_raw_coordinate, sample_dir, image_names,
                                           label_fix, format, read_nuc_seg_map, read_dapi_map,
-                                          invasive_margin_in_px, readMasks, ignore_scoring)
+                                          invasive_margin_in_px, readMasks, ROI, ignore_scoring)
                                   
               names(x@coordinates) <- coordinates
               return(x)
@@ -129,6 +132,7 @@ setMethod("read_raw_coordinate",
                                 read_dapi_map,
                                 invasive_margin_in_px,
                                 readMasks,
+                                ROI,
                                 ignore_scoring){
               if (format == 'Vectra'){
                   img_names <- image_names[grep(x@coordinate_name,image_names)]
@@ -227,10 +231,39 @@ setMethod("read_raw_coordinate",
               }else{
                   x@size_in_px <- x_max * y_max
               }
-              return(x)
               
+              if (ROI){
+                  #extract ROI mask
+                  roi <- img_names[grep('_ROI.tif',img_names)]
+                  if (length(roi)==0){
+                      stop(paste('_ROI.tif for',coordinate_name, 'in',
+                                 sample_dir, 'does not exists!'))
+                  }
+                  roi <- file.path(sample_dir, roi)
+                  roi <- extract_mask(roi)
+                  
+                  #drop all coordinates outside of the image
+                  filter <- sapply(1:length(x@ppp$x),function(i,dat,mask)mask[dat$x[i],dat$y[i]]==1,x@ppp,roi)
+                  x@ppp <- x@ppp[filter,]
+                  x@raw@data <- x@raw@data[filter,]
+                  
+                  #change the size of the image
+                  x@size_in_px <- sum(roi>0) 
+                  
+                  #if there were other masks read we set all these masks to 0
+                  if (readMasks){
+                      #reduce the other masks
+                      for (i in 1:length(x@masks)){
+                          x@masks[[i]] <- x@masks[[i]][roi==0] <- 0
+                      }
+                      
+                  }
+                  x@mask$ROI <- roi
+                  
+              }
+              
+              return(x)
 })
-
 
 #' Read inForm output from a single coordinate
 #' 
