@@ -66,17 +66,21 @@ setGeneric("get_counts_per_mm2", function(x, ...) standardGeneric("get_counts_pe
 #' @aliases get_counts_per_mm2,ANY,ANY-method
 setMethod("get_counts_per_mm2",
           signature = "Iris",
-          definition = function(x, digits=2){
+          definition = function(x, digits=2, blank=F){
               counts <- get_counts_per_mm2_noncollapsed(x)
               if (length(x@counts)>1){
                   means <- sapply(counts,colMeans,na.rm=T)
                   se <- sapply(counts,function(x)apply(x,2,function(y)sd(y,na.rm = T)/sqrt(length(y[!is.na(y)]))))
                   res <- means
-                  for (i in 1:ncol(means)){
-                     res [,i] <- paste(format(means[,i],digits=digits),'+/-',format(se[,i],digits=digits))   
+                  if (!blank){
+                      for (i in 1:ncol(means)){
+                          res [,i] <- paste(format(means[,i],digits=digits),'+/-',format(se[,i],digits=digits))   
+                      }
                   }
-              }else{
+              }else if (!blank){
                   res <- format(counts,digits=digits)
+              }else{
+                  res <- counts
               }
               return(res)
           })
