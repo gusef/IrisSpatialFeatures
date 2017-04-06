@@ -48,7 +48,7 @@ setMethod("read_raw",
                                 read_nuc_seg_map=F,
                                 read_dapi_map=F,
                                 MicronsPerPixel=0.496,
-                                invasive_margin_in_px=80,
+                                invasive_margin_in_px=100,
                                 readMasks=T,
                                 ROI=F,
                                 ignore_scoring=F){
