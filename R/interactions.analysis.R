@@ -305,7 +305,7 @@ setMethod("plot_interactions",
               
           int <- lapply(x@interactions,function(x)x$avg$mean)
           dat <- sapply(int,function(x)x[,label])
-          count <- get_counts_collapsed(x)[label,]
+          count <- get_counts_per_mm2(x,blank=T)[label,]
           labels <- rownames(dat)
           
           if (normalize){
@@ -336,7 +336,7 @@ setMethod("plot_interactions",
     
           #generate the plots
           op <- par(no.readonly = TRUE)
-          layout(as.matrix(2:1), widths = c(1), heights = c(0.2,0.8), respect = FALSE)
+          layout(as.matrix(2:1), widths = c(1), heights = c(0.4,0.8), respect = FALSE)
     
           par(mar = c(6, 4, 0, 0))
           bp <- barplot(dat,
@@ -362,6 +362,7 @@ setMethod("plot_interactions",
                        axes=F,
                        cex.names = 0.5,
                        main=paste('Interactions with',label)) 
+          mtext('Counts / mm2',side = 2,line = 2)
           axis(side = 2,tick = T, labels = T,line = -1,las=1,cex.axis=0.5)
           par(op)
           return(dat)
@@ -400,6 +401,7 @@ setMethod("interaction_maps",
                                 outline_transparency=0.9,
                                 use_dapi=F,
                                 outdir='interaction_maps',
+                                useMask=NULL,
                                 format='.png'){
     if (length(x@interactions)==0){
         stop('Please run "extract_interactions" before plotting the interaction maps.')
@@ -413,7 +415,7 @@ setMethod("interaction_maps",
 
     #generate a map for each sample
     lapply(x@samples, interaction_map_sample, x@interactions, int_markers, int_marker_cols,
-           silent_markers, silent_col, map_dir, outline_transparency, use_dapi, format)
+           silent_markers, silent_col, map_dir, outline_transparency, use_dapi,useMask, format)
     return('Done!')
     
 })
@@ -422,12 +424,12 @@ setGeneric("interaction_map_sample", function(x, ...) standardGeneric("interacti
 setMethod("interaction_map_sample",
           signature = "Sample",
           definition = function(x, interactions, int_markers, int_marker_cols, silent_markers,
-                                silent_col, map_dir, outline_transparency, use_dapi, format){
+                                silent_col, map_dir, outline_transparency, use_dapi,useMask, format){
               
               message("Working on sample: ",x@sample_name)
               lapply(x@coordinates, generate_interaction_map, x@sample_name, 
                      interactions[[x@sample_name]], int_markers, int_marker_cols, 
-                     silent_markers, silent_col, map_dir, outline_transparency, use_dapi, format)
+                     silent_markers, silent_col, map_dir, outline_transparency, use_dapi,useMask, format)
 })    
     
 
@@ -443,7 +445,7 @@ setGeneric("generate_interaction_map", function(x, ...) standardGeneric("generat
 setMethod("generate_interaction_map",
               signature = "Coordinate",
               definition = function(x, samp_name, interactions, int_markers, int_marker_cols, silent_markers,
-                                    silent_col, map_dir, outline_transparency, use_dapi, format){
+                                    silent_col, map_dir, outline_transparency, use_dapi, useMask, format){
 
                   nams <- paste(samp_name,x@coordinate_name,sep='_')
                   #extract all data    
@@ -473,8 +475,8 @@ setMethod("generate_interaction_map",
                       dapi_map <- mem
                       dapi_map[dapi_map!=0] <- 0
                   }
-
-                if (all(int_markers %in% ppp$marks)){
+                  
+                  if (all(int_markers %in% ppp$marks)){
                     #generate the masks
                     #first the interaction ones
                     int_marker_masks <- lapply(int_markers,generate_mask,mem,ppp)
@@ -509,6 +511,7 @@ setMethod("generate_interaction_map",
                         dapi_map[int_marker_masks[[i]]==2] <- col_count + i+2;
                         col_count <- col_count+1
                     }
+                    
                     if (format=='.png'){
                         png(file.path(map_dir,paste0(nams,'_',marker_prefix,'.png')),width=nrow(dapi_map),height=ncol(dapi_map))
                         image(dapi_map[,ncol(dapi_map):1],col = cols,breaks=breaks,yaxt='n',xaxt='n')    
@@ -521,6 +524,11 @@ setMethod("generate_interaction_map",
 
                         #actual markers
                         for (i in 1:length(int_marker_masks)){
+                            #if a mask was specified show the interactions only within those masks
+                            if (!is.null(useMask)){
+                                int_marker_masks[[i]][x@mask[[useMask]]==0] <- 0 
+                            }
+                            
                             current_col <- col2rgb(int_marker_cols[i])[,1]/255
                             for (j in 1:3){
                                 tmp <- tif[,,j]
@@ -537,6 +545,10 @@ setMethod("generate_interaction_map",
                         if (length(sil_marker_masks)>0){
                             for (i in 1:length(sil_marker_masks)){
                                 current_col <- col2rgb(silent_col[i])[,1]/255
+                                #if a mask was specified show the interactions only within those masks
+                                if (!is.null(useMask)){
+                                    sil_marker_masks[[i]][x@mask[[useMask]]==0] <- 0 
+                                }
                                 for (j in 1:3){
                                     tmp <- tif[,,j]
                                     tmp[t(sil_marker_masks[[i]])>0] <- current_col[j]
