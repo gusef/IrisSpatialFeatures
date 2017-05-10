@@ -28,6 +28,11 @@ vignettes/*.pdf
 .png
 .pdf
 # cpp files
-.o
-.dll
+*.o
+*.dll
+*.so
 inst/doc
+#Roxygen2
+*.Rd
+# OS mess
+.DS_Store
