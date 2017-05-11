@@ -2,7 +2,7 @@
 title: "Iris - An R package to quantify the tumor microenvironment based on multiplex IF data"
 author: "Daniel Gusenleitner"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: pdf_document
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
   %\VignetteEngine{knitr::rmarkdown}

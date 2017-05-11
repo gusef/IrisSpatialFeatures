@@ -36,3 +36,4 @@ inst/doc
 *.Rd
 # OS mess
 .DS_Store
+src/symbols.rds

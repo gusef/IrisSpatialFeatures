@@ -69,8 +69,7 @@ Sample <- setClass("Sample",
 #' @slot ignore_scoring Flag indicating whether the scoring file should be ignored (default: False)
 #' @docType class
 #' 
-#' @name Iris
-#' @rdname Iris-class
+#' @name Iris-class
 #' @exportClass Iris
 #' @aliases NULL
 Iris <- setClass("Iris",
