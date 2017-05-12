@@ -10,7 +10,6 @@
 #' @author
 #' Daniel Gusenleitner \email{Daniel_Gusenleitner@dfci.harvard.edu}
 #' @name Iris
-#' @export
 #' @docType package
 #' @aliases Iris-package
 #' @rdname Iris-package

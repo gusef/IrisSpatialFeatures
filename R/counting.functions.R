@@ -4,7 +4,7 @@
 
 setGeneric("get_counts_collapsed", function(x, ...) standardGeneric("get_counts_collapsed"))
 setMethod("get_counts_collapsed",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x){
               combined <- sapply(x@counts,colSums,na.rm=T)
               nams <- x@markers
@@ -25,18 +25,19 @@ setMethod("get_counts_collapsed",
 
 #' Get all the counts on a per mm2 basis non-collapsed
 #' 
-#' @param x Iris object.
+#' @param x Iris ImageSet object.
 #' @param ... Additional arguments  
 #' 
-#' @return Iris object.
+#' @return Iris ImageSet object.
 #' @docType methods
 #' @export
 #' @rdname get_counts_per_mm2_noncollapsed
 setGeneric("get_counts_per_mm2_noncollapsed", function(x, ...) standardGeneric("get_counts_per_mm2_noncollapsed"))
+
 #' @rdname get_counts_per_mm2_noncollapsed
 #' @aliases get_counts_per_mm2_noncollapsed,ANY,ANY-method
 setMethod("get_counts_per_mm2_noncollapsed",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x){
               
               sizes <- lapply(x@samples,function(y)sapply(y@coordinates,function(z)z@size_in_px))
@@ -52,8 +53,9 @@ setMethod("get_counts_per_mm2_noncollapsed",
 
 
 #' Get all the counts on a per mm2 basis
-#' @param x An Iris object
+#' @param x An Iris ImageSet object
 #' @param digits Number of digits that are shown in the output (default: 2)
+#' @param blank (default: F)
 #' @param ... Additional arguments
 #' @return counts per mm2 per sample, collapsing each coordinate and returning mean and standard error
 #' 
@@ -62,10 +64,10 @@ setMethod("get_counts_per_mm2_noncollapsed",
 #' @importFrom stats sd
 #' @rdname get_counts_per_mm2
 setGeneric("get_counts_per_mm2", function(x, ...) standardGeneric("get_counts_per_mm2"))
+
 #' @rdname get_counts_per_mm2
-#' @aliases get_counts_per_mm2,ANY,ANY-method
 setMethod("get_counts_per_mm2",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x, digits=2, blank=F){
               counts <- get_counts_per_mm2_noncollapsed(x)
               if (length(x@counts)>1){
@@ -103,7 +105,7 @@ setGeneric("get_count_ratios", function(x, ...) standardGeneric("get_count_ratio
 #' @rdname get_count_ratios
 #' @aliases get_count_ratios,ANY,ANY-method
 setMethod("get_count_ratios",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x, marker1, marker2, digits=2){
               ratios <- sapply(x@counts,function(x,m1,m2)x[,m1]/x[,m2],marker1,marker2)
               for (idx in 1:length(ratios)){
@@ -118,7 +120,7 @@ setMethod("get_count_ratios",
 
 setGeneric("extract_counts", function(x, ...) standardGeneric("extract_counts"))
 setMethod("extract_counts",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x){
               counts <- lapply(x@samples,extract_counts_sample)
               nams <- sort(unique(unlist(lapply(counts,colnames))))
@@ -159,7 +161,7 @@ extractCountsF <- function(x,counter){
 
 setGeneric("get_counts_noncollapsed", function(x, ...) standardGeneric("get_counts_noncollapsed"))
 setMethod("get_counts_noncollapsed",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x){
               counts <- x@counts
               nams <- unique(unlist(lapply(counts,colnames)))

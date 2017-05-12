@@ -2,7 +2,7 @@
 
 #' Extract the distance to each nearest neighbor for each cell-type
 #' 
-#' @param x Iris object
+#' @param x Iris ImageSet object
 #' @param min_num_cells Minimum number of cell that a coordinate needs to have in order to calculate the statistics (Default: 10)
 #' @param ... Additional arguments
 #' 
@@ -14,7 +14,7 @@ setGeneric("extract_nearest_neighbor", function(x, ...) standardGeneric("extract
 #' @rdname extract_nearest_neighbor
 #' @aliases extract.nearest.neighbor,ANY,ANY-method
 setMethod("extract_nearest_neighbor",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x, min_num_cells=10){
     all_levels <- x@markers
     x@nearest_neighbors <- lapply(x@samples,
@@ -95,7 +95,7 @@ getToNeighbors <- function(to,classes,ppp,min_num_cells){
 
 #' Get the nearest neighbor for each cell-type
 #' 
-#' @param x An Iris object
+#' @param x An Iris ImageSet object
 #' @param ... Additional arguments
 #' 
 #' @docType methods
@@ -106,14 +106,14 @@ setGeneric("get_all_nearest_neighbors", function(x, ...) standardGeneric("get_al
 #' @rdname get_all_nearest_neighbors
 #' @aliases get_all_nearest_neighbors,ANY,ANY-method
 setMethod("get_all_nearest_neighbors",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x){
               return(x@nearest_neighbors)
           })
 
 #' Get the nearest neighbor for a specified cell-type
 #' 
-#' @param x An Iris object
+#' @param x An Iris ImageSet object
 #' @param marker Cell type for which the nearest neighbor should be calculated
 #' @param ... Additional arguments
 #' 
@@ -125,7 +125,7 @@ setGeneric("get_nearest_neighbors", function(x, ...) standardGeneric("get_neares
 #' @rdname get_nearest_neighbors
 #' @aliases get_nearest_neighbors,ANY,ANY-method
 setMethod("get_nearest_neighbors",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x,marker){
               if (!marker %in% x@markers){
                   stop(paste('There is no celltype: ',marker))
@@ -143,7 +143,7 @@ setMethod("get_nearest_neighbors",
 #' both CD8 PD1+ and CD8 PD1- cells, the 'CD8 PD1' would be speficified as 'to' parameter, 2 distances would be calculated for each sample and a two-sided paired t-test calculated
 #' to test for significant differences. 
 #' 
-#' @param x Iris object.
+#' @param x Iris ImageSet object.
 #' @param from Cell-type from which the nearest neighbor is calculated.
 #' @param to Cell-type to which the nearest neighbor is calculated.
 #' @param ttest Flag indicating whether a paired t-test should be calculated. (default: TRUE)
@@ -161,7 +161,7 @@ setGeneric("plot_nearest_neighbor", function(x, ...) standardGeneric("plot_neare
 #' @rdname plot_nearest_neighbor
 #' @aliases plot_nearest_neighbor,ANY,ANY-method
 setMethod("plot_nearest_neighbor",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x, from, to, ttest=TRUE, transposed=FALSE){
     marker_names <- x@markers
     
@@ -281,7 +281,7 @@ buildLabel <- function(from,to,ext,transposed){
 
 #' Plot nearest neighbor ray plots for each samples
 #' 
-#' @param x An Iris object
+#' @param x An Iris ImageSet object
 #' @param from_type Cell type from which the rays are drawn
 #' @param to_type Cell type to which the rays are drawn
 #' @param from_col Color for the 'from' cell-type (Default: '#EE7600')
@@ -302,7 +302,7 @@ setGeneric("neighbor_ray_plot", function(x, ...) standardGeneric("neighbor_ray_p
 #' @rdname neighbor_ray_plot
 #' @aliases neighbor.ray.plot,ANY,ANY-method
 setMethod("neighbor_ray_plot",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x,
                                 from_type,
                                 to_type,

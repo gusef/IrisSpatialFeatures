@@ -56,7 +56,7 @@ Sample <- setClass("Sample",
                              sample_name="character"))
 
 #' Class to represent an imaging dataset.
-#'
+#' 
 #' @slot samples A list of samples each containing multiple coordinates.
 #' @slot counts A list of counts of different cell types for each coordinate in each sample.
 #' @slot nearest_neighbors A list of mean and std of nearest neighbor distances for each samples.
@@ -67,12 +67,7 @@ Sample <- setClass("Sample",
 #' @slot invasive_margin_in_px The width of the invasive margin in pixels
 #' @slot readMasks Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: True)
 #' @slot ignore_scoring Flag indicating whether the scoring file should be ignored (default: False)
-#' @docType class
-#' 
-#' @name Iris-class
-#' @exportClass Iris
-#' @aliases NULL
-Iris <- setClass("Iris",
+ImageSet <- setClass("ImageSet",
                  slots = c(samples = "list",
                            pData = "data.frame",
                            counts = "list",

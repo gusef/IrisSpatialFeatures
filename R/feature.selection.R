@@ -42,7 +42,7 @@ feature_selection <- function(dat,lab){
 }
 
 #' Extract all spatial features
-#' @param x Iris object
+#' @param x Iris ImageSet object
 #' @param name Prefix for all features, e.g. 'invasive_margin' (Default: '')
 #' @param rm.na Should features with NA values be removed (Default: FALSE)
 #' @param ... Additional arguments
@@ -55,7 +55,7 @@ setGeneric("extract_features", function(x, ...) standardGeneric("extract_feature
 #' @rdname extract_features
 #' @aliases extract_features,ANY,ANY-method
 setMethod("extract_features",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x, name='', rm.na=F){
 
               counts <- get_counts_per_mm2_noncollapsed(x)

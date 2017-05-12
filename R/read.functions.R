@@ -8,9 +8,9 @@
 #   ***_cell_seg_data_summary.txt (which is optional)
 
 
-#' Read inForm output and store it in an Iris object.
+#' Read inForm output and store it in an Iris ImageSet object.
 #' 
-#' @param x Iris object.
+#' @param x Iris ImageSet object.
 #' @param raw_dir_name Directory that contains the raw files
 #' @param label_fix List of length 2 character vector that is used to fix filenames.
 #' @param format Output format: Currently only "Vectra" and "Mantra" are supported. 
@@ -24,9 +24,9 @@
 #' @param ignore_scoring Flag indicating whether the scoring file should be ignored (default: False)
 #' @param ... Additional arguments  
 #' 
-#' @return Iris object.
+#' @return Iris ImageSet object.
 #' @examples
-#' raw_data <- Iris()
+#' raw_data <- new("ImageSet")
 #' raw_data <- read_raw(raw_data,
 #'                      raw_dir_name=system.file("extdata", package = "Iris"),
 #'                      format='Mantra')
@@ -39,7 +39,7 @@ setGeneric("read_raw", function(x, ...) standardGeneric("read_raw"))
 #' @rdname read_raw
 #' @aliases read_raw,ANY,ANY-method
 setMethod("read_raw",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x,
                                 raw_dir_name,
                                 label_fix=list(),
@@ -332,7 +332,7 @@ setMethod("extract_mask_data",
 
 #' This function reads the manually determined thresholds of certain markers (e.g. PD1, PD-L1) and splits selected celltypes into marker+ and marker- celltypes.
 #' 
-#' @param x Iris object.
+#' @param x Iris ImageSet object.
 #' @param marker Name of the marker used in the score file.
 #' @param marker_name corresponding name, which should be appended at the selected cell types.
 #' @param base Vector of cell types for which the marker should be used.
@@ -341,9 +341,9 @@ setMethod("extract_mask_data",
 #' @param ... Additional arguments  
 #' 
 #' @docType methods
-#' @return Iris object.
+#' @return Iris ImageSet object.
 #' @examples
-#' raw_data <- Iris()
+#' raw_data <- new("ImageSet")
 #' raw_data <- read_raw(raw_data,
 #'                      raw_dir_name=system.file("extdata", package = "Iris"),
 #'                      format='Mantra')
@@ -362,7 +362,7 @@ setGeneric("threshold_dataset", function(x, ...) standardGeneric("threshold_data
 #' @rdname threshold_dataset
 #' @aliases threshold_dataset,ANY,ANY-method
 setMethod("threshold_dataset",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function (x, 
                                  marker, 
                                  marker_name, 
@@ -482,13 +482,13 @@ setMethod("getScoring",
 
 #' Method that reduces the current dataset to a specific region of interest, discarding all cell coordinates outside of that region
 #'  
-#' @param x Iris object 
+#' @param x Iris ImageSet object 
 #' @param ROI Region of interest (default: 'invasive_margin')
 #' @param ... Additional arguments  
 #' 
-#' @return Iris object
+#' @return Iris ImageSet object
 #' @examples
-#' raw_data <- Iris()
+#' raw_data <- new("ImageSet")
 #' raw_data <- read_raw(raw_data,
 #'                      raw_dir_name=system.file("extdata", package = "Iris"),
 #'                      format='Mantra')
@@ -508,7 +508,7 @@ setGeneric("extract_ROI", function(x, ...) standardGeneric("extract_ROI"))
 #' @rdname extract_ROI
 #' @aliases extract_ROI,ANY,ANY-method
 setMethod("extract_ROI",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x, ROI='invasive_margin'){
               if (length(x@samples[[1]]@coordinates[[1]]@mask[[ROI]])==0){
                   stop('There is no mask for "',ROI,'"')

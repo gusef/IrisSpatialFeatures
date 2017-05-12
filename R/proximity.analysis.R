@@ -5,7 +5,7 @@
 #' The second mode uses a user specified distance to count the cells within the proximity of a given cell-type. With increasing distances usually cells fall into the proximity of multiple cells
 #' of a given type so the function allows the restriction of only counting the cell only once. 
 #' 
-#' @param x Iris object
+#' @param x Iris ImageSet object
 #' @param radii The size of the radius in pixels or the default, which are the inForm output columns that indicated the minor and major axis of each cell. 
 #' @param uncertainty_margin Only for the approximation of the interaction analysis, where it indicates how many pixels further should be search to find a touching cell (deafult: 1).
 #' @param only_closest For the proximity analysis a target cell can be in the vincinity of multiple source cells, so the counts are articicially inflated. E.g. a CD8 PD1+ T-cell is within <50 pixels of 30 HRS cells, this cell should only be counted for the closes HRS cell. (default: FALSE)
@@ -19,7 +19,7 @@ setGeneric("extract_proximity", function(x, ...) standardGeneric("extract_proxim
 #' @rdname extract_proximity
 #' @aliases run_proximity,ANY,ANY-method
 setMethod("extract_proximity",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x, radii=c('Entire.Cell.Major.Axis', 'Entire.Cell.Minor.Axis'),
                                 uncertainty_margin=1, only_closest=F){
               all_levels <- x@markers
@@ -117,7 +117,7 @@ extract_proximity_single <- function(d, fr, tr, radii, uncertainty_margin, only_
 
 #' Get all proximity data for all cell-types in a sample
 #' 
-#' @param x An Iris object
+#' @param x An Iris ImageSet object
 #' @param ... Additional arguments
 #' 
 #' @docType methods
@@ -128,14 +128,14 @@ setGeneric("get_all_proximities", function(x, ...) standardGeneric("get_all_prox
 #' @rdname get_all_proximities
 #' @aliases get_all_proximities,ANY,ANY-method
 setMethod("get_all_proximities",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x){
               return(x@proximity)
           })
 
 #' Get proximity data for a given cell-type
 #' 
-#' @param x An Iris object.
+#' @param x An Iris ImageSet object.
 #' @param marker Cell type for which the proximity data should be extracted.
 #' @param normalize Flag indicating whether the populations should be normalized so that the sum of all is 1 (default: TRUE).
 #' @param ... Additional arguments.
@@ -148,7 +148,7 @@ setGeneric("get_proximities", function(x, ...) standardGeneric("get_proximities"
 #' @rdname get_proximities
 #' @aliases get_proximities,ANY,ANY-method
 setMethod("get_proximities",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x,marker,normalize=T){
               if (!marker %in% x@markers){
                   stop(paste('There is no celltype: ',marker))
@@ -167,7 +167,7 @@ setMethod("get_proximities",
 ##### Interaction summary plotting functions
 
 #' Plot proximity analysis data
-#' @param x An Iris object
+#' @param x An Iris ImageSet object
 #' @param label Cell-type for which the proximit profile is plotted
 #' @param ordering Ordering of the samples (Default: NULL)
 #' @param normalize Flag, should the populations of different cell-types sum up to one in each sample? (Default: TRUE)
@@ -191,7 +191,7 @@ setGeneric("plot_proximities", function(x, ...) standardGeneric("plot_proximitie
 #' @rdname plot_proximities
 #' @aliases plot_proximities,ANY,ANY-method
 setMethod("plot_proximities",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x, label, ordering=NULL, normalize=T, palette=NULL,
                                 celltype_order=NULL, xlim_fix=13, topbar_cols='darkgrey'){
               if (length(x@proximity)==0){

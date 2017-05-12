@@ -2,7 +2,7 @@
 
 #' Extract interactions between all cell-types
 #' 
-#' @param x Iris object
+#' @param x Iris ImageSet object
 #' @param ... Additional arguments
 #' 
 #' @docType methods
@@ -14,7 +14,7 @@ setGeneric("extract_interactions", function(x, ...) standardGeneric("extract_int
 #' @rdname extract_interactions
 #' @aliases extract_interactions,ANY,ANY-method
 setMethod("extract_interactions",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x){
               x@interactions <- lapply(x@samples,interactions_per_sample,x@markers)
               names(x@interactions) <- names(x@samples)
@@ -216,7 +216,7 @@ collapseMatrices <- function(mat,fun){
 
 #' Get all interactions between all cell-types
 #' 
-#' @param x An Iris object.
+#' @param x An Iris ImageSet object.
 #' @param ... Additional arguments.
 #' 
 #' @docType methods
@@ -227,7 +227,7 @@ setGeneric("get_all_interactions", function(x, ...) standardGeneric("get_all_int
 #' @rdname get_all_interactions
 #' @aliases get_all_interactions,ANY,ANY-method
 setMethod("get_all_interactions",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x){
           ints <- lapply(x@interactions,function(y)y$avg$mean)
           int_norm <- lapply(ints,function(y)sweep(y,2,colSums(y),'/'))
@@ -236,7 +236,7 @@ setMethod("get_all_interactions",
 
 #' Get interactions for a specific marker
 #' 
-#' @param x An iris object
+#' @param x An iris ImageSet object
 #' @param marker Cell-type for which the interactions should be pulled
 #' @param normalize Flag to indicated whether to normalize each sample so all interactions sum up to 1 (Default: 1)
 #' @param ... Additional arguments.
@@ -249,7 +249,7 @@ setGeneric("get_interactions", function(x, ...) standardGeneric("get_interaction
 #' @rdname get_interactions
 #' @aliases get_interactions,ANY,ANY-method
 setMethod("get_interactions",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x,marker,normalize=T){
               if (!marker %in% x@markers){
                   stop(paste('There is no celltype: ',marker))
@@ -269,7 +269,7 @@ setMethod("get_interactions",
 
 #' Interaction summary plot for all cell-types and all samples in a dataset
 #'
-#' @param x Iris object to be plotted
+#' @param x Iris ImageSet object to be plotted
 #' @param label The cell type the interaction profile should be plotted for
 #' @param ordering Ordering of the samples (default: NULL)
 #' @param normalize Normalize the interactions with a given cell-type, so they sum up to 1 (default: TRUE)
@@ -296,7 +296,7 @@ setGeneric("plot_interactions", function(x, ...) standardGeneric("plot_interacti
 #' @rdname plot_interactions
 #' @aliases plot_interactions,ANY,ANY-method
 setMethod("plot_interactions",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x, label, ordering=NULL, normalize=T, palette=NULL,
                                 celltype_order=NULL, xlim_fix=13, topbar_cols='darkgrey'){
           if (length(x@interactions)==0){
@@ -373,7 +373,7 @@ setMethod("plot_interactions",
 
 
 #' Plot interaction maps for all samples
-#' @param x An Iris object
+#' @param x An Iris ImageSet object
 #' @param int_markers Cell-types that should be considered. If two cells from different cell-types interact they are filled in, if a cell is not interacting it is just outlined.
 #' @param int_marker_cols Colors for the cell-types
 #' @param silent_markers Cell-types that should only be outlined (Default: c())
@@ -381,6 +381,7 @@ setMethod("plot_interactions",
 #' @param outline_transparency Dimming factor for the outlines cells(Default: 0.9)
 #' @param use_dapi Use the DAPI channel as a background (Default: FALSE)
 #' @param outdir Output directory (Default: './interaction_maps')
+#' @param useMask (Default: NULL)
 #' @param format Output format of the images. Can be '.png' or '.tiff' (Default: '.png')
 #' @param ... Additional arguments.
 #' 
@@ -392,7 +393,7 @@ setGeneric("interaction_maps", function(x, ...) standardGeneric("interaction_map
 #' @rdname interaction_maps
 #' @aliases interaction_maps,ANY,ANY-method
 setMethod("interaction_maps",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x,
                                 int_markers,
                                 int_marker_cols,

@@ -1,7 +1,7 @@
 
 #' Plot all coordinates in a given dataset
 #' 
-#' @param x Sample object of the Iris package.
+#' @param x Sample ImageSet object of the Iris package.
 #' @param outdir Output directory (default: './')
 #' @param palette Color palette used for the different cell-types. (default: NULL)
 #' @param type File format for the plots. Can bei either 'pdf' or 'png'. (default: 'pdf')
@@ -17,7 +17,7 @@ setGeneric("overview_plot", function(x, ...) standardGeneric("overview_plot"))
 #' @rdname overview_plot
 #' @aliases overview_plot,ANY,ANY-method
 setMethod("overview_plot",
-          signature = "Iris",
+          signature = "ImageSet",
           definition = function(x,outdir='./',palette=NULL,type='pdf',width=10,height=7){
           lapply(x@samples,
                  overview_plot_sample,
