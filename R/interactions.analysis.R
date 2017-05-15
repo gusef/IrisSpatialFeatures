@@ -5,9 +5,29 @@
 #' @param x Iris ImageSet object
 #' @param ... Additional arguments
 #' 
+#' @examples 
+#' extract_interactions(new("ImageSet"))
+#' 
 #' @docType methods
 #' @export
 #' @rdname extract_interactions
+#' 
+#' @examples 
+#' raw_data <- new("ImageSet")
+#' raw_data <- read_raw(raw_data,
+#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      format='Mantra')
+#' dataset <- threshold_dataset(raw_data,
+#'     marker='PD-Ligand-1 (Opal 690)',
+#'     marker_name='PDL1',
+#'     base=c('SOX10+'))
+#' dataset <- threshold_dataset(dataset,
+#'     marker='PD-1 (Opal 540)',
+#'     marker_name='PD1',
+#'     base=c('CD8+','OTHER'))
+#' dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
+#' dataset <- extract_proximity(dataset,only_closest=TRUE,radii=25)
+#' dataset <- extract_interactions(dataset)
 #' 
 setGeneric("extract_interactions", function(x, ...) standardGeneric("extract_interactions"))
 
@@ -244,6 +264,23 @@ setMethod("get_all_interactions",
 #' @docType methods
 #' @export
 #' @rdname get_interactions
+#' @examples 
+#' raw_data <- new("ImageSet")
+#' raw_data <- read_raw(raw_data,
+#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      format='Mantra')
+#' dataset <- threshold_dataset(raw_data,
+#'     marker='PD-Ligand-1 (Opal 690)',
+#'     marker_name='PDL1',
+#'     base=c('SOX10+'))
+#' dataset <- threshold_dataset(dataset,
+#'     marker='PD-1 (Opal 540)',
+#'     marker_name='PD1',
+#'     base=c('CD8+','OTHER'))
+#' dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
+#' dataset <- extract_proximity(dataset,only_closest=TRUE,radii=25)
+#' dataset <- extract_interactions(dataset)
+#' get_interactions(dataset,'CD8+ PD1+')
 setGeneric("get_interactions", function(x, ...) standardGeneric("get_interactions"))
 
 #' @rdname get_interactions
@@ -388,6 +425,29 @@ setMethod("plot_interactions",
 #' @docType methods
 #' @export
 #' @rdname interaction_maps
+#' @examples 
+#' raw_data <- new("ImageSet")
+#' raw_data <- read_raw(raw_data,
+#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      format='Mantra')
+#' dataset <- threshold_dataset(raw_data,
+#'     marker='PD-Ligand-1 (Opal 690)',
+#'     marker_name='PDL1',
+#'     base=c('SOX10+'))
+#' dataset <- threshold_dataset(dataset,
+#'     marker='PD-1 (Opal 540)',
+#'     marker_name='PD1',
+#'     base=c('CD8+','OTHER'))
+#' dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
+#' dataset <- extract_proximity(dataset,only_closest=TRUE,radii=25)
+#' dataset <- extract_interactions(dataset)
+#' get_interactions(dataset,'CD8+ PD1+')
+#' int_markers <- c('CD8+ PD1+','SOX10+ PDL1+')
+#' int_marker_cols <- c('#dd1c77','#99d8c9')
+#' silent_markers <- c('CD8+ PD1-')
+#' silent_col=c('yellow')
+#' p <- interaction_maps(dataset,int_markers,int_marker_cols,silent_markers,
+#'                       silent_col)
 setGeneric("interaction_maps", function(x, ...) standardGeneric("interaction_maps"))
 
 #' @rdname interaction_maps

@@ -34,6 +34,8 @@ setOldClass("ppp")
 #' @slot coordinate_name Name of the current coordinate
 #' @slot size_in_px Size of the image in pixel, accounting for mask size
 #' @docType class
+#' @examples 
+#' coord <- new("Coordinate")
 #' 
 #' @importFrom spatstat ppp
 Coordinate <- setClass("Coordinate",

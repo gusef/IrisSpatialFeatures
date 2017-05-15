@@ -11,6 +11,10 @@
 #' 
 #' @docType methods
 #' @export
+#' 
+#' @examples
+#' overview_plot(new("ImageSet"))
+#' 
 #' @rdname overview_plot
 setGeneric("overview_plot", function(x, ...) standardGeneric("overview_plot"))
 

@@ -89,7 +89,8 @@ int_markers <- c('CD8+ PD1+','SOX10+ PDL1+')
 int_marker_cols <- c('#dd1c77','#99d8c9')
 silent_markers <- c('CD8+ PD1-')
 silent_col=c('yellow')
-p <- interaction_maps(dataset,int_markers,int_marker_cols,silent_markers,silent_col)
+p <- interaction_maps(dataset,int_markers,int_marker_cols,silent_markers,
+                      silent_col)
 ```
 
 ##Running the proximity analysis

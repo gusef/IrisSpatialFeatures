@@ -270,6 +270,8 @@ setMethod("read_raw_coordinate",
 #' 
 #' @return Mask matrix
 #' @export
+#' @examples 
+#' extract_mask(system.file("extdata","MEL29822","MEL29822_080416_1_Invasive_Margin.tif", package = "Iris"))
 extract_mask <- function(filename){
     mask <- readTIFF(filename)
     mask <- as.matrix((mask[,,1]+mask[,,2]+mask[,,3])>0)
@@ -491,6 +493,7 @@ setMethod("getScoring",
 #' raw_data <- read_raw(raw_data,
 #'                      raw_dir_name=system.file("extdata", package = "Iris"),
 #'                      format='Mantra')
+#' extract_ROI(raw_data)
 #' dataset <- threshold_dataset(raw_data,
 #'                              marker='PD-Ligand-1 (Opal 690)',
 #'                              marker_name='PDL1',

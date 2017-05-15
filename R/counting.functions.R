@@ -28,6 +28,8 @@ setMethod("get_counts_collapsed",
 #' 
 #' @param x Iris ImageSet object.
 #' @param ... Additional arguments  
+#' @examples
+#' get_counts_per_mm2_noncollapsed(new("ImageSet"))
 #' 
 #' @return Iris ImageSet object.
 #' @docType methods
@@ -68,6 +70,9 @@ setMethod("get_counts_per_mm2_noncollapsed",
 #' @param blank (default: FALSE)
 #' @param ... Additional arguments
 #' @return counts per mm2 per sample, collapsing each coordinate and returning mean and standard error
+#' 
+#' @examples
+#' get_counts_per_mm2(new("ImageSet"))
 #' 
 #' @docType methods
 #' @export
@@ -110,9 +115,23 @@ setMethod("get_counts_per_mm2",
 #' @param ... Additional arguments.
 #' 
 #' @docType methods
-#' @export
 #' @importFrom stats sd
 #' @rdname get_count_ratios
+#' @export
+#' @examples 
+#' raw_data <- new("ImageSet")
+#' raw_data <- read_raw(raw_data,
+#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      format='Mantra')
+#' dataset <- threshold_dataset(raw_data,
+#'     marker='PD-Ligand-1 (Opal 690)',
+#'     marker_name='PDL1',
+#'     base=c('SOX10+'))
+#' dataset <- threshold_dataset(dataset,
+#'     marker='PD-1 (Opal 540)',
+#'     marker_name='PD1',
+#'     base=c('CD8+','OTHER'))
+#'     get_count_ratios(dataset,'SOX10+ PDL1-','SOX10+ PDL1+')
 setGeneric("get_count_ratios", 
            function(x, ...) standardGeneric("get_count_ratios"))
 

@@ -10,6 +10,8 @@
 #' @param uncertainty_margin Only for the approximation of the interaction analysis, where it indicates how many pixels further should be search to find a touching cell (deafult: 1).
 #' @param only_closest For the proximity analysis a target cell can be in the vincinity of multiple source cells, so the counts are articicially inflated. E.g. a CD8 PD1+ T-cell is within <50 pixels of 30 HRS cells, this cell should only be counted for the closes HRS cell. (default: FALSE)
 #' @param ... Additional arguments  
+#' @examples
+#' extract_proximity(new("ImageSet"))
 #' 
 #' @docType methods
 #' @export
@@ -120,6 +122,9 @@ extract_proximity_single <- function(d, fr, tr, radii, uncertainty_margin, only_
 #' @param x An Iris ImageSet object
 #' @param ... Additional arguments
 #' 
+#' @examples 
+#' get_all_proximities(new("ImageSet"))
+#' 
 #' @docType methods
 #' @export
 #' @rdname get_all_proximities
@@ -141,7 +146,6 @@ setMethod("get_all_proximities",
 #' @param ... Additional arguments.
 #' 
 #' @docType methods
-#' @export
 #' @rdname get_proximities
 setGeneric("get_proximities", function(x, ...) standardGeneric("get_proximities"))
 
@@ -184,8 +188,26 @@ setMethod("get_proximities",
 #' @importFrom graphics par
 #' @importFrom graphics text
 #' @docType methods
-#' @export
 #' @rdname plot_proximities
+#' @export
+#' 
+#' @examples 
+#' raw_data <- new("ImageSet")
+#' raw_data <- read_raw(raw_data,
+#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      format='Mantra')
+#' dataset <- threshold_dataset(raw_data,
+#'     marker='PD-Ligand-1 (Opal 690)',
+#'     marker_name='PDL1',
+#'     base=c('SOX10+'))
+#' dataset <- threshold_dataset(dataset,
+#'     marker='PD-1 (Opal 540)',
+#'     marker_name='PD1',
+#'     base=c('CD8+','OTHER'))
+#' dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
+#' dataset <- extract_proximity(dataset,only_closest=TRUE,radii=25)
+#' p <- plot_proximities(dataset,"SOX10+ PDL1-",xlim_fix=3)
+#' 
 setGeneric("plot_proximities", function(x, ...) standardGeneric("plot_proximities"))
 
 #' @rdname plot_proximities

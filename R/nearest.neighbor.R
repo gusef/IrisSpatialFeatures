@@ -8,6 +8,10 @@
 #' 
 #' @docType methods
 #' @export
+#' 
+#' @examples 
+#' extract_nearest_neighbor(new("ImageSet"))
+#' 
 #' @rdname extract_nearest_neighbor
 setGeneric("extract_nearest_neighbor", function(x, ...) standardGeneric("extract_nearest_neighbor"))
 
@@ -100,6 +104,10 @@ getToNeighbors <- function(to,classes,ppp,min_num_cells){
 #' 
 #' @docType methods
 #' @export
+#'
+#' @examples
+#' get_all_nearest_neighbors(new("ImageSet"))
+#' 
 #' @rdname get_all_nearest_neighbors
 setGeneric("get_all_nearest_neighbors", function(x, ...) standardGeneric("get_all_nearest_neighbors"))
 
@@ -119,6 +127,21 @@ setMethod("get_all_nearest_neighbors",
 #' 
 #' @export
 #' @rdname get_nearest_neighbors
+#' @examples 
+#' raw_data <- new("ImageSet")
+#' raw_data <- read_raw(raw_data,
+#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      format='Mantra')
+#' dataset <- threshold_dataset(raw_data,
+#'     marker='PD-Ligand-1 (Opal 690)',
+#'     marker_name='PDL1',
+#'     base=c('SOX10+'))
+#' dataset <- threshold_dataset(dataset,
+#'     marker='PD-1 (Opal 540)',
+#'     marker_name='PD1',
+#'     base=c('CD8+','OTHER'))
+#' dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
+#' get_nearest_neighbors(dataset,"SOX10+ PDL1+")
 #' 
 setGeneric("get_nearest_neighbors", function(x, ...) standardGeneric("get_nearest_neighbors"))
 
@@ -156,6 +179,22 @@ setMethod("get_nearest_neighbors",
 #' @docType methods
 #' @export 
 #' @rdname plot_nearest_neighbor
+#' @examples 
+#' raw_data <- new("ImageSet")
+#' raw_data <- read_raw(raw_data,
+#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      format='Mantra')
+#' dataset <- threshold_dataset(raw_data,
+#'     marker='PD-Ligand-1 (Opal 690)',
+#'     marker_name='PDL1',
+#'     base=c('SOX10+'))
+#' dataset <- threshold_dataset(dataset,
+#'     marker='PD-1 (Opal 540)',
+#'     marker_name='PD1',
+#'     base=c('CD8+','OTHER'))
+#' dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
+#' get_nearest_neighbors(dataset,"SOX10+ PDL1+")
+#' p <- plot_nearest_neighbor(dataset,'CD8+ PD1+','SOX10+ PDL1')
 setGeneric("plot_nearest_neighbor", function(x, ...) standardGeneric("plot_nearest_neighbor"))
 
 #' @rdname plot_nearest_neighbor
@@ -295,8 +334,28 @@ buildLabel <- function(from,to,ext,transposed){
 #' 
 #' @docType methods
 #' @export
+#' 
 #' @importFrom spatstat superimpose
 #' @rdname neighbor_ray_plot
+#' @examples
+#' raw_data <- new("ImageSet")
+#' raw_data <- read_raw(raw_data,
+#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      format='Mantra')
+#' dataset <- threshold_dataset(raw_data,
+#'     marker='PD-Ligand-1 (Opal 690)',
+#'     marker_name='PDL1',
+#'     base=c('SOX10+'))
+#' dataset <- threshold_dataset(dataset,
+#'     marker='PD-1 (Opal 540)',
+#'     marker_name='PD1',
+#'     base=c('CD8+','OTHER'))
+#' dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
+#' get_nearest_neighbors(dataset,"SOX10+ PDL1+")
+#' plot_dir <- file.path('./ray_plots')
+#' if (!file.exists(plot_dir)){
+#'  dir.create(file.path(plot_dir))
+#' }
 setGeneric("neighbor_ray_plot", function(x, ...) standardGeneric("neighbor_ray_plot"))
 
 #' @rdname neighbor_ray_plot
