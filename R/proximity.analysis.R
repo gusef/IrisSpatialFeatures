@@ -21,7 +21,7 @@ setGeneric("extract_proximity", function(x, ...) standardGeneric("extract_proxim
 setMethod("extract_proximity",
           signature = "ImageSet",
           definition = function(x, radii=c('Entire.Cell.Major.Axis', 'Entire.Cell.Minor.Axis'),
-                                uncertainty_margin=1, only_closest=F){
+                                uncertainty_margin=1, only_closest=FALSE){
               all_levels <- x@markers
               x@proximity <- lapply(x@samples, touches_per_sample, radii, 
                                              uncertainty_margin, all_levels, only_closest)
@@ -46,7 +46,7 @@ setGeneric("touching_events", function(x, ...) standardGeneric("touching_events"
 setMethod("touching_events",
           signature = "Coordinate",
           definition = function(x, all_levels, radii, uncertainty_margin, only_closest){
-              gc(verbose = F)
+              gc(verbose = FALSE)
               total <- matrix(0,nrow=length(all_levels),ncol=length(all_levels))
               colnames(total) <- rownames(total) <- all_levels
               for (from in all_levels){
@@ -149,7 +149,7 @@ setGeneric("get_proximities", function(x, ...) standardGeneric("get_proximities"
 #' @aliases get_proximities,ANY,ANY-method
 setMethod("get_proximities",
           signature = "ImageSet",
-          definition = function(x,marker,normalize=T){
+          definition = function(x,marker,normalize=TRUE){
               if (!marker %in% x@markers){
                   stop(paste('There is no celltype: ',marker))
               }
@@ -192,7 +192,7 @@ setGeneric("plot_proximities", function(x, ...) standardGeneric("plot_proximitie
 #' @aliases plot_proximities,ANY,ANY-method
 setMethod("plot_proximities",
           signature = "ImageSet",
-          definition = function(x, label, ordering=NULL, normalize=T, palette=NULL,
+          definition = function(x, label, ordering=NULL, normalize=TRUE, palette=NULL,
                                 celltype_order=NULL, xlim_fix=13, topbar_cols='darkgrey'){
               if (length(x@proximity)==0){
                   stop(paste('Please run extract.proximity before plotting the interactions.'))
@@ -213,7 +213,7 @@ setMethod("plot_proximities",
               
               if (!is.null(ordering)){
                   if(length(ordering)==1){
-                      ordering <- order(colSums(dat[grep(ordering,rownames(dat),fixed=T),]),decreasing=T)
+                      ordering <- order(colSums(dat[grep(ordering,rownames(dat),fixed=TRUE),]),decreasing=TRUE)
                   }
                   dat <- dat[,ordering]
                   count <- count[ordering]
@@ -252,10 +252,10 @@ setMethod("plot_proximities",
                            xlim = c(0,ncol(dat)+xlim_fix),
                            col = topbar_cols,
                            axisnames = FALSE,
-                           axes=F,
+                           axes=FALSE,
                            cex.names = 0.5,
                            main=paste('In proximity to',label)) 
-              axis(side = 2,tick = T, labels = T,line = -1,las=1,cex.axis=0.5)
+              axis(side = 2,tick = TRUE, labels = TRUE,line = -1,las=1,cex.axis=0.5)
               par(op)
               return(dat)
           })
