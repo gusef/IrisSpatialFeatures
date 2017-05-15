@@ -8,7 +8,6 @@ Maintainer: Daniel Gusenleitner <Daniel_Gusenleitner@dfci.harvard.edu>
 Depends:
     R (>= 3.2.0)
 Imports:
-    Biobase,
     Rcpp (>= 0.12.7),
     SpatialTools,
     gplots,

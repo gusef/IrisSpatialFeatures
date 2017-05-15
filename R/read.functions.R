@@ -236,7 +236,7 @@ setMethod("read_raw_coordinate",
                   #extract ROI mask
                   roi <- img_names[grep('_ROI.tif',img_names)]
                   if (length(roi)==0){
-                      stop(paste('_ROI.tif for',coordinate_name, 'in',
+                      stop(paste('_ROI.tif for',x@coordinate_name, 'in',
                                  sample_dir, 'does not exists!'))
                   }
                   roi <- file.path(sample_dir, roi)

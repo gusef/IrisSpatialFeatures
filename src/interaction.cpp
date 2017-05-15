@@ -221,7 +221,7 @@ void fix_coordinate_issues(NumericMatrix &padded_map, std::list<std::pair <int,i
             }
         }
     }
-    std::cout << solved << " of " << issues << " coordinate issues solved...\n";
+    Rprintf("%d solved of %d issues\n",solved,issues);
 }
 
 
@@ -380,8 +380,8 @@ void fill_mask(NumericMatrix &mask, NumericMatrix &padded, int xx, int yy){
     //as long as the stack is not empty
     while (sid >= 0){
         if (sid > 999){
-            std::cout << "STACK issue that shouldn't exist!\n";
-            std::cout << "x:"<<xx<<" y:"<<yy<<"\n";
+            Rprintf("STACK issue that shouldn't exist!\n");
+            Rprintf("x: %d y: %d\n",xx,yy);
             break;
         }
 
