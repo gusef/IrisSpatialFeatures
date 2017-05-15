@@ -147,14 +147,14 @@ get_single_int <- function(lvl, int, labels, all_levels){
         num_cells <- nrow(per_cell_summary)
         
         #calculate the average interaction measurements
-        avg_means <- colMeans(per_cell_summary,na.rm = T)
-        avg_vars <- apply(per_cell_summary,2,var,na.rm=T)
+        avg_means <- colMeans(per_cell_summary,na.rm = TRUE)
+        avg_vars <- apply(per_cell_summary,2,var,na.rm=TRUE)
         
         
         #calculate the percent interaction measurements
         per_cell_summary <- per_cell_summary>0
-        per_means <- colMeans(per_cell_summary,na.rm = T)
-        per_vars <- apply(per_cell_summary,2,var,na.rm=T)
+        per_means <- colMeans(per_cell_summary,na.rm = TRUE)
+        per_vars <- apply(per_cell_summary,2,var,na.rm=TRUE)
     }
     
     
@@ -206,7 +206,7 @@ collapseMatrices <- function(mat,fun){
     #  Make a 3D array from list of matrices
     arr <- array( unlist(mat) , c(nrow(mat[[1]]),nrow(mat[[1]]),length(mat)))
     #  Get mean of third dimension
-    collapsed <- fun( arr , dims = 2 ,na.rm = T)
+    collapsed <- fun( arr , dims = 2 ,na.rm = TRUE)
     colnames(collapsed) <- rownames(collapsed) <- colnames(mat[[1]])
     return(collapsed)
 }
@@ -250,7 +250,7 @@ setGeneric("get_interactions", function(x, ...) standardGeneric("get_interaction
 #' @aliases get_interactions,ANY,ANY-method
 setMethod("get_interactions",
           signature = "ImageSet",
-          definition = function(x,marker,normalize=T){
+          definition = function(x,marker,normalize=TRUE){
               if (!marker %in% x@markers){
                   stop(paste('There is no celltype: ',marker))
               }
@@ -297,7 +297,7 @@ setGeneric("plot_interactions", function(x, ...) standardGeneric("plot_interacti
 #' @aliases plot_interactions,ANY,ANY-method
 setMethod("plot_interactions",
           signature = "ImageSet",
-          definition = function(x, label, ordering=NULL, normalize=T, palette=NULL,
+          definition = function(x, label, ordering=NULL, normalize=TRUE, palette=NULL,
                                 celltype_order=NULL, xlim_fix=13, topbar_cols='darkgrey'){
           if (length(x@interactions)==0){
               stop(paste('Please run extract.interactions before plotting the interactions.'))
@@ -305,7 +305,7 @@ setMethod("plot_interactions",
               
           int <- lapply(x@interactions,function(x)x$avg$mean)
           dat <- sapply(int,function(x)x[,label])
-          count <- get_counts_per_mm2(x,blank=T)[label,]
+          count <- get_counts_per_mm2(x,blank=TRUE)[label,]
           labels <- rownames(dat)
           
           if (normalize){
@@ -318,7 +318,7 @@ setMethod("plot_interactions",
     
           if (!is.null(ordering)){
               if(length(ordering)==1){
-                  ordering <- order(colSums(dat[grep(ordering,rownames(dat),fixed=T),]),decreasing=T)
+                  ordering <- order(colSums(dat[grep(ordering,rownames(dat),fixed=TRUE),]),decreasing=TRUE)
               }
               dat <- dat[,ordering]
               count <- count[ordering]
@@ -359,11 +359,11 @@ setMethod("plot_interactions",
                        xlim = c(0,ncol(dat)+xlim_fix),
                        col = topbar_cols,
                        axisnames = FALSE,
-                       axes=F,
+                       axes=FALSE,
                        cex.names = 0.5,
                        main=paste('Interactions with',label)) 
           mtext('Counts / mm2',side = 2,line = 2)
-          axis(side = 2,tick = T, labels = T,line = -1,las=1,cex.axis=0.5)
+          axis(side = 2,tick = TRUE, labels = TRUE,line = -1,las=1,cex.axis=0.5)
           par(op)
           return(dat)
 })
@@ -400,7 +400,7 @@ setMethod("interaction_maps",
                                 silent_markers=c(),
                                 silent_col=c(),
                                 outline_transparency=0.9,
-                                use_dapi=F,
+                                use_dapi=FALSE,
                                 outdir='interaction_maps',
                                 useMask=NULL,
                                 format='.png'){

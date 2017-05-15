@@ -66,7 +66,7 @@ Sample <- setClass("Sample",
 #' @slot markers A vector of strings indicating all different cell types considered.
 #' @slot invasive_margin_in_px The width of the invasive margin in pixels
 #' @slot readMasks Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: True)
-#' @slot ignore_scoring Flag indicating whether the scoring file should be ignored (default: False)
+#' @slot ignore_scoring Flag indicating whether the scoring file should be ignored (default: FALSE)
 ImageSet <- setClass("ImageSet",
                  slots = c(samples = "list",
                            pData = "data.frame",

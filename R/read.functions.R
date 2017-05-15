@@ -1,4 +1,3 @@
-
 #This function assumes each sample has its own directory 
 #where it has one or more images. The image names include the coordinate of the image
 #in a format [xxxxx,yyyyy], which is the standard output of inForm.
@@ -45,13 +44,13 @@ setMethod("read_raw",
                                 label_fix=list(),
                                 format='Vectra',
                                 dir_filter='',
-                                read_nuc_seg_map=F,
-                                read_dapi_map=F,
+                                read_nuc_seg_map=FALSE,
+                                read_dapi_map=FALSE,
                                 MicronsPerPixel=0.496,
                                 invasive_margin_in_px=100,
-                                readMasks=T,
-                                ROI=F,
-                                ignore_scoring=F){
+                                readMasks=TRUE,
+                                ROI=FALSE,
+                                ignore_scoring=FALSE){
               x@microns_per_pixel=MicronsPerPixel
               raw_directories <- dir(raw_dir_name)
               x@samples <- lapply(raw_directories,function(x)Sample(sample_name=x))
@@ -86,7 +85,7 @@ setMethod("read_raw_sample",
         
               #get sample directory
               sample_dir <- file.path(raw_dir_name,x@sample_name)
-              image_names <- dir(sample_dir,recursive = T)
+              image_names <- dir(sample_dir,recursive = TRUE)
             
               #directory filter in case there are different projects for each sample
               if (dir_filter!=''){
@@ -153,7 +152,7 @@ setMethod("read_raw_coordinate",
               #grab all of the data files and put them into a list
               x@raw@data <- read.csv(file.path(sample_dir,seg_data),
                                           sep='\t',
-                                          as.is=T)
+                                          as.is=TRUE)
 
               x@raw@data <- x@raw@data[x@raw@data$Phenotype!='',]
               
@@ -161,7 +160,7 @@ setMethod("read_raw_coordinate",
                   x@raw@summary <- t(read.csv(file.path(sample_dir,
                                                              img_names[grep('_cell_seg_data_summary.txt$',img_names)]),
                                                    sep='\t',
-                                                   as.is=T))
+                                                   as.is=TRUE))
               }
                   
               if (length(grep('_memb_seg_map.tif',img_names))>0){
@@ -176,7 +175,7 @@ setMethod("read_raw_coordinate",
                   
               if (read_dapi_map && length(grep('_component_data.tif',img_names))>0){
                   dapi <- readTIFF(file.path(sample_dir,
-                                             img_names[grep('_component_data.tif',img_names)]),all = T)[[1]]
+                                             img_names[grep('_component_data.tif',img_names)]),all = TRUE)[[1]]
                   if (class(dapi) == 'array'){
                       dapi <- dapi[,,4]
                   }
@@ -191,14 +190,14 @@ setMethod("read_raw_coordinate",
                   }    
                   x@raw@score <- t(read.csv(file.path(sample_dir,score_data),
                                                  sep='\t',
-                                                 as.is=T))
+                                                 as.is=TRUE))
               }
                   
               #fix the labels if necessary
               if(length(label_fix)>0){
                   #for each label fix
                   for (fix in label_fix){
-                      x@raw@data$Phenotype[grep(fix[1],x@raw@data$Phenotype,fixed = T)] <- fix[2]
+                      x@raw@data$Phenotype[grep(fix[1],x@raw@data$Phenotype,fixed = TRUE)] <- fix[2]
                   }
               }
               
@@ -368,7 +367,7 @@ setMethod("threshold_dataset",
                                  marker_name, 
                                  base=NULL, 
                                  pheno_name='Phenotype', 
-                                 remove_blanks=T){
+                                 remove_blanks=TRUE){
               #for each sample
               x@samples <- lapply(x@samples, threshold_samples, marker, marker_name, base, pheno_name, remove_blanks)
               names(x@samples) <- sapply(x@samples,function(x)x@sample_name)
@@ -472,80 +471,7 @@ setMethod("getScoring",
                   threshold <- scoring['Positivity.Threshold',1]
                   scores <- rbind(scores,c(compartment,component,threshold))
               }
-              scores <- data.frame(scores,stringsAsFactors = F)
+              scores <- data.frame(scores,stringsAsFactors = FALSE)
               scores$Threshold <- as.numeric(scores$Threshold)
               return(scores)
 })
-
-########################################################################################################################
-###ROI functions
-
-#' Method that reduces the current dataset to a specific region of interest, discarding all cell coordinates outside of that region
-#'  
-#' @param x Iris ImageSet object 
-#' @param ROI Region of interest (default: 'invasive_margin')
-#' @param ... Additional arguments  
-#' 
-#' @return Iris ImageSet object
-#' @examples
-#' raw_data <- new("ImageSet")
-#' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "Iris"),
-#'                      format='Mantra')
-#' dataset <- threshold_dataset(raw_data,
-#'                              marker='PD-Ligand-1 (Opal 690)',
-#'                              marker_name='PDL1',
-#'                              base=c('SOX10+'))
-#' dataset <- threshold_dataset(dataset,
-#'                              marker='PD-1 (Opal 540)',
-#'                              marker_name='PD1',
-#'                              base=c('CD8+','OTHER'))                     
-#' @docType methods
-#' @export
-#' @rdname extract_ROI
-setGeneric("extract_ROI", function(x, ...) standardGeneric("extract_ROI"))
-
-#' @rdname extract_ROI
-#' @aliases extract_ROI,ANY,ANY-method
-setMethod("extract_ROI",
-          signature = "ImageSet",
-          definition = function(x, ROI='invasive_margin'){
-              if (length(x@samples[[1]]@coordinates[[1]]@mask[[ROI]])==0){
-                  stop('There is no mask for "',ROI,'"')
-              }
-             
-              x@samples <- lapply(x@samples, extract_ROI_sample, ROI)
-              
-              #update the counts
-              x <- extract_counts(x)
-              
-              #reset all spatial stats
-              x@nearest_neighbors <- list()
-              x@interactions <- list()
-              x@proximity <- list()
-              
-              return(x)
-          })
-
-setGeneric("extract_ROI_sample", function(x, ...) standardGeneric("extract_ROI_sample"))
-setMethod("extract_ROI_sample",
-          signature = "Sample",
-          definition = function(x, ROI){
-              x@coordinates <- lapply(x@coordinates, extract_ROI_Coordinate, ROI)
-              return(x)
-          })
-
-
-setGeneric("extract_ROI_Coordinate", function(x, ...) standardGeneric("extract_ROI_Coordinate"))
-setMethod("extract_ROI_Coordinate",
-          signature = "Coordinate",
-          definition = function(x, ROI){
-              #reduce to the filter
-              mask <- x@mask[[ROI]]
-              filter <- sapply(1:length(x@ppp$x),function(i,dat,mask)mask[dat$x[i],dat$y[i]]==1,x@ppp,mask)
-              x@ppp <- x@ppp[filter,]
-              x@raw@data <- x@raw@data[filter,]
-              x@size_in_px <- sum(mask>0) 
-              
-              return(x)
-          })

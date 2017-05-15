@@ -84,7 +84,7 @@ setMethod("overview_plot_coord",
           xlab='x',
           main=paste(sample_name,'-',x@coordinate_name))             
      par(mar=c(1,1,1,1))
-     image(matrix(c(1,1,1,1),ncol=2),col='white',axes=F)
+     image(matrix(c(1,1,1,1),ncol=2),col='white',axes=FALSE)
      legend('left',col = palette,legend = all_levels,pch=18,cex = 0.8)
      dev.off()
 })

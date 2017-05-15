@@ -166,7 +166,7 @@ setMethod("plot_nearest_neighbor",
     marker_names <- x@markers
     
     #grab the relevant markers
-    comp <- grep(to,marker_names,fixed = T)
+    comp <- grep(to,marker_names,fixed = TRUE)
     
     if (length(comp)==0 || !from%in%marker_names){
         stop('One or both selected markers are not included in the dataset')    
@@ -193,7 +193,7 @@ setMethod("plot_nearest_neighbor",
     current.mean[is.na(current.mean)] <- 0
     
     max_idx <- which.max(rowSums(current.mean))
-    ord <- order(current.mean[max_idx,],decreasing = T)
+    ord <- order(current.mean[max_idx,],decreasing = TRUE)
     current.mean <- current.mean[,ord]
     current.se <- current.se[,ord]
     
@@ -231,7 +231,7 @@ setMethod("plot_nearest_neighbor",
     
     #paired t test to test for significance
     if (ttest & length(comp)>1){
-        pval <- t.test(current.mean[1,],current.mean[2,],paired = T)$p.value
+        pval <- t.test(current.mean[1,],current.mean[2,],paired = TRUE)$p.value
         mtext(paste('Paired t-test:',format(pval,digits=4)),3)
     }else{
         pval <- NA
