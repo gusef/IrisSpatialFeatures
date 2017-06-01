@@ -66,3 +66,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+
+static const R_CallMethodDef CallEntries[] = {
+    {"Iris_watershedC", (DL_FUNC) &Iris_watershedC, 2},
+    {"Iris_generate_maskC", (DL_FUNC) &Iris_generate_maskC, 3},
+    {"Iris_getInteractionsC", (DL_FUNC) &Iris_getInteractionsC, 1},
+    {"Iris_fillMaskC", (DL_FUNC) &Iris_fillMaskC, 3},
+    {"Iris_growMarginC", (DL_FUNC) &Iris_growMarginC, 2},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_Iris(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+}

@@ -426,6 +426,18 @@ setMethod("threshold_coords",
                                                    scoring$Component,
                                                    'Mean..Normalized.Counts..Total.Weighting.',
                                                    sep='.')]]
+              
+              
+              #sometimes there are #N/A from Inform
+              if (class(expression) == 'character'){
+                  keep <- expression!='#N/A'
+                  x@raw@data <- x@raw@data[keep,]
+                  x@ppp <- x@ppp[keep,]
+                  expression <- as.numeric(expression[keep])
+              }
+              
+              expression <- as.numeric(expression)
+              
               #deterine the positive cells
               positive_cells <- expression > scoring$Threshold
             
