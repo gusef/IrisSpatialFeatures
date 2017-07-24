@@ -170,7 +170,7 @@ setMethod("read_raw_coordinate",
               
               if (use_binary_seg_maps){
                   maps <- readTIFF(file.path(sample_dir,
-                                     img_names[grep('_binary_seg_maps.tif',img_names)]),all=T)
+                                     img_names[grep('_binary_seg_maps.tif',img_names)]),all=TRUE)
                   x@raw@mem_seg_map <- maps[[2]]
                   if (read_nuc_seg_map){
                       x@raw@nuc_seg_map <- maps[[1]]
