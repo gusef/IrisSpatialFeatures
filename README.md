@@ -3,13 +3,6 @@
 
 ## How to install in R:
 
-This is a private repository so you need to generate a personal access token 
-(PAT) here: https://github.com/settings/tokens which lets you install R 
-packages from private Github repositories.
-
-In R they can then just install it using devtools:
-
-
 ``` r
 #install devtools from cran
 install.packages('devtools')

@@ -16,6 +16,7 @@
 #' @param dir_filter Filter to select only certain directory names.
 #' @param read_nuc_seg_map Flag indicating whether the nuclear map should be read.
 #' @param read_dapi_map Flag indicating whether the dapi layer should be read.
+#' @param use_binary_seg_maps Flag indicating whether the dapi layer should be read.
 #' @param MicronsPerPixel Length of one pixel. Default: 0.496, corresponding to a 20x Mantra/Vectra images
 #' @param invasive_margin_in_px The width of the invasive margin in pixels
 #' @param readMasks Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: True)
@@ -46,6 +47,7 @@ setMethod("read_raw",
                                 dir_filter='',
                                 read_nuc_seg_map=FALSE,
                                 read_dapi_map=FALSE,
+                                use_binary_seg_maps=FALSE,
                                 MicronsPerPixel=0.496,
                                 invasive_margin_in_px=100,
                                 readMasks=TRUE,
@@ -55,7 +57,7 @@ setMethod("read_raw",
               raw_directories <- dir(raw_dir_name)
               x@samples <- lapply(raw_directories,function(x)Sample(sample_name=x))
               x@samples <- lapply(x@samples,read_raw_sample,raw_dir_name,label_fix,
-                                       format,dir_filter,read_nuc_seg_map,read_dapi_map,
+                                       format,dir_filter,read_nuc_seg_map,read_dapi_map, use_binary_seg_maps,
                                        invasive_margin_in_px, readMasks, ROI, ignore_scoring)
               names(x@samples) <- toupper(raw_directories)
               
@@ -77,6 +79,7 @@ setMethod("read_raw_sample",
                                 dir_filter,
                                 read_nuc_seg_map,
                                 read_dapi_map,
+                                use_binary_seg_maps,
                                 invasive_margin_in_px,
                                 readMasks,
                                 ROI,
@@ -109,7 +112,7 @@ setMethod("read_raw_sample",
               }
               x@coordinates <- lapply(coordinates,function(x)Coordinate(coordinate_name=x))
               x@coordinates <-lapply(x@coordinates, read_raw_coordinate, sample_dir, image_names,
-                                          label_fix, format, read_nuc_seg_map, read_dapi_map,
+                                          label_fix, format, read_nuc_seg_map, read_dapi_map, use_binary_seg_maps,
                                           invasive_margin_in_px, readMasks, ROI, ignore_scoring)
                                   
               names(x@coordinates) <- coordinates
@@ -129,6 +132,7 @@ setMethod("read_raw_coordinate",
                                 format,
                                 read_nuc_seg_map,
                                 read_dapi_map,
+                                use_binary_seg_maps,
                                 invasive_margin_in_px,
                                 readMasks,
                                 ROI,
@@ -162,17 +166,28 @@ setMethod("read_raw_coordinate",
                                                    sep='\t',
                                                    as.is=TRUE))
               }
+               
+              
+              if (use_binary_seg_maps){
+                  maps <- readTIFF(file.path(sample_dir,
+                                     img_names[grep('_binary_seg_maps.tif',img_names)]),all=T)
+                  x@raw@mem_seg_map <- maps[[2]]
+                  if (read_nuc_seg_map){
+                      x@raw@nuc_seg_map <- maps[[1]]
+                  }
                   
-              if (length(grep('_memb_seg_map.tif',img_names))>0){
-                  x@raw@mem_seg_map <- readTIFF(file.path(sample_dir,
-                                                                img_names[grep('_memb_seg_map.tif',img_names)]))
-              }
                   
-              if (read_nuc_seg_map && length(grep('_nuc_seg_map.tif',img_names))>0){
-                  x@raw@nuc_seg_map <- readTIFF(file.path(sample_dir,
-                                                               img_names[grep('_nuc_seg_map.tif',img_names)]))
-              }
-                  
+              }else{   
+                  if (length(grep('_memb_seg_map.tif',img_names))>0){
+                      x@raw@mem_seg_map <- readTIFF(file.path(sample_dir,
+                                                                    img_names[grep('_memb_seg_map.tif',img_names)]))
+                  }
+                      
+                  if (read_nuc_seg_map && length(grep('_nuc_seg_map.tif',img_names))>0){
+                      x@raw@nuc_seg_map <- readTIFF(file.path(sample_dir,
+                                                                   img_names[grep('_nuc_seg_map.tif',img_names)]))
+                  }
+              }      
               if (read_dapi_map && length(grep('_component_data.tif',img_names))>0){
                   dapi <- readTIFF(file.path(sample_dir,
                                              img_names[grep('_component_data.tif',img_names)]),all = TRUE)[[1]]
