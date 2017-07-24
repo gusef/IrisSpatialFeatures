@@ -2,7 +2,7 @@
 
 #' Extract interactions between all cell-types
 #' 
-#' @param x Iris ImageSet object
+#' @param x IrisSpatialFeatures ImageSet object
 #' @param ... Additional arguments
 #' 
 #' @examples 
@@ -15,7 +15,7 @@
 #' @examples 
 #' raw_data <- new("ImageSet")
 #' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
 #'                      format='Mantra')
 #' dataset <- threshold_dataset(raw_data,
 #'     marker='PD-Ligand-1 (Opal 690)',
@@ -236,7 +236,7 @@ collapseMatrices <- function(mat,fun){
 
 #' Get all interactions between all cell-types
 #' 
-#' @param x An Iris ImageSet object.
+#' @param x An IrisSpatialFeatures ImageSet object.
 #' @param ... Additional arguments.
 #' 
 #' @docType methods
@@ -256,7 +256,7 @@ setMethod("get_all_interactions",
 
 #' Get interactions for a specific marker
 #' 
-#' @param x An iris ImageSet object
+#' @param x An IrisSpatialFeatures ImageSet object
 #' @param marker Cell-type for which the interactions should be pulled
 #' @param normalize Flag to indicated whether to normalize each sample so all interactions sum up to 1 (Default: 1)
 #' @param ... Additional arguments.
@@ -267,7 +267,7 @@ setMethod("get_all_interactions",
 #' @examples 
 #' raw_data <- new("ImageSet")
 #' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
 #'                      format='Mantra')
 #' dataset <- threshold_dataset(raw_data,
 #'     marker='PD-Ligand-1 (Opal 690)',
@@ -306,7 +306,7 @@ setMethod("get_interactions",
 
 #' Interaction summary plot for all cell-types and all samples in a dataset
 #'
-#' @param x Iris ImageSet object to be plotted
+#' @param x IrisSpatialFeatures ImageSet object to be plotted
 #' @param label The cell type the interaction profile should be plotted for
 #' @param ordering Ordering of the samples (default: NULL)
 #' @param normalize Normalize the interactions with a given cell-type, so they sum up to 1 (default: TRUE)
@@ -410,7 +410,7 @@ setMethod("plot_interactions",
 
 
 #' Plot interaction maps for all samples
-#' @param x An Iris ImageSet object
+#' @param x An IrisSpatialFeatures ImageSet object
 #' @param int_markers Cell-types that should be considered. If two cells from different cell-types interact they are filled in, if a cell is not interacting it is just outlined.
 #' @param int_marker_cols Colors for the cell-types
 #' @param silent_markers Cell-types that should only be outlined (Default: c())
@@ -428,7 +428,7 @@ setMethod("plot_interactions",
 #' @examples 
 #' raw_data <- new("ImageSet")
 #' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
 #'                      format='Mantra')
 #' dataset <- threshold_dataset(raw_data,
 #'     marker='PD-Ligand-1 (Opal 690)',

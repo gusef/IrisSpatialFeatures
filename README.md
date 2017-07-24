@@ -1,4 +1,4 @@
-# Iris
+# Iris Spatial Features
 
 
 ## How to install in R:

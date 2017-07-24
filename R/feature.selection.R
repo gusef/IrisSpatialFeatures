@@ -42,7 +42,7 @@ feature_selection <- function(dat,lab){
 }
 
 #' Extract all spatial features
-#' @param x Iris ImageSet object
+#' @param x IrisSpatialFeatures ImageSet object
 #' @param name Prefix for all features, e.g. 'invasive_margin' (Default: '')
 #' @param rm.na Should features with NA values be removed (Default: FALSE)
 #' @param ... Additional arguments

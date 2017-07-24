@@ -1,4 +1,4 @@
-#' Iris: A package to extract spatial features based on multiplex IF images
+#' IrisSpatialFeatures: A package to extract spatial features based on multiplex IF images
 #'
 #' Iris reads the output of the PerkinElmer inForm software and calculates 
 #' a variety of spatial statistics. In addition to simple counts, it can 
@@ -9,8 +9,8 @@
 #'
 #' @author
 #' Daniel Gusenleitner \email{Daniel_Gusenleitner@dfci.harvard.edu}
-#' @name Iris
+#' @name IrisSpatialFeatures
 #' @docType package
-#' @aliases Iris-package
-#' @rdname Iris-package
+#' @aliases IrisSpatialFeatures-package
+#' @rdname IrisSpatialFeatures-package
 NULL

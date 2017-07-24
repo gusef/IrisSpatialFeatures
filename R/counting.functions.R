@@ -26,12 +26,12 @@ setMethod("get_counts_collapsed",
 
 #' Get all the counts on a per mm2 basis non-collapsed
 #' 
-#' @param x Iris ImageSet object.
+#' @param x IrisSpatialFeatures ImageSet object.
 #' @param ... Additional arguments  
 #' @examples
 #' get_counts_per_mm2_noncollapsed(new("ImageSet"))
 #' 
-#' @return Iris ImageSet object.
+#' @return IrisSpatialFeatures ImageSet object.
 #' @docType methods
 #' @export
 #' @rdname get_counts_per_mm2_noncollapsed
@@ -65,7 +65,7 @@ setMethod("get_counts_per_mm2_noncollapsed",
 
 
 #' Get all the counts on a per mm2 basis
-#' @param x An Iris ImageSet object
+#' @param x An IrisSpatialFeatures ImageSet object
 #' @param digits Number of digits that are shown in the output (default: 2)
 #' @param blank (default: FALSE)
 #' @param ... Additional arguments
@@ -108,7 +108,7 @@ setMethod("get_counts_per_mm2",
 
 #' Get ratio of counts between two markers
 #' 
-#' @param x An Iris object
+#' @param x An IrisSpatialFeatures object
 #' @param marker1 First cell-type.
 #' @param marker2 Second cell-type.
 #' @param digits Number of digits that should be shown in the the results. (Default: 2)
@@ -121,7 +121,7 @@ setMethod("get_counts_per_mm2",
 #' @examples 
 #' raw_data <- new("ImageSet")
 #' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
 #'                      format='Mantra')
 #' dataset <- threshold_dataset(raw_data,
 #'     marker='PD-Ligand-1 (Opal 690)',

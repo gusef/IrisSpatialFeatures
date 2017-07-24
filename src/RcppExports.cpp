@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // watershedC
 List watershedC(NumericMatrix padded_map, NumericMatrix cell_coords);
-RcppExport SEXP Iris_watershedC(SEXP padded_mapSEXP, SEXP cell_coordsSEXP) {
+RcppExport SEXP IrisSpatialFeatures_watershedC(SEXP padded_mapSEXP, SEXP cell_coordsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -19,7 +19,7 @@ END_RCPP
 }
 // generate_maskC
 NumericMatrix generate_maskC(NumericMatrix marker_map, NumericMatrix padded_map, NumericMatrix cell_coords);
-RcppExport SEXP Iris_generate_maskC(SEXP marker_mapSEXP, SEXP padded_mapSEXP, SEXP cell_coordsSEXP) {
+RcppExport SEXP IrisSpatialFeatures_generate_maskC(SEXP marker_mapSEXP, SEXP padded_mapSEXP, SEXP cell_coordsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -32,7 +32,7 @@ END_RCPP
 }
 // getInteractionsC
 List getInteractionsC(NumericMatrix filled_map);
-RcppExport SEXP Iris_getInteractionsC(SEXP filled_mapSEXP) {
+RcppExport SEXP IrisSpatialFeatures_getInteractionsC(SEXP filled_mapSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -43,7 +43,7 @@ END_RCPP
 }
 // fillMaskC
 NumericMatrix fillMaskC(NumericMatrix mask, NumericMatrix padded, NumericMatrix cell_coords);
-RcppExport SEXP Iris_fillMaskC(SEXP maskSEXP, SEXP paddedSEXP, SEXP cell_coordsSEXP) {
+RcppExport SEXP IrisSpatialFeatures_fillMaskC(SEXP maskSEXP, SEXP paddedSEXP, SEXP cell_coordsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -56,7 +56,7 @@ END_RCPP
 }
 // growMarginC
 NumericMatrix growMarginC(NumericMatrix mask, int distance);
-RcppExport SEXP Iris_growMarginC(SEXP maskSEXP, SEXP distanceSEXP) {
+RcppExport SEXP IrisSpatialFeatures_growMarginC(SEXP maskSEXP, SEXP distanceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -68,15 +68,15 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"Iris_watershedC", (DL_FUNC) &Iris_watershedC, 2},
-    {"Iris_generate_maskC", (DL_FUNC) &Iris_generate_maskC, 3},
-    {"Iris_getInteractionsC", (DL_FUNC) &Iris_getInteractionsC, 1},
-    {"Iris_fillMaskC", (DL_FUNC) &Iris_fillMaskC, 3},
-    {"Iris_growMarginC", (DL_FUNC) &Iris_growMarginC, 2},
+    {"IrisSpatialFeatures_watershedC", (DL_FUNC) &IrisSpatialFeatures_watershedC, 2},
+    {"IrisSpatialFeatures_generate_maskC", (DL_FUNC) &IrisSpatialFeatures_generate_maskC, 3},
+    {"IrisSpatialFeatures_getInteractionsC", (DL_FUNC) &IrisSpatialFeatures_getInteractionsC, 1},
+    {"IrisSpatialFeatures_fillMaskC", (DL_FUNC) &IrisSpatialFeatures_fillMaskC, 3},
+    {"IrisSpatialFeatures_growMarginC", (DL_FUNC) &IrisSpatialFeatures_growMarginC, 2},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_Iris(DllInfo *dll) {
+RcppExport void R_init_IrisSpatialFeatures(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

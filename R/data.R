@@ -1,7 +1,7 @@
-#' Example Iris dataset
+#' Example IrisSpatialFeatures dataset
 #'
 #' A dataset that contains two small samples, with 5 imaging coordinates per samples
 #'
-#' @format Iris dataset
+#' @format IrisSpatialFeatures dataset
 "Iris_data"
 

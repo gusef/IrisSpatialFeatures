@@ -5,7 +5,7 @@
 #' The second mode uses a user specified distance to count the cells within the proximity of a given cell-type. With increasing distances usually cells fall into the proximity of multiple cells
 #' of a given type so the function allows the restriction of only counting the cell only once. 
 #' 
-#' @param x Iris ImageSet object
+#' @param x IrisSpatialFeatures ImageSet object
 #' @param radii The size of the radius in pixels or the default, which are the inForm output columns that indicated the minor and major axis of each cell. 
 #' @param uncertainty_margin Only for the approximation of the interaction analysis, where it indicates how many pixels further should be search to find a touching cell (deafult: 1).
 #' @param only_closest For the proximity analysis a target cell can be in the vincinity of multiple source cells, so the counts are articicially inflated. E.g. a CD8 PD1+ T-cell is within <50 pixels of 30 HRS cells, this cell should only be counted for the closes HRS cell. (default: FALSE)
@@ -119,7 +119,7 @@ extract_proximity_single <- function(d, fr, tr, radii, uncertainty_margin, only_
 
 #' Get all proximity data for all cell-types in a sample
 #' 
-#' @param x An Iris ImageSet object
+#' @param x An IrisSpatialFeatures ImageSet object
 #' @param ... Additional arguments
 #' 
 #' @examples 
@@ -140,7 +140,7 @@ setMethod("get_all_proximities",
 
 #' Get proximity data for a given cell-type
 #' 
-#' @param x An Iris ImageSet object.
+#' @param x An IrisSpatialFeatures ImageSet object.
 #' @param marker Cell type for which the proximity data should be extracted.
 #' @param normalize Flag indicating whether the populations should be normalized so that the sum of all is 1 (default: TRUE).
 #' @param ... Additional arguments.
@@ -171,7 +171,7 @@ setMethod("get_proximities",
 ##### Interaction summary plotting functions
 
 #' Plot proximity analysis data
-#' @param x An Iris ImageSet object
+#' @param x An IrisSpatialFeatures ImageSet object
 #' @param label Cell-type for which the proximit profile is plotted
 #' @param ordering Ordering of the samples (Default: NULL)
 #' @param normalize Flag, should the populations of different cell-types sum up to one in each sample? (Default: TRUE)
@@ -194,7 +194,7 @@ setMethod("get_proximities",
 #' @examples 
 #' raw_data <- new("ImageSet")
 #' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
 #'                      format='Mantra')
 #' dataset <- threshold_dataset(raw_data,
 #'     marker='PD-Ligand-1 (Opal 690)',

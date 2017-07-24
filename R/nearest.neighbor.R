@@ -2,7 +2,7 @@
 
 #' Extract the distance to each nearest neighbor for each cell-type
 #' 
-#' @param x Iris ImageSet object
+#' @param x IrisSpatialFeatures ImageSet object
 #' @param min_num_cells Minimum number of cell that a coordinate needs to have in order to calculate the statistics (Default: 10)
 #' @param ... Additional arguments
 #' 
@@ -99,7 +99,7 @@ getToNeighbors <- function(to,classes,ppp,min_num_cells){
 
 #' Get the nearest neighbor for each cell-type
 #' 
-#' @param x An Iris ImageSet object
+#' @param x An IrisSpatialFeatures ImageSet object
 #' @param ... Additional arguments
 #' 
 #' @docType methods
@@ -121,7 +121,7 @@ setMethod("get_all_nearest_neighbors",
 
 #' Get the nearest neighbor for a specified cell-type
 #' 
-#' @param x An Iris ImageSet object
+#' @param x An IrisSpatialFeatures ImageSet object
 #' @param marker Cell type for which the nearest neighbor should be calculated
 #' @param ... Additional arguments
 #' 
@@ -130,7 +130,7 @@ setMethod("get_all_nearest_neighbors",
 #' @examples 
 #' raw_data <- new("ImageSet")
 #' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
 #'                      format='Mantra')
 #' dataset <- threshold_dataset(raw_data,
 #'     marker='PD-Ligand-1 (Opal 690)',
@@ -166,7 +166,7 @@ setMethod("get_nearest_neighbors",
 #' both CD8 PD1+ and CD8 PD1- cells, the 'CD8 PD1' would be speficified as 'to' parameter, 2 distances would be calculated for each sample and a two-sided paired t-test calculated
 #' to test for significant differences. 
 #' 
-#' @param x Iris ImageSet object.
+#' @param x IrisSpatialFeatures ImageSet object.
 #' @param from Cell-type from which the nearest neighbor is calculated.
 #' @param to Cell-type to which the nearest neighbor is calculated.
 #' @param ttest Flag indicating whether a paired t-test should be calculated. (default: TRUE)
@@ -182,7 +182,7 @@ setMethod("get_nearest_neighbors",
 #' @examples 
 #' raw_data <- new("ImageSet")
 #' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
 #'                      format='Mantra')
 #' dataset <- threshold_dataset(raw_data,
 #'     marker='PD-Ligand-1 (Opal 690)',
@@ -320,7 +320,7 @@ buildLabel <- function(from,to,ext,transposed){
 
 #' Plot nearest neighbor ray plots for each samples
 #' 
-#' @param x An Iris ImageSet object
+#' @param x An IrisSpatialFeatures ImageSet object
 #' @param from_type Cell type from which the rays are drawn
 #' @param to_type Cell type to which the rays are drawn
 #' @param from_col Color for the 'from' cell-type (Default: '#EE7600')
@@ -340,7 +340,7 @@ buildLabel <- function(from,to,ext,transposed){
 #' @examples
 #' raw_data <- new("ImageSet")
 #' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
 #'                      format='Mantra')
 #' dataset <- threshold_dataset(raw_data,
 #'     marker='PD-Ligand-1 (Opal 690)',

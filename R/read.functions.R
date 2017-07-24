@@ -7,9 +7,9 @@
 #   ***_cell_seg_data_summary.txt (which is optional)
 
 
-#' Read inForm output and store it in an Iris ImageSet object.
+#' Read inForm output and store it in an IrisSpatialFeatures ImageSet object.
 #' 
-#' @param x Iris ImageSet object.
+#' @param x IrisSpatialFeatures ImageSet object.
 #' @param raw_dir_name Directory that contains the raw files
 #' @param label_fix List of length 2 character vector that is used to fix filenames.
 #' @param format Output format: Currently only "Vectra" and "Mantra" are supported. 
@@ -24,11 +24,11 @@
 #' @param ignore_scoring Flag indicating whether the scoring file should be ignored (default: False)
 #' @param ... Additional arguments  
 #' 
-#' @return Iris ImageSet object.
+#' @return IrisSpatialFeatures ImageSet object.
 #' @examples
 #' raw_data <- new("ImageSet")
 #' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
 #'                      format='Mantra')
 #' @docType methods
 #' @export
@@ -286,7 +286,7 @@ setMethod("read_raw_coordinate",
 #' @return Mask matrix
 #' @export
 #' @examples 
-#' extract_mask(system.file("extdata","MEL29822","MEL29822_080416_1_Invasive_Margin.tif", package = "Iris"))
+#' extract_mask(system.file("extdata","MEL29822","MEL29822_080416_1_Invasive_Margin.tif", package = "IrisSpatialFeatures"))
 extract_mask <- function(filename){
     mask <- readTIFF(filename)
     mask <- as.matrix((mask[,,1]+mask[,,2]+mask[,,3])>0)
@@ -295,7 +295,7 @@ extract_mask <- function(filename){
 }
 
 
-#' @useDynLib Iris
+#' @useDynLib IrisSpatialFeatures
 #' @importFrom Rcpp sourceCpp
 setGeneric("extract_mask_data", function(x, ...) standardGeneric("extract_mask_data"))
 setMethod("extract_mask_data",
@@ -348,7 +348,7 @@ setMethod("extract_mask_data",
 
 #' This function reads the manually determined thresholds of certain markers (e.g. PD1, PD-L1) and splits selected celltypes into marker+ and marker- celltypes.
 #' 
-#' @param x Iris ImageSet object.
+#' @param x IrisSpatialFeatures ImageSet object.
 #' @param marker Name of the marker used in the score file.
 #' @param marker_name corresponding name, which should be appended at the selected cell types.
 #' @param base Vector of cell types for which the marker should be used.
@@ -357,11 +357,11 @@ setMethod("extract_mask_data",
 #' @param ... Additional arguments  
 #' 
 #' @docType methods
-#' @return Iris ImageSet object.
+#' @return IrisSpatialFeatures ImageSet object.
 #' @examples
 #' raw_data <- new("ImageSet")
 #' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
 #'                      format='Mantra')
 #' dataset <- threshold_dataset(raw_data,
 #'                              marker='PD-Ligand-1 (Opal 690)',
@@ -510,15 +510,15 @@ setMethod("getScoring",
 
 #' Method that reduces the current dataset to a specific region of interest, discarding all cell coordinates outside of that region
 #'  
-#' @param x Iris ImageSet object 
+#' @param x IrisSpatialFeatures ImageSet object 
 #' @param ROI Region of interest (default: 'invasive_margin')
 #' @param ... Additional arguments  
 #' 
-#' @return Iris ImageSet object
+#' @return IrisSpatialFeatures ImageSet object
 #' @examples
 #' raw_data <- new("ImageSet")
 #' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "Iris"),
+#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
 #'                      format='Mantra')
 #' extract_ROI(raw_data)
 #' dataset <- threshold_dataset(raw_data,

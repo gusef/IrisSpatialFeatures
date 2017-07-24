@@ -1,7 +1,7 @@
 
 #' Plot all coordinates in a given dataset
 #' 
-#' @param x Sample ImageSet object of the Iris package.
+#' @param x Sample ImageSet object of the IrisSpatialFeatures package.
 #' @param outdir Output directory (default: './')
 #' @param palette Color palette used for the different cell-types. (default: NULL)
 #' @param type File format for the plots. Can bei either 'pdf' or 'png'. (default: 'pdf')
