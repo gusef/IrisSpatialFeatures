@@ -9,7 +9,8 @@
 #' @param radii The size of the radius in pixels or the default, which are the inForm output columns that indicated the minor and major axis of each cell. 
 #' @param uncertainty_margin Only for the approximation of the interaction analysis, where it indicates how many pixels further should be search to find a touching cell (deafult: 1).
 #' @param only_closest For the proximity analysis a target cell can be in the vincinity of multiple source cells, so the counts are articicially inflated. E.g. a CD8 PD1+ T-cell is within <50 pixels of 30 HRS cells, this cell should only be counted for the closes HRS cell. (default: FALSE)
-#' @param ... Additional arguments  
+#' @param ... Additional arguments
+#' @return The proximial events for each cell
 #' @examples
 #' extract_proximity(new("ImageSet"))
 #' 
@@ -121,6 +122,7 @@ extract_proximity_single <- function(d, fr, tr, radii, uncertainty_margin, only_
 #' 
 #' @param x An IrisSpatialFeatures ImageSet object
 #' @param ... Additional arguments
+#' @return all proximity data for cell-types
 #' 
 #' @examples 
 #' get_all_proximities(new("ImageSet"))
@@ -144,6 +146,7 @@ setMethod("get_all_proximities",
 #' @param marker Cell type for which the proximity data should be extracted.
 #' @param normalize Flag indicating whether the populations should be normalized so that the sum of all is 1 (default: TRUE).
 #' @param ... Additional arguments.
+#' @return proximities for a specific cell-type
 #' 
 #' @docType methods
 #' @rdname get_proximities
@@ -180,6 +183,7 @@ setMethod("get_proximities",
 #' @param xlim_fix Space on the right side to show the legend (Default: 13)
 #' @param topbar_cols Color of the barplots on top (Default: 'darkgrey'
 #' @param ... Additional parameters. 
+#' @return plot proximity analysis
 #' 
 #' @importFrom graphics axis
 #' @importFrom graphics barplot

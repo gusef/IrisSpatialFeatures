@@ -8,6 +8,7 @@
 #' @param width Width of the plot in inches for pdf and pixels for png. (default: 10)
 #' @param height Heigth of the plot in inches for pdf and pixels for png. (default: 7)
 #' @param ... Additional arguments
+#' @return plot of all coordinates
 #' 
 #' @docType methods
 #' @export

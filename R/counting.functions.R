@@ -113,6 +113,7 @@ setMethod("get_counts_per_mm2",
 #' @param marker2 Second cell-type.
 #' @param digits Number of digits that should be shown in the the results. (Default: 2)
 #' @param ... Additional arguments.
+#' @return Count ratio between two markers
 #' 
 #' @docType methods
 #' @importFrom stats sd

@@ -3,7 +3,8 @@
 #' Function to extract all numeric features
 #' @param dat A data matrix with features as rows and samples as columns
 #' @param lab Label annotation that contains 2 classes, which corresponds to the samples in the column
-#' 
+#'
+#' @return t-test and wilcox test btween the 2 classes
 #' @export
 #' @importFrom stats t.test
 #' @importFrom stats wilcox.test
@@ -46,6 +47,7 @@ feature_selection <- function(dat,lab){
 #' @param name Prefix for all features, e.g. 'invasive_margin' (Default: '')
 #' @param rm.na Should features with NA values be removed (Default: FALSE)
 #' @param ... Additional arguments
+#' @return dataframe of features
 #' 
 #' @docType methods
 #' @export

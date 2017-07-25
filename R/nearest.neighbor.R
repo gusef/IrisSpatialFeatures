@@ -6,6 +6,8 @@
 #' @param min_num_cells Minimum number of cell that a coordinate needs to have in order to calculate the statistics (Default: 10)
 #' @param ... Additional arguments
 #' 
+#' @return distance to nearest neighbor for each
+#' 
 #' @docType methods
 #' @export
 #' 
@@ -101,6 +103,7 @@ getToNeighbors <- function(to,classes,ppp,min_num_cells){
 #' 
 #' @param x An IrisSpatialFeatures ImageSet object
 #' @param ... Additional arguments
+#' @return Nearest neighbor for each cell-type
 #' 
 #' @docType methods
 #' @export
@@ -124,6 +127,7 @@ setMethod("get_all_nearest_neighbors",
 #' @param x An IrisSpatialFeatures ImageSet object
 #' @param marker Cell type for which the nearest neighbor should be calculated
 #' @param ... Additional arguments
+#' @return nearest neighbors for the specified cell-type
 #' 
 #' @export
 #' @rdname get_nearest_neighbors
@@ -172,6 +176,7 @@ setMethod("get_nearest_neighbors",
 #' @param ttest Flag indicating whether a paired t-test should be calculated. (default: TRUE)
 #' @param transposed Switches 'from' and 'to' cell-type. This way the (default: FALSE)
 #' @param ... Additional arguments. 
+#' @return plot average nearest neighbor barplots for two cell types
 #' 
 #' @importFrom graphics barplot
 #' @importFrom graphics mtext
@@ -331,6 +336,7 @@ buildLabel <- function(from,to,ext,transposed){
 #' @param height Height of the pdf. (Default: 7)
 #' @param width Width of the pdf. (Default: 10)
 #' @param ... Additional arguments.
+#' @return nearest neighbor ray plots
 #' 
 #' @docType methods
 #' @export

@@ -4,12 +4,13 @@
 #' 
 #' @param x IrisSpatialFeatures ImageSet object
 #' @param ... Additional arguments
+#' @return list of interactions
 #' 
 #' @examples 
 #' extract_interactions(new("ImageSet"))
 #' 
 #' @docType methods
-#' @export
+#' @export 
 #' @rdname extract_interactions
 #' 
 #' @examples 
@@ -238,6 +239,7 @@ collapseMatrices <- function(mat,fun){
 #' 
 #' @param x An IrisSpatialFeatures ImageSet object.
 #' @param ... Additional arguments.
+#' @return For each cell-type return interactions
 #' 
 #' @docType methods
 #' @export
@@ -260,6 +262,7 @@ setMethod("get_all_interactions",
 #' @param marker Cell-type for which the interactions should be pulled
 #' @param normalize Flag to indicated whether to normalize each sample so all interactions sum up to 1 (Default: 1)
 #' @param ... Additional arguments.
+#' @return interactions for a specific marker
 #' 
 #' @docType methods
 #' @export
@@ -315,6 +318,7 @@ setMethod("get_interactions",
 #' @param xlim_fix Whitespace on the right side so the legend can be displayed clearly. (default: 13)
 #' @param topbar_cols Color of the barplots that are shown on top. (default: 'darkgrey')
 #' @param ... Additional arguments
+#' @return plot of all cell-types and samples interactions
 #' 
 #' @importFrom graphics axis
 #' @importFrom graphics layout
@@ -421,6 +425,7 @@ setMethod("plot_interactions",
 #' @param useMask (Default: NULL)
 #' @param format Output format of the images. Can be '.png' or '.tiff' (Default: '.png')
 #' @param ... Additional arguments.
+#' @return plot of interactions for all samples
 #' 
 #' @docType methods
 #' @export
