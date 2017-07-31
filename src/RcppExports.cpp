@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // watershedC
 List watershedC(NumericMatrix padded_map, NumericMatrix cell_coords);
-RcppExport SEXP IrisSpatialFeatures_watershedC(SEXP padded_mapSEXP, SEXP cell_coordsSEXP) {
+RcppExport SEXP _IrisSpatialFeatures_watershedC(SEXP padded_mapSEXP, SEXP cell_coordsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -19,7 +19,7 @@ END_RCPP
 }
 // generate_maskC
 NumericMatrix generate_maskC(NumericMatrix marker_map, NumericMatrix padded_map, NumericMatrix cell_coords);
-RcppExport SEXP IrisSpatialFeatures_generate_maskC(SEXP marker_mapSEXP, SEXP padded_mapSEXP, SEXP cell_coordsSEXP) {
+RcppExport SEXP _IrisSpatialFeatures_generate_maskC(SEXP marker_mapSEXP, SEXP padded_mapSEXP, SEXP cell_coordsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -32,7 +32,7 @@ END_RCPP
 }
 // getInteractionsC
 List getInteractionsC(NumericMatrix filled_map);
-RcppExport SEXP IrisSpatialFeatures_getInteractionsC(SEXP filled_mapSEXP) {
+RcppExport SEXP _IrisSpatialFeatures_getInteractionsC(SEXP filled_mapSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -43,7 +43,7 @@ END_RCPP
 }
 // fillMaskC
 NumericMatrix fillMaskC(NumericMatrix mask, NumericMatrix padded, NumericMatrix cell_coords);
-RcppExport SEXP IrisSpatialFeatures_fillMaskC(SEXP maskSEXP, SEXP paddedSEXP, SEXP cell_coordsSEXP) {
+RcppExport SEXP _IrisSpatialFeatures_fillMaskC(SEXP maskSEXP, SEXP paddedSEXP, SEXP cell_coordsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -56,7 +56,7 @@ END_RCPP
 }
 // growMarginC
 NumericMatrix growMarginC(NumericMatrix mask, int distance);
-RcppExport SEXP IrisSpatialFeatures_growMarginC(SEXP maskSEXP, SEXP distanceSEXP) {
+RcppExport SEXP _IrisSpatialFeatures_growMarginC(SEXP maskSEXP, SEXP distanceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -68,11 +68,11 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"IrisSpatialFeatures_watershedC", (DL_FUNC) &IrisSpatialFeatures_watershedC, 2},
-    {"IrisSpatialFeatures_generate_maskC", (DL_FUNC) &IrisSpatialFeatures_generate_maskC, 3},
-    {"IrisSpatialFeatures_getInteractionsC", (DL_FUNC) &IrisSpatialFeatures_getInteractionsC, 1},
-    {"IrisSpatialFeatures_fillMaskC", (DL_FUNC) &IrisSpatialFeatures_fillMaskC, 3},
-    {"IrisSpatialFeatures_growMarginC", (DL_FUNC) &IrisSpatialFeatures_growMarginC, 2},
+    {"_IrisSpatialFeatures_watershedC", (DL_FUNC) &_IrisSpatialFeatures_watershedC, 2},
+    {"_IrisSpatialFeatures_generate_maskC", (DL_FUNC) &_IrisSpatialFeatures_generate_maskC, 3},
+    {"_IrisSpatialFeatures_getInteractionsC", (DL_FUNC) &_IrisSpatialFeatures_getInteractionsC, 1},
+    {"_IrisSpatialFeatures_fillMaskC", (DL_FUNC) &_IrisSpatialFeatures_fillMaskC, 3},
+    {"_IrisSpatialFeatures_growMarginC", (DL_FUNC) &_IrisSpatialFeatures_growMarginC, 2},
     {NULL, NULL, 0}
 };
 

@@ -31,7 +31,6 @@ vignettes/*.pdf
 *.o
 *.dll
 *.so
-inst/doc
 #Roxygen2
 *.Rd
 # OS mess

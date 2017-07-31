@@ -2,22 +2,22 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 watershedC <- function(padded_map, cell_coords) {
-    .Call('IrisSpatialFeatures_watershedC', PACKAGE = 'IrisSpatialFeatures', padded_map, cell_coords)
+    .Call('_IrisSpatialFeatures_watershedC', PACKAGE = 'IrisSpatialFeatures', padded_map, cell_coords)
 }
 
 generate_maskC <- function(marker_map, padded_map, cell_coords) {
-    .Call('IrisSpatialFeatures_generate_maskC', PACKAGE = 'IrisSpatialFeatures', marker_map, padded_map, cell_coords)
+    .Call('_IrisSpatialFeatures_generate_maskC', PACKAGE = 'IrisSpatialFeatures', marker_map, padded_map, cell_coords)
 }
 
 getInteractionsC <- function(filled_map) {
-    .Call('IrisSpatialFeatures_getInteractionsC', PACKAGE = 'IrisSpatialFeatures', filled_map)
+    .Call('_IrisSpatialFeatures_getInteractionsC', PACKAGE = 'IrisSpatialFeatures', filled_map)
 }
 
 fillMaskC <- function(mask, padded, cell_coords) {
-    .Call('IrisSpatialFeatures_fillMaskC', PACKAGE = 'IrisSpatialFeatures', mask, padded, cell_coords)
+    .Call('_IrisSpatialFeatures_fillMaskC', PACKAGE = 'IrisSpatialFeatures', mask, padded, cell_coords)
 }
 
 growMarginC <- function(mask, distance) {
-    .Call('IrisSpatialFeatures_growMarginC', PACKAGE = 'IrisSpatialFeatures', mask, distance)
+    .Call('_IrisSpatialFeatures_growMarginC', PACKAGE = 'IrisSpatialFeatures', mask, distance)
 }
 
