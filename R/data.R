@@ -4,4 +4,3 @@
 #'
 #' @format IrisSpatialFeatures dataset
 "IrisSpatialFeatures_data"
-
