@@ -16,5 +16,7 @@ Mask matrix
 Read inForm output from a single coordinate
 }
 \examples{
-extract_mask(system.file("extdata","MEL29822","MEL29822_080416_1_Invasive_Margin.tif", package = "IrisSpatialFeatures"))
+extract_mask(system.file("extdata",
+                         "MEL2","MEL2_080416_1_Invasive_Margin.tif",
+                         package = "IrisSpatialFeatures"))
 }

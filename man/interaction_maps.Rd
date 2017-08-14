@@ -19,7 +19,9 @@ interaction_maps(x, ...)
 
 \item{...}{Additional arguments.}
 
-\item{int_markers}{Cell-types that should be considered. If two cells from different cell-types interact they are filled in, if a cell is not interacting it is just outlined.}
+\item{int_markers}{Cell-types that should be considered. If two cells
+from different cell-types interact they are filled in,
+if a cell is not interacting it is just outlined.}
 
 \item{int_marker_cols}{Colors for the cell-types}
 

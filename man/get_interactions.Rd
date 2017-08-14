@@ -39,8 +39,6 @@ dataset <- threshold_dataset(dataset,
     marker='PD-1 (Opal 540)',
     marker_name='PD1',
     base=c('CD8+','OTHER'))
-dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
-dataset <- extract_proximity(dataset,only_closest=TRUE,radii=25)
 dataset <- extract_interactions(dataset)
 get_interactions(dataset,'CD8+ PD1+')
 }

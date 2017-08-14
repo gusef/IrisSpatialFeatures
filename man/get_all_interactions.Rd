@@ -22,3 +22,21 @@ For each cell-type return interactions
 \description{
 Get all interactions between all cell-types
 }
+\examples{
+raw_data <- new("ImageSet")
+raw_data <- read_raw(raw_data,
+                     raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
+                     format='Mantra')
+dataset <- threshold_dataset(raw_data,
+    marker='PD-Ligand-1 (Opal 690)',
+    marker_name='PDL1',
+    base=c('SOX10+'))
+dataset <- threshold_dataset(dataset,
+    marker='PD-1 (Opal 540)',
+    marker_name='PD1',
+    base=c('CD8+','OTHER'))
+dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
+dataset <- extract_proximity(dataset,only_closest=TRUE,radii=25)
+dataset <- extract_interactions(dataset)
+get_all_interactions(dataset)
+}

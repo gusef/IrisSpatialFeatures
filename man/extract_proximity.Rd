@@ -5,8 +5,8 @@
 \alias{extract_proximity}
 \alias{extract_proximity,ImageSet-method}
 \alias{run_proximity,ANY,ANY-method}
-\title{Run a proximity analysis on all samples. 
-There are two modes this function can be run. In the first mode it uses the major and minor axes for each cell as provided by inform. It then averages 
+\title{Run a proximity analysis on all samples.
+There are two modes this function can be run. In the first mode it uses the major and minor axes for each cell as provided by inform. It then averages
 half of those two axes and adds an uncertainty margin, which are used to provide an estimate on whether two cells are touching. This mode can be used to approximate the interaction analysis.
 The second mode uses a user specified distance to count the cells within the proximity of a given cell-type. With increasing distances usually cells fall into the proximity of multiple cells
 of a given type so the function allows the restriction of only counting the cell only once.}
@@ -31,8 +31,8 @@ extract_proximity(x, ...)
 The proximial events for each cell
 }
 \description{
-Run a proximity analysis on all samples. 
-There are two modes this function can be run. In the first mode it uses the major and minor axes for each cell as provided by inform. It then averages 
+Run a proximity analysis on all samples.
+There are two modes this function can be run. In the first mode it uses the major and minor axes for each cell as provided by inform. It then averages
 half of those two axes and adds an uncertainty margin, which are used to provide an estimate on whether two cells are touching. This mode can be used to approximate the interaction analysis.
 The second mode uses a user specified distance to count the cells within the proximity of a given cell-type. With increasing distances usually cells fall into the proximity of multiple cells
 of a given type so the function allows the restriction of only counting the cell only once.

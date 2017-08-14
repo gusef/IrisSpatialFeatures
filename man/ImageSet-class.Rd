@@ -13,22 +13,29 @@ Class to represent an imaging dataset.
 \describe{
 \item{\code{samples}}{A list of samples each containing multiple coordinates.}
 
-\item{\code{counts}}{A list of counts of different cell types for each coordinate in each sample.}
+\item{\code{counts}}{A list of counts of different cell types for each coordinate in
+each sample.}
 
-\item{\code{nearest_neighbors}}{A list of mean and std of nearest neighbor distances for each samples.}
+\item{\code{nearest_neighbors}}{A list of mean and std of nearest neighbor distances
+for each samples.}
 
 \item{\code{interactions}}{A list of interaction information for each sample.}
 
-\item{\code{proximity}}{A list of mean and std of nearest neighbor distances for each sample.}
+\item{\code{proximity}}{A list of mean and std of nearest neighbor distances for each
+sample.}
 
-\item{\code{microns_per_pixel}}{Scalar value that indicates the length of a pixel in micrometers.}
+\item{\code{microns_per_pixel}}{Scalar value that indicates the length of a pixel in
+micrometers.}
 
-\item{\code{markers}}{A vector of strings indicating all different cell types considered.}
+\item{\code{markers}}{A vector of strings indicating all different cell types
+considered.}
 
 \item{\code{invasive_margin_in_px}}{The width of the invasive margin in pixels}
 
-\item{\code{readMasks}}{Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: True)}
+\item{\code{readMasks}}{Flag indicating whether the "_Tumor.tif" and
+"_Invasive_Margin.tif" should be read (default: True)}
 
-\item{\code{ignore_scoring}}{Flag indicating whether the scoring file should be ignored (default: FALSE)}
+\item{\code{ignore_scoring}}{Flag indicating whether the scoring file should be
+ignored (default: FALSE)}
 }}
 

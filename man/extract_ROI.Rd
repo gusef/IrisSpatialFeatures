@@ -37,5 +37,5 @@ dataset <- threshold_dataset(raw_data,
 dataset <- threshold_dataset(dataset,
                              marker='PD-1 (Opal 540)',
                              marker_name='PD1',
-                             base=c('CD8+','OTHER'))                     
+                             base=c('CD8+','OTHER'))
 }

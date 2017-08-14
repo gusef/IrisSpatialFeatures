@@ -9,11 +9,19 @@ feature_selection(dat, lab)
 \arguments{
 \item{dat}{A data matrix with features as rows and samples as columns}
 
-\item{lab}{Label annotation that contains 2 classes, which corresponds to the samples in the column}
+\item{lab}{Label annotation that contains 2 classes,
+which corresponds to the samples in the column}
 }
 \value{
 t-test and wilcox test btween the 2 classes
 }
 \description{
 Function to extract all numeric features
+}
+\examples{
+dat <- cbind(matrix(runif(400),ncol=10),matrix(runif(400)+0.2,ncol=10))
+lab <- c(rep('classA',10),rep('classB',10))
+rownames(dat) <- paste0('F',1:nrow(dat))
+feature_selection(dat,lab)
+
 }
