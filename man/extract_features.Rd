@@ -29,7 +29,8 @@ Extract all spatial features
 \examples{
 raw_data <- new("ImageSet")
 raw_data <- read_raw(raw_data,
-                     raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
+                     raw_dir_name=system.file("extdata",
+                          package = "IrisSpatialFeatures"),
                      format='Mantra')
 dataset <- threshold_dataset(raw_data,
     marker='PD-Ligand-1 (Opal 690)',

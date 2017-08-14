@@ -20,7 +20,8 @@ get_count_ratios(x, ...)
 
 \item{marker2}{Second cell-type.}
 
-\item{digits}{Number of digits that should be shown in the the results. (Default: 2)}
+\item{digits}{Number of digits that should be shown in the the results.
+(Default: 2)}
 }
 \value{
 Count ratio between two markers

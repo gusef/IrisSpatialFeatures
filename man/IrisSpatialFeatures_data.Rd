@@ -9,6 +9,7 @@
 IrisSpatialFeatures_data
 }
 \description{
-A dataset that contains two small samples, with 5 imaging coordinates per samples
+A dataset that contains two small samples, with 5 imaging coordinates per
+samples
 }
 \keyword{datasets}

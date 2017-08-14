@@ -11,7 +11,8 @@ An S3 class to represent a single imaging sample with multiple coordinates.
 \section{Slots}{
 
 \describe{
-\item{\code{coordinates}}{A list of coordinate objects that contain all of the raw and coordinate data.}
+\item{\code{coordinates}}{A list of coordinate objects that contain all of the raw
+and coordinate data.}
 
 \item{\code{sample_name}}{Name of the contained sample.}
 }}

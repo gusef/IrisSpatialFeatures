@@ -4,7 +4,8 @@
 #'
 #' @slot data Raw coordinate data sheet
 #' @slot summary Inform summary (optional)
-#' @slot score Score table that indicates intensity cutoff for certain markers such as PD1 and PD-L1
+#' @slot score Score table that indicates intensity cutoff for certain markers
+#!       such as PD1 and PD-L1
 #' @slot mem_seg_map Membrane map as output by inForm
 #' @slot nuc_seg_map Nuclear map as output by inForm (optional)
 #' @slot dapi_map DAPI stain map as output by inForm (optional)
@@ -57,7 +58,8 @@ Coordinate <- setClass(
 
 #' An S3 class to represent a single imaging sample with multiple coordinates.
 #'
-#' @slot coordinates A list of coordinate objects that contain all of the raw and coordinate data.
+#' @slot coordinates A list of coordinate objects that contain all of the raw
+#'       and coordinate data.
 #' @slot sample_name Name of the contained sample.
 #' @docType class
 #'
@@ -68,15 +70,15 @@ Sample <- setClass("Sample",
 #' Class to represent an imaging dataset.
 #'
 #' @slot samples A list of samples each containing multiple coordinates.
-#' @slot counts A list of counts of different cell types for each coordinate in
-#'              each sample.
-#' @slot nearest_neighbors A list of mean and std of nearest neighbor distances
-#'                        for each samples.
+#' @slot counts A list of counts of different cell types for each coordinate
+#'       in each sample.
+#' @slot nearest_neighbors A list of mean and std of nearest neighbor
+#'       distances for each samples.
 #' @slot interactions A list of interaction information for each sample.
-#' @slot proximity A list of mean and std of nearest neighbor distances for each
-#'                  sample.
-#' @slot microns_per_pixel Scalar value that indicates the length of a pixel in
-#'                        micrometers.
+#' @slot proximity A list of mean and std of nearest neighbor distances for
+#'       each sample.
+#' @slot microns_per_pixel Scalar value that indicates the length of a pixel
+#'       in micrometers.
 #' @slot markers A vector of strings indicating all different cell types
 #'               considered.
 #' @slot invasive_margin_in_px The width of the invasive margin in pixels

@@ -15,7 +15,7 @@ Class to represent the raw data that is output by inForm
 
 \item{\code{summary}}{Inform summary (optional)}
 
-\item{\code{score}}{Score table that indicates intensity cutoff for certain markers such as PD1 and PD-L1}
+\item{\code{score}}{Score table that indicates intensity cutoff for certain markers}
 
 \item{\code{mem_seg_map}}{Membrane map as output by inForm}
 

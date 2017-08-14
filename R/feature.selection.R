@@ -1,4 +1,4 @@
-##############################################################################################################
+##############################################################################
 
 #' Function to extract all numeric features
 #' @param dat A data matrix with features as rows and samples as columns
@@ -66,7 +66,8 @@ feature_selection <- function(dat, lab) {
 #' @examples
 #' raw_data <- new("ImageSet")
 #' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
+#'                      raw_dir_name=system.file("extdata",
+#'                           package = "IrisSpatialFeatures"),
 #'                      format='Mantra')
 #' dataset <- threshold_dataset(raw_data,
 #'     marker='PD-Ligand-1 (Opal 690)',
@@ -106,7 +107,9 @@ setMethod(
             f_inter <- do.call(rbind, f_inter)
             dat <- rbind(dat, f_inter)
         } else{
-            message('Skipping interactions .. please run extract_interactions to include them.')
+            message(paste('Skipping interactions .. ',
+                   'please run extract_interactions to include them.',
+                   sep=""))
         }
 
         if (length(x@nearest_neighbors) > 0) {
@@ -117,9 +120,10 @@ setMethod(
             f_nn <- do.call(rbind, f_nn)
             dat <- rbind(dat, f_nn)
         } else{
-            message(
-                'Skipping nearest neighbors .. please run extract_nearest_neighbor to include them.'
-            )
+            message(paste(
+            'Skipping nearest neighbors .. ',
+            'please run extract_nearest_neighbor to include them.',
+            sep=""))
         }
         dat <- dat[!duplicated(rownames(dat)), ]
         #some of the ratios cause infinte values
@@ -180,7 +184,8 @@ extractRatios <- function(mat, nam) {
     } else{
         COUNTS <- TRUE
         nams <-
-            sub('[+-]$', '', sapply(strsplit(rownames(mat), ' - '), function(x)
+            sub('[+-]$', '', sapply(strsplit(rownames(mat), ' - '), 
+                function(x)
                 x[2]))
         paired <- getPaired(nams)
         nams <- nams[paired]
@@ -195,17 +200,18 @@ extractRatios <- function(mat, nam) {
         num_pairs <- seq(nrow(mat) / 2)
         indices <- sort(rep(num_pairs, 2))
         ratios <- t(sapply(num_pairs,
-                           function(x, indices, mat)
-                               mat[grep(x, indices)[1], ] / mat[grep(x, indices)[2], ],
-                           indices,
-                           mat))
+                function(x, indices, mat)
+                    mat[grep(x, indices)[1], ] / mat[grep(x, indices)[2], ],
+                        indices,
+                        mat))
         #log2 to get a nicer behavior
         ratios <- log2(ratios)
         if (COUNTS) {
             rownames(ratios) <- paste('ratio -', unique(paste0(nams, '+/-')))
         } else{
             rownames(ratios) <-
-                paste('ratio -', unique(paste0(nams[, 1], '+/- -> ', nams[, 2])))
+                paste('ratio -', unique(paste0(nams[, 1], '+/- -> ',
+                    nams[, 2])))
         }
         rownames(ratios) <- paste(nam, '-', rownames(ratios))
     }
@@ -390,7 +396,8 @@ nearestNeighborSample <- function(sample, classes) {
     nums <- collapseMatrices(nums, rowSums)
 
     #there is a special case where there is only 1 cell of a type
-    #this leads to an NA variance. In this case the means are set to NA as well
+    #this leads to an NA variance. In this case the means are set to NA
+    # as well
     means[is.na(vars)] <- NA
 
     #calculate the standard error on the combined coordinates
@@ -401,7 +408,8 @@ nearestNeighborSample <- function(sample, classes) {
 
 generate_NN <- function(dataset) {
     classes <-
-        sort(unique(unlist(lapply(unlist(dataset, recursive = FALSE), function(x)
+        sort(unique(unlist(lapply(unlist(dataset, recursive = FALSE),
+            function(x)
             levels(x$ppp$marks)))))
     nn <- lapply(dataset, nearestNeighborSample, classes)
     return(nn)

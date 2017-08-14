@@ -20,7 +20,8 @@ get_counts_per_mm2(x, ...)
 \item{blank}{(default: FALSE)}
 }
 \value{
-counts per mm2 per sample, collapsing each coordinate and returning mean and standard error
+counts per mm2 per sample, collapsing each coordinate and returning
+        mean and standard error
 }
 \description{
 Get all the counts on a per mm2 basis

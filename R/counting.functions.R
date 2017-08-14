@@ -77,7 +77,8 @@ setMethod(
 #' @param digits Number of digits that are shown in the output (default: 2)
 #' @param blank (default: FALSE)
 #' @param ... Additional arguments
-#' @return counts per mm2 per sample, collapsing each coordinate and returning mean and standard error
+#' @return counts per mm2 per sample, collapsing each coordinate and returning
+#'         mean and standard error
 #'
 #' @examples
 #' get_counts_per_mm2(new("ImageSet"))
@@ -124,7 +125,8 @@ setMethod(
 #' @param x An IrisSpatialFeatures object
 #' @param marker1 First cell-type.
 #' @param marker2 Second cell-type.
-#' @param digits Number of digits that should be shown in the the results. (Default: 2)
+#' @param digits Number of digits that should be shown in the the results.
+#'        (Default: 2)
 #' @param ... Additional arguments.
 #' @return Count ratio between two markers
 #'
@@ -189,8 +191,8 @@ setMethod(
         ))))
         for (i in 1:length(counts)) {
             if (nrow(counts[[i]]) == 1) {
-                temp <- t(as.matrix(counts[[i]][, match(nams,
-                                                        colnames(counts[[i]]))]))
+                temp <- t(as.matrix(counts[[i]][,match(nams,
+                                                colnames(counts[[i]]))]))
                 rownames(temp) <- rownames(counts[[i]])
                 counts[[i]] <- temp
             } else{
