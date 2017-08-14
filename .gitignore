@@ -32,7 +32,7 @@ vignettes/*.html
 *.dll
 *.so
 #Roxygen2
-#*.Rd
+*.Rd
 # OS mess
 .DS_Store
 src/symbols.rds

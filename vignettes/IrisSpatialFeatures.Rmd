@@ -46,7 +46,7 @@ if (!file.exists(plot_dir)){
 p <- overview_plot(dataset,outdir=plot_dir,palette=NULL,type='png')
 ```
 
-![Example of an Overview plot](plots/MEL29822_080416_1.png?raw=true "Overview Example")
+![Example of an Overview plot](plots/MEL2_080416_1.png?raw=true "Overview Example")
 
 ## Extract counts and ratios
 Here we extract counts per mm2 for each marker, both for each coordinate and collapsed across the multiple images per sample.
