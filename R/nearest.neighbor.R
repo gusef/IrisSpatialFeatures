@@ -441,7 +441,8 @@ setMethod(
                           height = 7,
                           width = 10) {
         #generate the mapping directory
-        out_dir <- file.path(getwd(), plot_dir)
+        #out_dir <- file.path(getwd(), plot_dir)
+        out_dir <- plot_dir
         if (!file.exists(out_dir)) {
             dir.create(out_dir, showWarnings = FALSE)
         }

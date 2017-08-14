@@ -20,8 +20,7 @@ LinkingTo: Rcpp
 LazyData: true
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
-Suggests: knitr, rmarkdown
-biocViews: FeatureExtraction
+Suggests: knitr, rmarkdown, testthat
+biocViews: FeatureExtraction, SingleCell
 NeedsCompilation: yes
-biocViews: SingleCell
 Packaged: 2017-05-15 15:08:36 UTC; jasonweirather

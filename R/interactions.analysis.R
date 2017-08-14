@@ -618,7 +618,8 @@ setMethod(
         }
 
         #generate the mapping directory
-        map_dir <- file.path(getwd(), outdir)
+        #map_dir <- file.path(getwd(), outdir)
+        map_dir <-outdir
         if (!file.exists(map_dir)) {
             dir.create(map_dir, showWarnings = FALSE)
         }

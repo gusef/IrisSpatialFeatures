@@ -39,14 +39,14 @@ dataset <- threshold_dataset(dataset,
 ## Overview plots
 Next we plot all the cell coordinates color coordinated in .pdf format
 ```{r overview_plots}
-plot_dir <- file.path('./plots')
+plot_dir <- file.path(tempdir(),'plots')
 if (!file.exists(plot_dir)){
     dir.create(file.path(plot_dir))
 }
 p <- overview_plot(dataset,outdir=plot_dir,palette=NULL,type='png')
 ```
 
-![Example of an Overview plot](plots/MEL2_080416_1.png?raw=true "Overview Example")
+![Example of an Overview plot](`r plot_dir`/MEL2_080416_1.png?raw=true "Overview Example")
 
 ## Extract counts and ratios
 Here we extract counts per mm2 for each marker, both for each coordinate and collapsed across the multiple images per sample.
@@ -66,7 +66,7 @@ p <- plot_nearest_neighbor(dataset,'CD8+ PD1+','SOX10+ PDL1')
 p <- plot_nearest_neighbor(dataset,'SOX10+ PDL1+','SOX10+ PDL1-')
 
 #ray plots for 
-plot_dir <- file.path('./ray_plots')
+plot_dir <- file.path(tempdir(),'ray_plots')
 if (!file.exists(plot_dir)){
     dir.create(file.path(plot_dir))
 }
@@ -87,8 +87,12 @@ int_markers <- c('CD8+ PD1+','SOX10+ PDL1+')
 int_marker_cols <- c('#dd1c77','#99d8c9')
 silent_markers <- c('CD8+ PD1-')
 silent_col=c('yellow')
+plot_dir <- file.path(tempdir(),'interaction_maps')
+if (!file.exists(plot_dir)){
+    dir.create(file.path(plot_dir))
+}
 p <- interaction_maps(dataset,int_markers,int_marker_cols,silent_markers,
-                      silent_col)
+                      silent_col,outdir=plot_dir)
 ```
 
 ##Running the proximity analysis
