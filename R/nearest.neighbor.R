@@ -591,3 +591,112 @@ setMethod(
         }
     }
 )
+sample_normal_nearest_neighbor_once <- function(sample_name,data,markers) {
+    sample <- data@samples[sample_name][[1]]
+    frame_names <- names(sample@coordinates)
+    frame_mats <- lapply(frame_names,function(frame_name){
+        dat <- sample@coordinates[frame_name][[1]]
+        tot <- sapply(markers,function(x){sum(dat@ppp$marks==x)})
+        # get the number of cells in each of the categories of interest
+        smallest_cell_count <- min(tot)
+        # get the number to downsample to
+        parr <- lapply(markers,function(x){
+            mppp<-dat@ppp[dat@ppp$marks==x,]
+            mppp<-mppp[sample(1:length(mppp$marks),smallest_cell_count),]
+        })
+        names(parr) <- markers
+        # exectue downsampling
+        nnlistlist <- lapply(markers,function(marki){
+            # Get the mean aand variance between all markers a list of lists
+            pi <- parr[marki][[1]]
+            outs <- lapply(markers,function(markj){
+                # Get the mean and variance for nnearest distances bettween markj and marki
+                pj <- parr[markj][[1]]
+                dis<-spatstat::nncross(pi,pj)[,1]
+                list(mean_dist=mean(dis),
+                            var_dist=var(dis))
+            })
+            names(outs) <- markers
+            # we want one list of means an one list of means
+            mean_dist_arr <- sapply(markers,function(x){outs[[x]]$mean_dist})
+            names(mean_dist_arr) <- markers
+            var_dist_arr <- sapply(markers,function(x){outs[[x]]$var_dist})
+            names(var_dist_arr) <- markers
+            val <- list(mean_dist=mean_dist_arr,var_dist=var_dist_arr)
+        })
+        names(nnlistlist) <- markers
+        mean_dist <- lapply(markers,function(x){nnlistlist[[x]]$mean_dist})
+        names(mean_dist) <- markers
+        mean_dist_mat <- do.call(rbind,lapply(mean_dist,unlist))
+        var_dist <- lapply(markers,function(x){nnlistlist[[x]]$var_dist})
+        names(var_dist) <- markers
+        var_dist_mat <- do.call(rbind,lapply(var_dist,unlist))
+        return(list(mean_dist=mean_dist_mat,
+                    var_dist=var_dist_mat,
+                    population=smallest_cell_count))
+    })
+    names(frame_mats) <- frame_names
+    #now we can get the mean and variance matrix from the mean of the frames
+    mean_data <- lapply(frame_names,function(x){
+      return(frame_mats[frame_names==x][[1]]$mean_dist)
+    })
+    var_data <- lapply(frame_names,function(x){
+      return(frame_mats[frame_names==x][[1]]$var_dist)
+    })
+    populations <- lapply(frame_names,function(x){
+      return(frame_mats[frame_names==x][[1]]$population)
+    })
+    names(populations) <- frame_names
+    mean_combined <- Reduce("+",mean_data)/length(mean_data)
+    var_combined <- Reduce("+",var_data)/length(var_data)
+    # decided to go with data frame since we have multiple attributes for the mean and variance
+    mean_df <- as.data.frame(as.table(mean_combined))
+    var_df <- as.data.frame(as.table(var_combined))
+    mean_df <- cbind(rep(sample_name,dim(mean_df)[1]),mean_df)
+    colnames(mean_df) <- c("sample_name","marker_j","marker_i","mean")
+    colnames(var_df) <- c("sample_name","marker_j","marker_i","variance")
+    return(list(mean=mean_df,
+                var=var_df,
+                pop=populations))
+}
+normal_nearest_neighbor_n <- function(sample_name,data,markers,nresample) {
+    # For a single sample name, resample it nresample timesand return dataframes
+    totals<-lapply(rep(sample_name,nresample),
+                   sample_normal_nearest_neighbor_once,
+                   data=data,markers=markers)
+    combine_mean <- sapply(totals,function(x){x$mean$mean})
+    combine_var <- sapply(totals,function(x){x$var$variance})
+    template <- totals[[1]]$mean
+    mean_df<-cbind(as.data.frame(template$sample_name),
+         template$marker_j,
+         template$marker_i,
+         rowQuantiles(combine_mean,probs=c(0.05,0.5,0.95)))
+    var_df<-cbind(as.data.frame(template$sample_name),
+         template$marker_j,
+         template$marker_i,
+         rowQuantiles(combine_var,probs=c(0.05,0.5,0.95)))
+    names(mean_df)<-c("sample_name","marker_j","marker_i","5%","50%","95%")
+    names(var_df)<-c("sample_name","marker_j","marker_i","5%","50%","95%")  
+    return(list(mean=mean_df,var=var_df,nresample=nresample,sample=sample_name))
+}
+normal_nearest_neighbor <- function(data,markers,nresample) {
+    # Pre: take a list of markers and return median nearest neighbor based 
+    #  on n resamplings of the the same number of cells for the smallest 
+    #  number of cells in the marker list (per-sample)
+    # Post: Return a data frame with sample, the i an j markers used in
+    #  mean distance, and the 5%, median (50%) and 95% distances
+    sample_names <- names(data@samples)
+    v<-lapply(sample_names,
+            normal_nearest_neighbor_n,
+            data=data,
+            markers=markers,
+            nresample=nresample)
+    names(v)<-sample_names
+    mean_frame_list<-lapply(sample_names,function(x){
+        v[[x]]$mean
+    })
+    mean_df <- do.call("rbind",mean_frame_list)
+    return(mean_df)
+}
+
+
