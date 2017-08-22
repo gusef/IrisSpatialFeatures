@@ -272,8 +272,7 @@ setMethod(
         if (length(label_fix) > 0) {
             #for each label fix
             for (fix in label_fix) {
-                x@raw@data$Phenotype[grep(fix[1], x@raw@data$Phenotype, fixed = TRUE)] <-
-                    fix[2]
+                x@raw@data$Phenotype[x@raw@data$Phenotype==fix[1]] <- fix[2]
             }
         }
 
