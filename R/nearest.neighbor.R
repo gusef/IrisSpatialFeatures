@@ -596,14 +596,14 @@ setMethod(
 #' cell-types, normalized by downsampling each cell-type to the
 #' same size, for a single sample, with no resampling
 #'
-#' @param data sample_name sample name string
+#' @param sample_name sample_name sample name string
 #' @param data IrisSpatialFeatures ImageSet object
 #' @param markers vector of marker names to use
 #'
 #' @return data.frame
 #'
 #' @importFrom spatstat nncross
-setGeneric("normal_nearest_neighbor_sample_once", function(sample_name,data, ...)
+setGeneric("normal_nearest_neighbor_sample_once", function(sample_name,data,markers)
     standardGeneric("normal_nearest_neighbor_sample_once"))
 
 #' @rdname normal_nearest_neighbor_sample_once
@@ -701,6 +701,7 @@ setMethod(
 #' @param n_resamples number of times to resample each frame (default:500)
 #' @param quantiles vector of numeric fractions to include in vector
 #'        to show the mean distance calculated across resamplings
+#' @param ... Additional arguments
 #'
 #' @return data.frame
 #'
@@ -708,13 +709,21 @@ setMethod(
 #' @export
 #'
 #' @examples
-#' normal_nearest_neighbor_sample(new("ImageSet"),c())
+#' raw_data <- new("ImageSet")
+#' raw_data <- read_raw(raw_data,
+#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
+#'                      format='Mantra')
+#' dataset <- threshold_dataset(raw_data,
+#'     marker='PD-Ligand-1 (Opal 690)',
+#'     marker_name='PDL1',
+#'     base=c('SOX10+'))
+#' normal_nearest_neighbor_sample("MEL2",dataset,c("SOX10+ PDL1+","SOX10+ PDL1-"),10)
 #'
 #' @rdname normal_nearest_neighbor_sample
 #' @importFrom spatstat nncross
 #' @importFrom matrixStats rowMedians
 #' @importFrom matrixStats rowQuantiles
-setGeneric("normal_nearest_neighbor_sample", function(sample_name,data, ...)
+setGeneric("normal_nearest_neighbor_sample", function(sample_name,data,...)
     standardGeneric("normal_nearest_neighbor_sample"))
 
 #' @rdname normal_nearest_neighbor_sample
@@ -722,7 +731,7 @@ setGeneric("normal_nearest_neighbor_sample", function(sample_name,data, ...)
 setMethod(
     "normal_nearest_neighbor_sample",
     signature(sample_name="character",data="ImageSet"),
-    definition <- function(sample_name,data,markers,n_resamples,quantiles=c(0.05,0.25,0.5,0.75,0.95)) {
+    definition <- function(sample_name,data,markers,n_resamples=500,quantiles=c(0.05,0.25,0.5,0.75,0.95)) {
     totals<-lapply(rep(sample_name,n_resamples),
                    normal_nearest_neighbor_sample_once,
                    data=data,
@@ -756,6 +765,7 @@ setMethod(
 #' @param n_resamples number of times to resample each frame (default:500)
 #' @param quantiles vector of numeric fractions to include in vector
 #'        to show the mean distance calculated across resamplings
+#' @param ... Additional arguments
 #'
 #' @return data.frame
 #'
@@ -763,7 +773,15 @@ setMethod(
 #' @export
 #'
 #' @examples
-#' normal_nearest_neighbor(new("ImageSet"),c())
+#' raw_data <- new("ImageSet")
+#' raw_data <- read_raw(raw_data,
+#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
+#'                      format='Mantra')
+#' dataset <- threshold_dataset(raw_data,
+#'     marker='PD-Ligand-1 (Opal 690)',
+#'     marker_name='PDL1',
+#'     base=c('SOX10+'))
+#' normal_nearest_neighbor(dataset,c("SOX10+ PDL1+","SOX10+ PDL1-"),10)
 #'
 #' @rdname normal_nearest_neighbor
 setGeneric("normal_nearest_neighbor", function(data, ...)
