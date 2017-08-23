@@ -603,14 +603,14 @@ setMethod(
 #' @return data.frame
 #'
 #' @importFrom spatstat nncross
-setGeneric("normal_nearest_neighbor_sample_once", function(x, ...)
+setGeneric("normal_nearest_neighbor_sample_once", function(sample_name,data, ...)
     standardGeneric("normal_nearest_neighbor_sample_once"))
 
 #' @rdname normal_nearest_neighbor_sample_once
 #' @aliases normal.nearest.neighbor.sample.once,ANY,ANY-method
 setMethod(
     "normal_nearest_neighbor_sample_once",
-    signature = "ImageSet",
+    signature(sample_name="character",data="ImageSet"),
     definition <- function(sample_name,data,markers) {
     # For a single sample designated by sample_name get a dataframe
     markers <- data@markers[data@markers %in% markers]
@@ -714,14 +714,14 @@ setMethod(
 #' @importFrom spatstat nncross
 #' @importFrom matrixStats rowMedians
 #' @importFrom matrixStats rowQuantiles
-setGeneric("normal_nearest_neighbor_sample", function(x, ...)
+setGeneric("normal_nearest_neighbor_sample", function(sample_name,data, ...)
     standardGeneric("normal_nearest_neighbor_sample"))
 
 #' @rdname normal_nearest_neighbor_sample
 #' @aliases normal.nearest.neighbor.sample,ANY,ANY-method
 setMethod(
     "normal_nearest_neighbor_sample",
-    signature = "ImageSet",
+    signature(sample_name="character",data="ImageSet"),
     definition <- function(sample_name,data,markers,n_resamples,quantiles=c(0.05,0.25,0.5,0.75,0.95)) {
     totals<-lapply(rep(sample_name,n_resamples),
                    normal_nearest_neighbor_sample_once,
@@ -766,14 +766,14 @@ setMethod(
 #' normal_nearest_neighbor(new("ImageSet"),c())
 #'
 #' @rdname normal_nearest_neighbor
-setGeneric("normal_nearest_neighbor", function(x, ...)
+setGeneric("normal_nearest_neighbor", function(data, ...)
     standardGeneric("normal_nearest_neighbor"))
 
 #' @rdname normal_nearest_neighbor
 #' @aliases normal.nearest.neighbor,ANY,ANY-method
 setMethod(
     "normal_nearest_neighbor",
-    signature = "ImageSet",
+    signature(data="ImageSet"),
     definition <- function(data,markers,n_resamples=500,quantiles=c(0.05,0.25,0.5,0.75,0.95)) {
     sample_names <- names(data@samples)
     v<-lapply(sample_names,
