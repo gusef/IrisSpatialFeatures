@@ -599,11 +599,12 @@ setMethod(
 #' @param sample_name sample_name sample name string
 #' @param data IrisSpatialFeatures ImageSet object
 #' @param markers vector of marker names to use
+#' @param minimum_cells the smallest number of cells
 #'
 #' @return data.frame
 #'
 #' @importFrom spatstat nncross
-setGeneric("normal_nearest_neighbor_sample_once", function(sample_name,data,markers)
+setGeneric("normal_nearest_neighbor_sample_once", function(sample_name,data,markers,minimum_cells)
     standardGeneric("normal_nearest_neighbor_sample_once"))
 
 #' @rdname normal_nearest_neighbor_sample_once
@@ -611,7 +612,7 @@ setGeneric("normal_nearest_neighbor_sample_once", function(sample_name,data,mark
 setMethod(
     "normal_nearest_neighbor_sample_once",
     signature(sample_name="character",data="ImageSet"),
-    definition <- function(sample_name,data,markers) {
+    definition <- function(sample_name,data,markers,minimum_cells=50) {
     # For a single sample designated by sample_name get a dataframe
     markers <- data@markers[data@markers %in% markers]
     sample <- data@samples[sample_name][[1]]
@@ -635,9 +636,14 @@ setMethod(
             outs <- lapply(markers,function(markj){
                 # Get the mean and variance for nnearest distances bettween markj and marki
                 pj <- parr[markj][[1]]
+                if(smallest_cell_count < minimum_cells) {
+                    return(list(mean_dist=NA,
+                                var_dist=NA))
+                }
                 dis<-spatstat::nncross(pi,pj)[,1]
-                list(mean_dist=mean(dis),
+                res <- list(mean_dist=mean(dis),
                             var_dist=var(dis))
+                return(res)
             })
             names(outs) <- markers
             # we want one list of means an one list of means
@@ -662,10 +668,20 @@ setMethod(
     })
     names(frame_df_list) <- frame_names
     #now we can get the mean and variance matrix from the mean of the frames
-    mean_data <- lapply(frame_names,function(x){
+    # Remove frames that did not have enough data for the calculation
+    notna <- sapply(frame_names,function(x){
+        if(is.na(frame_df_list[x][[1]]$mean[1])) { return(FALSE);}
+        return(TRUE)
+    })
+    #print(notna)
+    #print(frame_df_list[notna])
+    #print(frame_df_list)
+    new_frame_names <- frame_names
+    if (length(notna[notna==TRUE])>0) { new_frame_names <- frame_names[notna];}
+    mean_data <- lapply(new_frame_names,function(x){
       return(frame_df_list[x][[1]]$mean)
     })
-    var_data <- lapply(frame_names,function(x){
+    var_data <- lapply(new_frame_names,function(x){
       return(frame_df_list[x][[1]]$var)
     })
     populations <- lapply(frame_names,function(x){
@@ -682,7 +698,8 @@ setMethod(
                 marker_j=template$marker_j,
                 mean=mean_combined,
                 var=var_combined,
-                frame_count=rep(length(frame_names),dim(template)[1]),
+                original_frame_count=rep(length(frame_names),dim(template)[1]),
+                useful_frame_count=rep(length(notna[notna==TRUE]),dim(template)[1]),
                 min_frame_cells=rep(min_pop,dim(template)[1]),
                 max_frame_cells=rep(max_pop,dim(template)[1]),
                 sample=rep(sample_name,dim(template)[1])
@@ -699,6 +716,7 @@ setMethod(
 #' @param data IrisSpatialFeatures ImageSet object
 #' @param markers vector of marker names to use
 #' @param n_resamples number of times to resample each frame (default:500)
+#' @param minimum_cells smallest number of cells to consider a frame (default:50)
 #' @param quantiles vector of numeric fractions to include in vector
 #'        to show the mean distance calculated across resamplings
 #' @param ... Additional arguments
@@ -731,19 +749,21 @@ setGeneric("normal_nearest_neighbor_sample", function(sample_name,data,...)
 setMethod(
     "normal_nearest_neighbor_sample",
     signature(sample_name="character",data="ImageSet"),
-    definition <- function(sample_name,data,markers,n_resamples=500,quantiles=c(0.05,0.25,0.5,0.75,0.95)) {
+    definition <- function(sample_name,data,markers,n_resamples=500,minimum_cells=50,quantiles=c(0.05,0.25,0.5,0.75,0.95)) {
     totals<-lapply(rep(sample_name,n_resamples),
                    normal_nearest_neighbor_sample_once,
                    data=data,
-                   markers=markers)
+                   markers=markers,
+                   minimum_cells=minimum_cells)
     combine_mean <- sapply(totals,function(x){x$mean})
     combine_var <- sapply(totals,function(x){x$var})
-    template <- totals[[1]]
     #build the dataframe
+    template <- totals[[1]]
     df <- data.frame(sample=template$sample,
                 marker_i=template$marker_i,
                 marker_j=template$marker_j,
-                frame_count = template$frame_count,
+                original_frame_count = template$original_frame_count,
+                useful_frame_count = template$useful_frame_count,
                 min_frame_cells = template$min_frame_cells,
                 max_frame_cells = template$max_frame_cells,
                 var = rowMedians(combine_var),
@@ -763,6 +783,7 @@ setMethod(
 #' @param data IrisSpatialFeatures ImageSet object
 #' @param markers vector of marker names to use
 #' @param n_resamples number of times to resample each frame (default:500)
+#' @param minimum_cells the smallest number of cells to consider a frame (default:50)
 #' @param quantiles vector of numeric fractions to include in vector
 #'        to show the mean distance calculated across resamplings
 #' @param ... Additional arguments
@@ -792,14 +813,15 @@ setGeneric("normal_nearest_neighbor", function(data, ...)
 setMethod(
     "normal_nearest_neighbor",
     signature(data="ImageSet"),
-    definition <- function(data,markers,n_resamples=500,quantiles=c(0.05,0.25,0.5,0.75,0.95)) {
+    definition <- function(data,markers,n_resamples=500,minimum_cells=50,quantiles=c(0.05,0.25,0.5,0.75,0.95)) {
     sample_names <- names(data@samples)
     v<-lapply(sample_names,
               normal_nearest_neighbor_sample,
               data=data,
               markers=markers,
               n_resamples=n_resamples,
-              quantiles=quantiles)
+              quantiles=quantiles,
+              minimum_cells=minimum_cells)
     names(v)<-sample_names
     df <- do.call("rbind",v)
     return(df)
