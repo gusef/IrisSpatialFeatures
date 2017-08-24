@@ -32,7 +32,10 @@ setMethod(
 #' @param x IrisSpatialFeatures ImageSet object.
 #' @param ... Additional arguments
 #' @examples
-#' get_counts_per_mm2_noncollapsed(new("ImageSet"))
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' get_counts_per_mm2_noncollapsed(dataset)
 #'
 #' @return IrisSpatialFeatures ImageSet object.
 #' @docType methods
@@ -81,7 +84,10 @@ setMethod(
 #'         mean and standard error
 #'
 #' @examples
-#' get_counts_per_mm2(new("ImageSet"))
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' get_counts_per_mm2(dataset)
 #'
 #' @docType methods
 #' @export
@@ -135,20 +141,10 @@ setMethod(
 #' @rdname get_count_ratios
 #' @export
 #' @examples
-#' raw_data <- new("ImageSet")
-#' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata",
-#'                              package = "IrisSpatialFeatures"),
-#'                      format='Mantra')
-#' dataset <- threshold_dataset(raw_data,
-#'     marker='PD-Ligand-1 (Opal 690)',
-#'     marker_name='PDL1',
-#'     base=c('SOX10+'))
-#' dataset <- threshold_dataset(dataset,
-#'     marker='PD-1 (Opal 540)',
-#'     marker_name='PD1',
-#'     base=c('CD8+','OTHER'))
-#'     get_count_ratios(dataset,'SOX10+ PDL1-','SOX10+ PDL1+')
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' get_count_ratios(dataset,'SOX10+ PDL1-','SOX10+ PDL1+')
 setGeneric("get_count_ratios",
            function(x, ...)
                standardGeneric("get_count_ratios"))

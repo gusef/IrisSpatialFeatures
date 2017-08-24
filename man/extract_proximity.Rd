@@ -38,6 +38,9 @@ The second mode uses a user specified distance to count the cells within the pro
 of a given type so the function allows the restriction of only counting the cell only once.
 }
 \examples{
-extract_proximity(new("ImageSet"))
+
+#loading pre-read dataset
+dataset <- IrisSpatialFeatures_data
+extract_proximity(dataset)
 
 }

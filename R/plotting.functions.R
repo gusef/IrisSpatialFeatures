@@ -15,7 +15,10 @@
 #' @export
 #'
 #' @examples
-#' overview_plot(new("ImageSet"))
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' overview_plot(dataset)
 #'
 #' @rdname overview_plot
 setGeneric("overview_plot", function(x, ...)

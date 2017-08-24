@@ -367,7 +367,7 @@ setMethod(
 #' @export
 #' @examples
 #' extract_mask(system.file("extdata",
-#'                          "MEL2","MEL2_080416_1_Invasive_Margin.tif",
+#'                          "MEL2","MEL2_080416_2_Invasive_Margin.tif",
 #'                          package = "IrisSpatialFeatures"))
 extract_mask <- function(filename) {
     mask <- readTIFF(filename)
@@ -708,19 +708,11 @@ setMethod(
 #'
 #' @return IrisSpatialFeatures ImageSet object
 #' @examples
-#' raw_data <- new("ImageSet")
-#' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
-#'                      format='Mantra')
-#' extract_ROI(raw_data)
-#' dataset <- threshold_dataset(raw_data,
-#'                              marker='PD-Ligand-1 (Opal 690)',
-#'                              marker_name='PDL1',
-#'                              base=c('SOX10+'))
-#' dataset <- threshold_dataset(dataset,
-#'                              marker='PD-1 (Opal 540)',
-#'                              marker_name='PD1',
-#'                              base=c('CD8+','OTHER'))
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' im_area <- extract_ROI(dataset,ROI='invasive_margin')
+#'
 #' @docType methods
 #' @export
 #' @rdname extract_ROI

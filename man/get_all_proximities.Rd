@@ -23,6 +23,9 @@ all proximity data for cell-types
 Get all proximity data for all cell-types in a sample
 }
 \examples{
-get_all_proximities(new("ImageSet"))
+
+#loading pre-read dataset
+dataset <- IrisSpatialFeatures_data
+get_all_proximities(dataset)
 
 }

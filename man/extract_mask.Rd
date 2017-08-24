@@ -17,6 +17,6 @@ Read inForm output from a single coordinate
 }
 \examples{
 extract_mask(system.file("extdata",
-                         "MEL2","MEL2_080416_1_Invasive_Margin.tif",
+                         "MEL2","MEL2_080416_2_Invasive_Margin.tif",
                          package = "IrisSpatialFeatures"))
 }

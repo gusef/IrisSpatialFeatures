@@ -13,7 +13,10 @@
 #' @param ... Additional arguments
 #' @return The proximial events for each cell
 #' @examples
-#' extract_proximity(new("ImageSet"))
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' extract_proximity(dataset)
 #'
 #' @docType methods
 #' @export
@@ -126,7 +129,10 @@ extract_proximity_single <- function(d, fr, tr, radii, uncertainty_margin, only_
 #' @return all proximity data for cell-types
 #'
 #' @examples
-#' get_all_proximities(new("ImageSet"))
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' get_all_proximities(dataset)
 #'
 #' @docType methods
 #' @export
@@ -197,19 +203,9 @@ setMethod("get_proximities",
 #' @export
 #'
 #' @examples
-#' raw_data <- new("ImageSet")
-#' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
-#'                      format='Mantra')
-#' dataset <- threshold_dataset(raw_data,
-#'     marker='PD-Ligand-1 (Opal 690)',
-#'     marker_name='PDL1',
-#'     base=c('SOX10+'))
-#' dataset <- threshold_dataset(dataset,
-#'     marker='PD-1 (Opal 540)',
-#'     marker_name='PD1',
-#'     base=c('CD8+','OTHER'))
-#' dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
 #' dataset <- extract_proximity(dataset,only_closest=TRUE,radii=25)
 #' p <- plot_proximities(dataset,"SOX10+ PDL1-",xlim_fix=3)
 #'

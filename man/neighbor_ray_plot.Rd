@@ -43,19 +43,10 @@ nearest neighbor ray plots
 Plot nearest neighbor ray plots for each samples
 }
 \examples{
-raw_data <- new("ImageSet")
-raw_data <- read_raw(raw_data,
-                     raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
-                     format='Mantra')
-dataset <- threshold_dataset(raw_data,
-    marker='PD-Ligand-1 (Opal 690)',
-    marker_name='PDL1',
-    base=c('SOX10+'))
-dataset <- threshold_dataset(dataset,
-    marker='PD-1 (Opal 540)',
-    marker_name='PD1',
-    base=c('CD8+','OTHER'))
-dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
+
+#loading pre-read dataset
+dataset <- IrisSpatialFeatures_data
+dataset <- extract_nearest_neighbor(dataset)
 get_nearest_neighbors(dataset,"SOX10+ PDL1+")
 plot_dir <- file.path('./ray_plots')
 if (!file.exists(plot_dir)){

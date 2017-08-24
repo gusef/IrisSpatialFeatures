@@ -23,6 +23,9 @@ Nearest neighbor for each cell-type
 Get the nearest neighbor for each cell-type
 }
 \examples{
-get_all_nearest_neighbors(new("ImageSet"))
+#loading pre-read dataset
+dataset <- IrisSpatialFeatures_data
+dataset <- extract_nearest_neighbor(dataset)
+get_all_nearest_neighbors(dataset)
 
 }

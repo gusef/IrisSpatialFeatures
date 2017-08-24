@@ -1,6 +1,4 @@
 
-
-
 #' Extract interactions between all cell-types
 #'
 #' @param x IrisSpatialFeatures ImageSet object
@@ -15,20 +13,9 @@
 #' @rdname extract_interactions
 #'
 #' @examples
-#' raw_data <- new("ImageSet")
-#' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
-#'                      format='Mantra')
-#' dataset <- threshold_dataset(raw_data,
-#'     marker='PD-Ligand-1 (Opal 690)',
-#'     marker_name='PDL1',
-#'     base=c('SOX10+'))
-#' dataset <- threshold_dataset(dataset,
-#'     marker='PD-1 (Opal 540)',
-#'     marker_name='PD1',
-#'     base=c('CD8+','OTHER'))
-#' dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
-#' dataset <- extract_proximity(dataset,only_closest=TRUE,radii=25)
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
 #' dataset <- extract_interactions(dataset)
 #'
 setGeneric("extract_interactions", function(x, ...)
@@ -298,22 +285,12 @@ collapseMatrices <- function(mat, fun) {
 #' @param ... Additional arguments.
 #' @return For each cell-type return interactions
 #' @examples
-#' raw_data <- new("ImageSet")
-#' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
-#'                      format='Mantra')
-#' dataset <- threshold_dataset(raw_data,
-#'     marker='PD-Ligand-1 (Opal 690)',
-#'     marker_name='PDL1',
-#'     base=c('SOX10+'))
-#' dataset <- threshold_dataset(dataset,
-#'     marker='PD-1 (Opal 540)',
-#'     marker_name='PD1',
-#'     base=c('CD8+','OTHER'))
-#' dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
-#' dataset <- extract_proximity(dataset,only_closest=TRUE,radii=25)
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
 #' dataset <- extract_interactions(dataset)
 #' get_all_interactions(dataset)
+#'
 #' @docType methods
 #' @export
 #' @rdname get_all_interactions
@@ -347,20 +324,12 @@ setMethod(
 #' @export
 #' @rdname get_interactions
 #' @examples
-#' raw_data <- new("ImageSet")
-#' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
-#'                      format='Mantra')
-#' dataset <- threshold_dataset(raw_data,
-#'     marker='PD-Ligand-1 (Opal 690)',
-#'     marker_name='PDL1',
-#'     base=c('SOX10+'))
-#' dataset <- threshold_dataset(dataset,
-#'     marker='PD-1 (Opal 540)',
-#'     marker_name='PD1',
-#'     base=c('CD8+','OTHER'))
+#'
+#' #' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
 #' dataset <- extract_interactions(dataset)
 #' get_interactions(dataset,'CD8+ PD1+')
+#'
 setGeneric("get_interactions", function(x, ...)
     standardGeneric("get_interactions"))
 
@@ -402,18 +371,9 @@ setMethod(
 #' @param ... Additional arguments
 #' @return plot of all cell-types and samples interactions
 #' @examples
-#' raw_data <- new("ImageSet")
-#' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
-#'                      format='Mantra')
-#' dataset <- threshold_dataset(raw_data,
-#'     marker='PD-Ligand-1 (Opal 690)',
-#'     marker_name='PDL1',
-#'     base=c('SOX10+'))
-#' dataset <- threshold_dataset(dataset,
-#'     marker='PD-1 (Opal 540)',
-#'     marker_name='PD1',
-#'     base=c('CD8+','OTHER'))
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
 #' dataset <- extract_interactions(dataset)
 #' plot_interactions(dataset,'SOX10+ PDL1+',xlim_fix=3)
 #'
@@ -573,20 +533,9 @@ setMethod(
 #' @export
 #' @rdname interaction_maps
 #' @examples
-#' raw_data <- new("ImageSet")
-#' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
-#'                      format='Mantra')
-#' dataset <- threshold_dataset(raw_data,
-#'     marker='PD-Ligand-1 (Opal 690)',
-#'     marker_name='PDL1',
-#'     base=c('SOX10+'))
-#' dataset <- threshold_dataset(dataset,
-#'     marker='PD-1 (Opal 540)',
-#'     marker_name='PD1',
-#'     base=c('CD8+','OTHER'))
-#' dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
-#' dataset <- extract_proximity(dataset,only_closest=TRUE,radii=25)
+#'
+#' #' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
 #' dataset <- extract_interactions(dataset)
 #' get_interactions(dataset,'CD8+ PD1+')
 #' int_markers <- c('CD8+ PD1+','SOX10+ PDL1+')

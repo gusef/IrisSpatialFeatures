@@ -23,6 +23,9 @@ IrisSpatialFeatures ImageSet object.
 Get all the counts on a per mm2 basis non-collapsed
 }
 \examples{
-get_counts_per_mm2_noncollapsed(new("ImageSet"))
+
+#loading pre-read dataset
+dataset <- IrisSpatialFeatures_data
+get_counts_per_mm2_noncollapsed(dataset)
 
 }

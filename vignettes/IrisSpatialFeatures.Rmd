@@ -13,7 +13,7 @@ vignette: >
 
 ## Reading the dataset
 
-This is a toy example, based on 2 sample with 5 coordinates each. The 20x images were acquired on the Mantra system of PerkinElmer, analyzed in inForm and cropped to 200x200 px to reduce the runtime. There are three different phenotypes present in this example, SOX10 or melanoma cell, CD8 cells indicating cytotoxic T-cells and other or undefined cells which have neither SOX10 or CD8 protein expression, but show up as cells according to the nuclear stain.
+This is a toy example, based on 2 sample with 2 coordinates each. The 20x images were acquired on the Mantra system of PerkinElmer, analyzed in inForm. There are three different phenotypes present in this example: melanoma cells (SOX10+ cells), CD8 cells indicating cytotoxic T-cells and other or undefined cells which have neither SOX10 or CD8 protein expression, but show up as cells according to the nuclear stain.
 In addition, PD1 and PD-L1 expression was scored in each sample and a threshold was determined in inForm that let's us distinguish between PD1+ and PD1- cells as well as PD-L1+/-. PD-L1 is only relevant in melanoma cells, whereas PD1 is relevant in the other two cell types. 
 Since the toy example only shows the area of a very small image, the resulting statistics often contain NA value, because cell types are not present, which is especially the case in ROI analyses. Look at the full example datasets for more realistic examples.
 
@@ -46,7 +46,7 @@ if (!file.exists(plot_dir)){
 p <- overview_plot(dataset,outdir=plot_dir,palette=NULL,type='png')
 ```
 
-![Example of an Overview plot](`r plot_dir`/MEL2_080416_1.png?raw=true "Overview Example")
+![Example of an Overview plot](`r plot_dir`/MEL3_120116_1.png?raw=true "Overview Example")
 
 ## Extract counts and ratios
 Here we extract counts per mm2 for each marker, both for each coordinate and collapsed across the multiple images per sample.
@@ -70,23 +70,23 @@ plot_dir <- file.path(tempdir(),'ray_plots')
 if (!file.exists(plot_dir)){
     dir.create(file.path(plot_dir))
 }
-neighbor_ray_plot(dataset,from_type='SOX10+ PDL1-',to_type='OTHER PD1-',plot_dir=plot_dir)
+neighbor_ray_plot(dataset,from_type='CD8+ PD1+',to_type='SOX10+ PDL1+',plot_dir=plot_dir,format ='pdf')
 ```
 
 ## Interaction analysis
-Here we extract the interactions between different cell types, generate an interaction profile for CD8+ PD1+ cells and also generate interaction maps for each coordinate showing the interactions between CD8+ PD1+ cells and SOX10+ PD-L1+ cells.
+Here we extract the interactions between different cell types, generate an interaction profile for SOX10+ PDL1+ cells and also generate interaction maps for each coordinate showing the interactions between CD8+ PD1+ cells and SOX10+ PD-L1+ cells.
 ```{r interaction_analysis, fig.width=7, fig.height=7}
 dataset <- extract_interactions(dataset)
-get_interactions(dataset,'CD8+ PD1+')
+get_interactions(dataset,'SOX10+ PDL1+')
 
 #plotting interaction summaries
-#p <- plot_interactions(dataset,'CD8+ PD1+',xlim_fix=4)
+p <- plot_interactions(dataset,'SOX10+ PDL1+',xlim_fix=4)
 
 #plotting interaction maps
 int_markers <- c('CD8+ PD1+','SOX10+ PDL1+')
-int_marker_cols <- c('#dd1c77','#99d8c9')
-silent_markers <- c('CD8+ PD1-')
-silent_col=c('yellow')
+int_marker_cols <- c('#fc5858','#66c2a4')
+silent_markers <- c('CD8+ PD1-','SOX10+ PDL1-' )
+silent_col=c('#fff7bc','#a6bddb')
 plot_dir <- file.path(tempdir(),'interaction_maps')
 if (!file.exists(plot_dir)){
     dir.create(file.path(plot_dir))
@@ -94,6 +94,8 @@ if (!file.exists(plot_dir)){
 p <- interaction_maps(dataset,int_markers,int_marker_cols,silent_markers,
                       silent_col,outdir=plot_dir)
 ```
+
+![Example of a Interaction map](`r plot_dir`/MEL2_080416_2_CD8+_PD1+__SOX10+_PDL1+__CD8+_PD1-__SOX10+_PDL1-.png?raw=true "Interaction map example")
 
 ##Running the proximity analysis
 Calculating the number of cells within 25 pixels distance for each cell and then showing the the profile for SOX10+ PDL1-

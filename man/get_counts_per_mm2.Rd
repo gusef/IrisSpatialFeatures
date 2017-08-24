@@ -27,6 +27,9 @@ counts per mm2 per sample, collapsing each coordinate and returning
 Get all the counts on a per mm2 basis
 }
 \examples{
-get_counts_per_mm2(new("ImageSet"))
+
+#loading pre-read dataset
+dataset <- IrisSpatialFeatures_data
+get_counts_per_mm2(dataset)
 
 }

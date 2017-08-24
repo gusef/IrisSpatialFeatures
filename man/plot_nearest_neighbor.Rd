@@ -40,19 +40,10 @@ both CD8 PD1+ and CD8 PD1- cells, the 'CD8 PD1' would be speficified as 'to' par
 to test for significant differences.
 }
 \examples{
-raw_data <- new("ImageSet")
-raw_data <- read_raw(raw_data,
-                     raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
-                     format='Mantra')
-dataset <- threshold_dataset(raw_data,
-    marker='PD-Ligand-1 (Opal 690)',
-    marker_name='PDL1',
-    base=c('SOX10+'))
-dataset <- threshold_dataset(dataset,
-    marker='PD-1 (Opal 540)',
-    marker_name='PD1',
-    base=c('CD8+','OTHER'))
-dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
-get_nearest_neighbors(dataset,"SOX10+ PDL1+")
+
+#loading pre-read dataset
+dataset <- IrisSpatialFeatures_data
+dataset <- extract_nearest_neighbor(dataset)
 p <- plot_nearest_neighbor(dataset,'CD8+ PD1+','SOX10+ PDL1')
+
 }

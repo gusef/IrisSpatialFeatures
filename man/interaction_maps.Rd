@@ -46,20 +46,9 @@ plot of interactions for all samples
 Plot interaction maps for all samples
 }
 \examples{
-raw_data <- new("ImageSet")
-raw_data <- read_raw(raw_data,
-                     raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
-                     format='Mantra')
-dataset <- threshold_dataset(raw_data,
-    marker='PD-Ligand-1 (Opal 690)',
-    marker_name='PDL1',
-    base=c('SOX10+'))
-dataset <- threshold_dataset(dataset,
-    marker='PD-1 (Opal 540)',
-    marker_name='PD1',
-    base=c('CD8+','OTHER'))
-dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
-dataset <- extract_proximity(dataset,only_closest=TRUE,radii=25)
+
+#' #loading pre-read dataset
+dataset <- IrisSpatialFeatures_data
 dataset <- extract_interactions(dataset)
 get_interactions(dataset,'CD8+ PD1+')
 int_markers <- c('CD8+ PD1+','SOX10+ PDL1+')

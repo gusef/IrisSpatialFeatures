@@ -25,6 +25,9 @@ distance to nearest neighbor for each
 Extract the distance to each nearest neighbor for each cell-type
 }
 \examples{
-extract_nearest_neighbor(new("ImageSet"))
+
+#loading pre-read dataset
+dataset <- IrisSpatialFeatures_data
+extract_nearest_neighbor(dataset)
 
 }

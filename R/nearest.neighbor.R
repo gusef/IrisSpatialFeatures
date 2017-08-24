@@ -13,7 +13,10 @@
 #' @export
 #'
 #' @examples
-#' extract_nearest_neighbor(new("ImageSet"))
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' extract_nearest_neighbor(dataset)
 #'
 #' @rdname extract_nearest_neighbor
 setGeneric("extract_nearest_neighbor", function(x, ...)
@@ -140,7 +143,10 @@ getToNeighbors <- function(to, classes, ppp, min_num_cells) {
 #' @export
 #'
 #' @examples
-#' get_all_nearest_neighbors(new("ImageSet"))
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' dataset <- extract_nearest_neighbor(dataset)
+#' get_all_nearest_neighbors(dataset)
 #'
 #' @rdname get_all_nearest_neighbors
 setGeneric("get_all_nearest_neighbors", function(x, ...)
@@ -166,18 +172,8 @@ setMethod(
 #' @export
 #' @rdname get_nearest_neighbors
 #' @examples
-#' raw_data <- new("ImageSet")
-#' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
-#'                      format='Mantra')
-#' dataset <- threshold_dataset(raw_data,
-#'     marker='PD-Ligand-1 (Opal 690)',
-#'     marker_name='PDL1',
-#'     base=c('SOX10+'))
-#' dataset <- threshold_dataset(dataset,
-#'     marker='PD-1 (Opal 540)',
-#'     marker_name='PD1',
-#'     base=c('CD8+','OTHER'))
+#' #' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
 #' dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
 #' get_nearest_neighbors(dataset,"SOX10+ PDL1+")
 #'
@@ -226,21 +222,12 @@ setMethod(
 #' @export
 #' @rdname plot_nearest_neighbor
 #' @examples
-#' raw_data <- new("ImageSet")
-#' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
-#'                      format='Mantra')
-#' dataset <- threshold_dataset(raw_data,
-#'     marker='PD-Ligand-1 (Opal 690)',
-#'     marker_name='PDL1',
-#'     base=c('SOX10+'))
-#' dataset <- threshold_dataset(dataset,
-#'     marker='PD-1 (Opal 540)',
-#'     marker_name='PD1',
-#'     base=c('CD8+','OTHER'))
-#' dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
-#' get_nearest_neighbors(dataset,"SOX10+ PDL1+")
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' dataset <- extract_nearest_neighbor(dataset)
 #' p <- plot_nearest_neighbor(dataset,'CD8+ PD1+','SOX10+ PDL1')
+#'
 setGeneric("plot_nearest_neighbor", function(x, ...)
     standardGeneric("plot_nearest_neighbor"))
 
@@ -404,19 +391,10 @@ buildLabel <- function(from, to, ext, transposed) {
 #' @importFrom spatstat superimpose
 #' @rdname neighbor_ray_plot
 #' @examples
-#' raw_data <- new("ImageSet")
-#' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
-#'                      format='Mantra')
-#' dataset <- threshold_dataset(raw_data,
-#'     marker='PD-Ligand-1 (Opal 690)',
-#'     marker_name='PDL1',
-#'     base=c('SOX10+'))
-#' dataset <- threshold_dataset(dataset,
-#'     marker='PD-1 (Opal 540)',
-#'     marker_name='PD1',
-#'     base=c('CD8+','OTHER'))
-#' dataset <- extract_nearest_neighbor(dataset,min_num_cells=2)
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' dataset <- extract_nearest_neighbor(dataset)
 #' get_nearest_neighbors(dataset,"SOX10+ PDL1+")
 #' plot_dir <- file.path('./ray_plots')
 #' if (!file.exists(plot_dir)){
@@ -727,14 +705,9 @@ setMethod(
 #' @export
 #'
 #' @examples
-#' raw_data <- new("ImageSet")
-#' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
-#'                      format='Mantra')
-#' dataset <- threshold_dataset(raw_data,
-#'     marker='PD-Ligand-1 (Opal 690)',
-#'     marker_name='PDL1',
-#'     base=c('SOX10+'))
+
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
 #' normal_nearest_neighbor_sample("MEL2",dataset,c("SOX10+ PDL1+","SOX10+ PDL1-"),10)
 #'
 #' @rdname normal_nearest_neighbor_sample
@@ -794,14 +767,10 @@ setMethod(
 #' @export
 #'
 #' @examples
-#' raw_data <- new("ImageSet")
-#' raw_data <- read_raw(raw_data,
-#'                      raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
-#'                      format='Mantra')
-#' dataset <- threshold_dataset(raw_data,
-#'     marker='PD-Ligand-1 (Opal 690)',
-#'     marker_name='PDL1',
-#'     base=c('SOX10+'))
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' dataset <- extract_nearest_neighbor(dataset)
 #' normal_nearest_neighbor(dataset,c("SOX10+ PDL1+","SOX10+ PDL1-"),10)
 #'
 #' @rdname normal_nearest_neighbor

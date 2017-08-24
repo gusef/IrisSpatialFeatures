@@ -34,6 +34,9 @@ plot of all coordinates
 Plot all coordinates in a given dataset
 }
 \examples{
-overview_plot(new("ImageSet"))
+
+#loading pre-read dataset
+dataset <- IrisSpatialFeatures_data
+overview_plot(dataset)
 
 }
