@@ -592,7 +592,10 @@ setMethod(
     signature(sample_name="character",data="ImageSet"),
     definition <- function(sample_name,data,markers,minimum_cells=50) {
     # For a single sample designated by sample_name get a dataframe
-    markers <- data@markers[data@markers %in% markers]
+    contains_markers <- data@markers[data@markers %in% markers]
+    if(length(contains_markers)!=length(markers)) {
+        stop("marker name problem")
+    }
     sample <- data@samples[sample_name][[1]]
     frame_names <- names(sample@coordinates)
     frame_df_list <- lapply(frame_names,function(frame_name){
@@ -651,9 +654,6 @@ setMethod(
         if(is.na(frame_df_list[x][[1]]$mean[1])) { return(FALSE);}
         return(TRUE)
     })
-    #print(notna)
-    #print(frame_df_list[notna])
-    #print(frame_df_list)
     new_frame_names <- frame_names
     if (length(notna[notna==TRUE])>0) { new_frame_names <- frame_names[notna];}
     mean_data <- lapply(new_frame_names,function(x){
