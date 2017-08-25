@@ -577,12 +577,19 @@ setMethod(
 #' @param sample_name sample_name sample name string
 #' @param data IrisSpatialFeatures ImageSet object
 #' @param markers vector of marker names to use
-#' @param minimum_cells the smallest number of cells
+#' @param minimum_cells the smallest number of cells (default:50)
+#' @param grouped_sample TRUE/FALSE if we want to group samples together and
+#'                       thus normalize the frames to the smallest frame
+#'                       count (Default: TRUE)
 #'
 #' @return data.frame
 #'
 #' @importFrom spatstat nncross
-setGeneric("normal_nearest_neighbor_sample_once", function(sample_name,data,markers,minimum_cells)
+setGeneric("normal_nearest_neighbor_sample_once", function(sample_name,
+                                                           data,
+                                                           markers,
+                                                           minimum_cells=50,
+                                                           grouped_sample=TRUE)
     standardGeneric("normal_nearest_neighbor_sample_once"))
 
 #' @rdname normal_nearest_neighbor_sample_once
@@ -590,7 +597,7 @@ setGeneric("normal_nearest_neighbor_sample_once", function(sample_name,data,mark
 setMethod(
     "normal_nearest_neighbor_sample_once",
     signature(sample_name="character",data="ImageSet"),
-    definition <- function(sample_name,data,markers,minimum_cells=50) {
+    definition <- function(sample_name,data,markers,minimum_cells,grouped_sample) {
     # For a single sample designated by sample_name get a dataframe
     contains_markers <- data@markers[data@markers %in% markers]
     if(length(contains_markers)!=length(markers)) {
@@ -598,16 +605,55 @@ setMethod(
     }
     sample <- data@samples[sample_name][[1]]
     frame_names <- names(sample@coordinates)
+    # First lets get the smallest cell count
+    functional_frame_names <- lapply(frame_names,function(frame_name){
+        #get the smallest cell counts from the frames that have enough cells
+        dat <- sample@coordinates[frame_name][[1]]
+        mcnt <- min(sapply(markers,function(x){sum(dat@ppp$marks==x)}))
+        if (mcnt >= minimum_cells) { return(TRUE)}
+        return(FALSE)
+    })
+    true_minimum <- minimum_cells
+    min_counts <- sapply(frame_names,function(frame_name){
+        #get the smallest cell counts from the frames that have enough cells
+        dat <- sample@coordinates[frame_name][[1]]
+        mcnt <- min(sapply(markers,function(x){sum(dat@ppp$marks==x)}))
+        if (mcnt < minimum_cells) { return(NA)}
+        return(mcnt)
+    })
+    if(!all(is.na(min_counts))) {
+        #if there is real number in there
+        true_minimum <- min(min_counts,na.rm=TRUE)
+        #print(true_minimum)
+    }
+    names(functional_frame_names) <- frame_names
+    #print(functional_frame_names)
+    #print(smallest_cell_count)
+    smallest_cell_count <- true_minimum
     frame_df_list <- lapply(frame_names,function(frame_name){
         dat <- sample@coordinates[frame_name][[1]]
         # filter down to just the markers we're interested in
         tot <- sapply(markers,function(x){sum(dat@ppp$marks==x)})
         # get the number of cells in each of the categories of interest
-        smallest_cell_count <- min(tot)
+        if (grouped_sample==FALSE) {
+            smallest_cell_count <- min(tot)
+        }
         # get the number to downsample to
         parr <- lapply(markers,function(x){
             mppp<-dat@ppp[dat@ppp$marks==x,]
-            mppp<-mppp[sample(1:length(mppp$marks),smallest_cell_count),]
+            if (grouped_sample==TRUE) {
+                if(functional_frame_names[frame_name][[1]]==TRUE) {
+                    # if its grouped and it is going to get used, do it right
+                    mppp<-mppp[sample(1:length(mppp$marks),true_minimum),]
+                    return(mppp)
+                } else {
+                    return(mppp)
+                }
+            } else {
+                # otherwise use its own cell count
+                mppp<-mppp[sample(1:length(mppp$marks),smallest_cell_count),]
+                return(mppp)
+            }
         })
         names(parr) <- markers
         # exectue downsampling
@@ -617,17 +663,21 @@ setMethod(
             outs <- lapply(markers,function(markj){
                 # Get the mean and variance for nnearest distances bettween markj and marki
                 pj <- parr[markj][[1]]
-                if(smallest_cell_count < minimum_cells) {
+                #print(functional_frame_names[frame_name][[1]])
+                if(smallest_cell_count < minimum_cells || functional_frame_names[frame_name][[1]]==FALSE) {
+                    #print("return bad")
                     return(list(mean_dist=NA,
                                 var_dist=NA))
                 }
+                #print(pj)
+                #print(pi)
+                #print('----')
                 dis<-spatstat::nncross(pi,pj)[,1]
                 res <- list(mean_dist=mean(dis),
                             var_dist=var(dis))
                 return(res)
             })
             names(outs) <- markers
-            # we want one list of means an one list of means
             mean_dist_arr <- sapply(markers,function(x){outs[[x]]$mean_dist})
             names(mean_dist_arr) <- markers
             var_dist_arr <- sapply(markers,function(x){outs[[x]]$var_dist})
@@ -648,41 +698,75 @@ setMethod(
         return(nn_df)
     })
     names(frame_df_list) <- frame_names
-    #now we can get the mean and variance matrix from the mean of the frames
-    # Remove frames that did not have enough data for the calculation
-    notna <- sapply(frame_names,function(x){
-        if(is.na(frame_df_list[x][[1]]$mean[1])) { return(FALSE);}
-        return(TRUE)
-    })
-    new_frame_names <- frame_names
-    if (length(notna[notna==TRUE])>0) { new_frame_names <- frame_names[notna];}
-    mean_data <- lapply(new_frame_names,function(x){
-      return(frame_df_list[x][[1]]$mean)
-    })
-    var_data <- lapply(new_frame_names,function(x){
-      return(frame_df_list[x][[1]]$var)
-    })
-    populations <- lapply(frame_names,function(x){
-      return(frame_df_list[x][[1]]$smallest_cell_count)
-    })
-    #Combine the frames to get aggrogate statistics of all the frames
-    mean_combined <- Reduce("+",mean_data)/length(mean_data)
-    var_combined <- Reduce("+",var_data)/length(var_data)
-    min_pop <- Reduce("min",populations)
-    max_pop <- Reduce("max",populations)
-    # Build a data frame with our data
-    template <- frame_df_list[1][[1]]
-    df <- data.frame(marker_i=template$marker_i,
+    if (grouped_sample==TRUE) {
+        ### Case 1: We are grouping sample frames together
+        #now we can get the mean and variance matrix from the mean of the frames
+        # Remove frames that did not have enough data for the calculation
+
+        #notna <- sapply(frame_names,function(x){
+        #    if(is.na(frame_df_list[x][[1]]$mean[1])) { return(FALSE);}
+        #    return(TRUE)
+        #})
+        #new_frame_names <- frame_names
+        #if (length(notna[notna==TRUE])>0) { new_frame_names <- frame_names[notna];}
+        usednames <- frame_names[unlist(functional_frame_names)]
+        mean_data <- lapply(usednames,function(x){
+            return(frame_df_list[x][[1]]$mean)
+        })
+        var_data <- lapply(usednames,function(x){
+            return(frame_df_list[x][[1]]$var)
+        })
+        populations <- lapply(usednames,function(x){
+            return(frame_df_list[x][[1]]$smallest_cell_count)
+        })
+        #Combine the frames to get aggrogate statistics of all the frames
+        mean_combined = NA
+        if (length(mean_data)>0) {
+            mean_combined <- Reduce("+",mean_data)/length(mean_data)
+        }
+        #print(mean_combined)
+        var_combined = NA
+        if (length(var_data)>0) {
+            var_combined <- Reduce("+",var_data)/length(var_data)
+        }
+        #print(var_combined)
+        min_pop <- Reduce("min",populations)
+        #print(min_pop)
+        if(is.null(min_pop)) {min_pop=NA}
+        else{ min_pop=min_pop[1]}
+        #print(min_pop)
+        #print(frame_df_list)
+        #max_pop <- Reduce("max",populations)
+        # Build a data frame with our data
+        template <- frame_df_list[frame_names[1]][[1]]
+        #print(template)
+        df <- data.frame(marker_i=template$marker_i,
                 marker_j=template$marker_j,
                 mean=mean_combined,
                 var=var_combined,
                 original_frame_count=rep(length(frame_names),dim(template)[1]),
-                useful_frame_count=rep(length(notna[notna==TRUE]),dim(template)[1]),
-                min_frame_cells=rep(min_pop,dim(template)[1]),
-                max_frame_cells=rep(max_pop,dim(template)[1]),
+                useful_frame_count=rep(length(usednames),dim(template)[1]),
+                #min_frame_cells=rep(min_pop,dim(template)[1]),
+                #max_frame_cells=rep(max_pop,dim(template)[1]),
+                smallest_cell_count=rep(min_pop,dim(template)[1]),
                 sample=rep(sample_name,dim(template)[1])
                 )
-    return(df)
+        return(df)
+    } else if (grouped_sample==FALSE) {
+        ### Case 2: We are leaving frames separate
+        named_frames <-lapply(frame_names,function(x){
+            # name the dataframes
+            framedf <- frame_df_list[x][[1]]
+            framedf$frame <- rep(x,dim(framedf)[1])
+            #framedf$frame_cells <- rep(framedf$smallest_cell_count
+            return(framedf)
+        })
+        nf_df <- do.call("rbind",named_frames)
+        nf_df <- data.frame(nf_df,
+                            sample=rep(sample_name,dim(nf_df)[1]),
+                            check.names = FALSE)
+        return(nf_df)
+    }
 })
 
 #' Extract the distance to each nearest neighbor for specified
@@ -697,7 +781,8 @@ setMethod(
 #' @param minimum_cells smallest number of cells to consider a frame (default:50)
 #' @param quantiles vector of numeric fractions to include in vector
 #'        to show the mean distance calculated across resamplings
-#' @param ... Additional arguments
+#'        (default:c(0.05,0.25,0.5,0.75,0.95))
+#' @param grouped_sample TRUE/FALSE group samples together (default:TRUE)
 #'
 #' @return data.frame
 #'
@@ -714,7 +799,12 @@ setMethod(
 #' @importFrom spatstat nncross
 #' @importFrom matrixStats rowMedians
 #' @importFrom matrixStats rowQuantiles
-setGeneric("normal_nearest_neighbor_sample", function(sample_name,data,...)
+setGeneric("normal_nearest_neighbor_sample", function(sample_name,
+                                                      data,markers,
+                                                      n_resamples=500,
+                                                      minimum_cells=50,
+                                                      quantiles=c(0.05,0.25,0.5,0.75,0.95),
+                                                      grouped_sample=TRUE)
     standardGeneric("normal_nearest_neighbor_sample"))
 
 #' @rdname normal_nearest_neighbor_sample
@@ -722,30 +812,47 @@ setGeneric("normal_nearest_neighbor_sample", function(sample_name,data,...)
 setMethod(
     "normal_nearest_neighbor_sample",
     signature(sample_name="character",data="ImageSet"),
-    definition <- function(sample_name,data,markers,n_resamples=500,minimum_cells=50,quantiles=c(0.05,0.25,0.5,0.75,0.95)) {
+    definition <- function(sample_name,data,markers,n_resamples,minimum_cells,quantiles,grouped_sample) {
     totals<-lapply(rep(sample_name,n_resamples),
                    normal_nearest_neighbor_sample_once,
                    data=data,
                    markers=markers,
-                   minimum_cells=minimum_cells)
+                   minimum_cells=minimum_cells,
+                   grouped_sample = grouped_sample)
     combine_mean <- sapply(totals,function(x){x$mean})
     combine_var <- sapply(totals,function(x){x$var})
-    #build the dataframe
     template <- totals[[1]]
-    df <- data.frame(sample=template$sample,
+    #build the dataframe
+    if (grouped_sample==TRUE) {
+        ### Case 1: We are putting samples frames together
+        df <- data.frame(sample=template$sample,
                 marker_i=template$marker_i,
                 marker_j=template$marker_j,
                 original_frame_count = template$original_frame_count,
                 useful_frame_count = template$useful_frame_count,
-                min_frame_cells = template$min_frame_cells,
-                max_frame_cells = template$max_frame_cells,
-                var = rowMedians(combine_var),
-                mean = rowMedians(combine_mean),
+                smallest_cell_count = template$smallest_cell_count,
+                var=rowQuantiles(combine_var,probs=0.5),
+                mean=rowQuantiles(combine_mean,probs=0.5),
                 rowQuantiles(combine_mean,probs=quantiles),
                 n_resamples = rep(n_resamples,dim(template)[1]),
                 check.names=FALSE
                 )
-    return(df)
+        return(df)
+    } else if (grouped_sample==FALSE) {
+        ### Case 2: We are leaving frames seperate
+        df <- data.frame(sample=template$sample,
+                         frame=template$frame,
+                         marker_i=template$marker_i,
+                         marker_j=template$marker_j,
+                         smallest_cell_count=template$smallest_cell_count,
+                         var=rowQuantiles(combine_var,probs=0.5),
+                         mean=rowQuantiles(combine_mean,probs=0.5),
+                         rowQuantiles(combine_mean,probs=quantiles),
+                         n_resamples=rep(n_resamples,dim(template)[1]),
+                         check.names=FALSE
+                         )
+        return(df)
+    }
 })
 
 #' Extract the distance to each nearest neighbor for specified
@@ -759,7 +866,8 @@ setMethod(
 #' @param minimum_cells the smallest number of cells to consider a frame (default:50)
 #' @param quantiles vector of numeric fractions to include in vector
 #'        to show the mean distance calculated across resamplings
-#' @param ... Additional arguments
+#'        (default:c(0.05,0.25,0.5,0.75,0.95))
+#' @param grouped_sample TRUE/FALSE group samples together (default:TRUE)
 #'
 #' @return data.frame
 #'
@@ -774,7 +882,7 @@ setMethod(
 #' normal_nearest_neighbor(dataset,c("SOX10+ PDL1+","SOX10+ PDL1-"),10)
 #'
 #' @rdname normal_nearest_neighbor
-setGeneric("normal_nearest_neighbor", function(data, ...)
+setGeneric("normal_nearest_neighbor", function(data, markers, n_resamples=500,minimum_cells=50,quantiles=c(0.05,0.25,0.5,0.75,0.95),grouped_sample=TRUE)
     standardGeneric("normal_nearest_neighbor"))
 
 #' @rdname normal_nearest_neighbor
@@ -782,7 +890,7 @@ setGeneric("normal_nearest_neighbor", function(data, ...)
 setMethod(
     "normal_nearest_neighbor",
     signature(data="ImageSet"),
-    definition <- function(data,markers,n_resamples=500,minimum_cells=50,quantiles=c(0.05,0.25,0.5,0.75,0.95)) {
+    definition <- function(data,markers,n_resamples,minimum_cells,quantiles,grouped_sample) {
     sample_names <- names(data@samples)
     v<-lapply(sample_names,
               normal_nearest_neighbor_sample,
@@ -790,7 +898,8 @@ setMethod(
               markers=markers,
               n_resamples=n_resamples,
               quantiles=quantiles,
-              minimum_cells=minimum_cells)
+              minimum_cells=minimum_cells,
+              grouped_sample=grouped_sample)
     names(v)<-sample_names
     df <- do.call("rbind",v)
     return(df)
