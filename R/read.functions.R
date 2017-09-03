@@ -21,7 +21,6 @@
 #' @param readMasks Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: True)
 #' @param ROI Flag indicating whether ROI was specified so the image is only analyzed within that region a '_ROI.tif' needs to be present. (default: False)
 #' @param ignore_scoring Flag indicating whether the scoring file should be ignored (default: False)
-#' @param ... Additional arguments
 #'
 #' @return IrisSpatialFeatures ImageSet object.
 #' @examples
@@ -33,7 +32,19 @@
 #' @importFrom methods new
 #' @rdname read_raw
 setGeneric("read_raw",
-           function(path, ...) standardGeneric("read_raw"),
+           function(path,
+                    label_fix = list(),
+                    format = 'Vectra',
+                    dir_filter = '',
+                    read_nuc_seg_map = FALSE,
+                    read_dapi_map = FALSE,
+                    use_binary_seg_maps = FALSE,
+                    MicronsPerPixel = 0.496,
+                    invasive_margin_in_px = 100,
+                    readMasks = TRUE,
+                    ROI = FALSE,
+                    ignore_scoring = FALSE,
+                    ...) standardGeneric("read_raw"),
            valueClass = "ImageSet")
 
 #' @rdname read_raw
@@ -42,17 +53,17 @@ setMethod(
     "read_raw",
     signature = c(path="character"),
     definition = function(path,
-                          label_fix = list(),
-                          format = 'Vectra',
-                          dir_filter = '',
-                          read_nuc_seg_map = FALSE,
-                          read_dapi_map = FALSE,
-                          use_binary_seg_maps = FALSE,
-                          MicronsPerPixel = 0.496,
-                          invasive_margin_in_px = 100,
-                          readMasks = TRUE,
-                          ROI = FALSE,
-                          ignore_scoring = FALSE) {
+                          label_fix,
+                          format,
+                          dir_filter,
+                          read_nuc_seg_map,
+                          read_dapi_map,
+                          use_binary_seg_maps,
+                          MicronsPerPixel,
+                          invasive_margin_in_px,
+                          readMasks,
+                          ROI,
+                          ignore_scoring) {
         x <- new("ImageSet")
         x@microns_per_pixel = MicronsPerPixel
         raw_directories <- dir(path)

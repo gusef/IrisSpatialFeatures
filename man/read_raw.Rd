@@ -7,18 +7,18 @@
 \alias{read_raw,ANY,ANY-method}
 \title{Read inForm output and store it in an IrisSpatialFeatures ImageSet object.}
 \usage{
-read_raw(path, ...)
-
-\S4method{read_raw}{character}(path, label_fix = list(), format = "Vectra",
-  dir_filter = "", read_nuc_seg_map = FALSE, read_dapi_map = FALSE,
+read_raw(path, label_fix = list(), format = "Vectra", dir_filter = "",
+  read_nuc_seg_map = FALSE, read_dapi_map = FALSE,
   use_binary_seg_maps = FALSE, MicronsPerPixel = 0.496,
   invasive_margin_in_px = 100, readMasks = TRUE, ROI = FALSE,
-  ignore_scoring = FALSE)
+  ignore_scoring = FALSE, ...)
+
+\S4method{read_raw}{character}(path, label_fix, format, dir_filter,
+  read_nuc_seg_map, read_dapi_map, use_binary_seg_maps, MicronsPerPixel,
+  invasive_margin_in_px, readMasks, ROI, ignore_scoring)
 }
 \arguments{
 \item{path}{Directory that contains the raw files}
-
-\item{...}{Additional arguments}
 
 \item{label_fix}{List of length 2 character vector that is used to fix filenames.}
 
