@@ -3,24 +3,22 @@
 \docType{methods}
 \name{read_raw}
 \alias{read_raw}
-\alias{read_raw,ImageSet-method}
+\alias{read_raw,character-method}
 \alias{read_raw,ANY,ANY-method}
 \title{Read inForm output and store it in an IrisSpatialFeatures ImageSet object.}
 \usage{
-read_raw(x, ...)
+read_raw(path, ...)
 
-\S4method{read_raw}{ImageSet}(x, raw_dir_name, label_fix = list(),
-  format = "Vectra", dir_filter = "", read_nuc_seg_map = FALSE,
-  read_dapi_map = FALSE, use_binary_seg_maps = FALSE,
-  MicronsPerPixel = 0.496, invasive_margin_in_px = 100, readMasks = TRUE,
-  ROI = FALSE, ignore_scoring = FALSE)
+\S4method{read_raw}{character}(path, label_fix = list(), format = "Vectra",
+  dir_filter = "", read_nuc_seg_map = FALSE, read_dapi_map = FALSE,
+  use_binary_seg_maps = FALSE, MicronsPerPixel = 0.496,
+  invasive_margin_in_px = 100, readMasks = TRUE, ROI = FALSE,
+  ignore_scoring = FALSE)
 }
 \arguments{
-\item{x}{IrisSpatialFeatures ImageSet object.}
+\item{path}{Directory that contains the raw files}
 
 \item{...}{Additional arguments}
-
-\item{raw_dir_name}{Directory that contains the raw files}
 
 \item{label_fix}{List of length 2 character vector that is used to fix filenames.}
 
@@ -52,7 +50,6 @@ Read inForm output and store it in an IrisSpatialFeatures ImageSet object.
 }
 \examples{
 raw_data <- new("ImageSet")
-raw_data <- read_raw(raw_data,
-                     raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
+raw_data <- read_raw(path=system.file("extdata", package = "IrisSpatialFeatures"),
                      format='Mantra')
 }

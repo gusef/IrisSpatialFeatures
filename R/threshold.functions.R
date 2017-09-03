@@ -1,0 +1,306 @@
+###########################################
+######### Thresholding functions
+
+#' This function reads the manually determined thresholds of certain markers (e.g. PD1, PD-L1) and splits selected celltypes into marker+ and marker- celltypes.
+#'
+#' @param image_set IrisSpatialFeatures ImageSet object.
+#' @param marker Name of the marker used in the score file.
+#' @param marker_name corresponding name, which should be appended at the selected cell types.
+#' @param base Vector of cell types for which the marker should be used.
+#' @param pheno_name Name of the phenotype column to be used. (Default from inForm is "Phenotype")
+#' @param remove_blanks Flag that indicates whether or not not called cells are to be removed. (Default: TRUE)
+#'
+#' @docType methods
+#' @return IrisSpatialFeatures ImageSet object.
+#' @examples
+#' dataset <- read_raw(path=system.file("extdata", package = "IrisSpatialFeatures"),
+#'                      format='Mantra')
+#' dataset <- threshold_dataset(dataset,
+#'                              marker='PD-Ligand-1 (Opal 690)',
+#'                              marker_name='PDL1',
+#'                              base=c('SOX10+'))
+#' dataset <- threshold_dataset(dataset,
+#'                              marker='PD-1 (Opal 540)',
+#'                              marker_name='PD1',
+#'                              base=c('CD8+','OTHER'))
+#' @export
+#' @rdname threshold_dataset
+setGeneric("threshold_dataset",
+           function(image_set, marker, marker_name, ...) {
+               standardGeneric("threshold_dataset")
+           },
+    valueClass = "ImageSet")
+
+#' @rdname threshold_dataset
+#' @aliases threshold_dataset,ANY,ANY-method
+setMethod(
+    "threshold_dataset",
+    signature = c(image_set="ImageSet",marker="character",marker_name="character"),
+    definition = function (image_set,
+                           marker,
+                           marker_name,
+                           base = NULL,
+                           pheno_name = 'Phenotype',
+                           remove_blanks = TRUE) {
+        x <- image_set
+        #for each sample
+        x@samples <-
+            lapply(
+                x@samples,
+                threshold_samples,
+                marker,
+                marker_name,
+                base,
+                pheno_name,
+                remove_blanks
+            )
+        names(x@samples) <-
+            sapply(x@samples, function(x)
+                x@sample_name)
+        x <- extract_counts(x)
+        return(x)
+    }
+)
+
+setGeneric("threshold_samples", function(x, ...)
+    standardGeneric("threshold_samples"))
+setMethod(
+    "threshold_samples",
+    signature = "Sample",
+    definition = function (x,
+                           marker,
+                           marker_name,
+                           base,
+                           pheno_name,
+                           remove_blanks) {
+        #for each coordinate
+        x@coordinates <-
+            lapply(
+                x@coordinates,
+                threshold_coords,
+                marker,
+                marker_name,
+                base,
+                pheno_name,
+                x@sample_name,
+                remove_blanks
+            )
+        names(x@coordinates) <-
+            sapply(x@coordinates, function(x)
+                x@coordinate_name)
+        return(x)
+    }
+)
+
+
+setGeneric("threshold_coords", function(x, ...)
+    standardGeneric("threshold_coords"))
+setMethod(
+    "threshold_coords",
+    signature = "Coordinate",
+    definition = function (x,
+                           marker,
+                           marker_name,
+                           base,
+                           pheno_name,
+                           sample_name,
+                           remove_blanks) {
+        #remove the cells that are not called by inForm (usually not very many!)
+        if (remove_blanks) {
+            x@raw@data <- x@raw@data[x@raw@data[[pheno_name]] != '', ]
+            x@ppp <- x@ppp[x@ppp$marks != '', ]
+            x@ppp$marks <- droplevels(x@ppp$marks)
+        }
+
+        #if no cell types were specified
+        if (is.null(base)) {
+            base <- levels(x@ppp$marks)
+        }
+
+        #make a combined phenotype column in the rawdata
+        if (!paste0(pheno_name, '.combined') %in% colnames(x@raw@data)) {
+            x@raw@data[[paste0(pheno_name, '.combined')]] <-
+                x@raw@data[[pheno_name]]
+        }
+
+        #get the thresholds for the marker we want to score
+        scoring <- getScoring(x)
+        #r automatically replaces special characters with '.'
+        #when they are used for names so I'm fixing this
+        mark <- gsub('[ \\(\\)]', '.', marker)
+        mark <- gsub('-', '.', mark)
+
+        if (sum(scoring$Component == mark) == 0) {
+            stop(
+                'Could not find Score for: ',
+                marker,
+                ' for Sample: ',
+                sample_name,
+                ' Coordinate: ',
+                x@coordinate_name
+            )
+        }
+        scoring <- scoring[scoring$Component == mark, ]
+
+        #extract the current marker expression
+        expression <- x@raw@data[[paste(
+            scoring$Compartment,
+            scoring$Component,
+            'Mean..Normalized.Counts..Total.Weighting.',
+            sep = '.'
+        )]]
+
+
+        #sometimes there are #N/A from Inform
+        if (class(expression) == 'character') {
+            keep <- expression != '#N/A'
+            x@raw@data <- x@raw@data[keep, ]
+            x@ppp <- x@ppp[keep, ]
+            expression <- as.numeric(expression[keep])
+        }
+
+        expression <- as.numeric(expression)
+
+        #deterine the positive cells
+        positive_cells <- expression > scoring$Threshold
+
+        #use only the cells that are within base
+        current <- x@raw@data[[pheno_name]] %in% base
+        current_base <- x@raw@data$Phenotype.combined[current]
+
+        #fetch the cells we are currently working on
+        x@raw@data$Phenotype.combined[current &
+                                          !positive_cells] <-
+            paste0(current_base[!positive_cells[current]], ' ', marker_name, '-')
+        x@raw@data$Phenotype.combined[current &
+                                          positive_cells] <-
+            paste0(current_base[positive_cells[current]], ' ', marker_name, '+')
+        x@ppp$marks <-
+            as.factor(x@raw@data$Phenotype.combined)
+
+        return(x)
+    }
+)
+
+setGeneric("getScoring", function(x, ...)
+    standardGeneric("getScoring"))
+setMethod(
+    "getScoring",
+    signature = "Coordinate",
+    definition = function(x) {
+        scoring <- x@raw@score
+        scores <- matrix(nrow = 0, ncol = 3)
+        colnames(scores) <-
+            c('Compartment', 'Component', 'Threshold')
+        #if there were more than one additional markers scores:
+        if (length(grep('First', rownames(scoring)) > 0)) {
+            tab <- c('First', 'Second', 'Third')
+            for (i in seq(length(tab))) {
+                #only if indicator actually exists (as of now I'm not sure if inForm allows for more than 2 markers)
+                if (length(grep(tab[i], rownames(scoring)) > 0)) {
+                    compartment <- scoring[paste0(tab[i], '.Cell.Compartment'), 1]
+                    component <-
+                        scoring[paste0(tab[i], '.Stain.Component'), 1]
+                    #r automatically replaces special characters with '.' when they are used for names so I'm fixing this
+                    component <-
+                        gsub('[ \\(\\)]', '.', component)
+                    component <- gsub('-', '.', component)
+                    threshold <-
+                        scoring[paste0(component, '.Threshold'), 1]
+                    scores <-
+                        rbind(scores, c(compartment, component, threshold))
+                }
+            }
+            #if there was only one marker scored
+        } else{
+            compartment <- scoring['Cell.Compartment', 1]
+            component <- scoring['Stain.Component', 1]
+            #r automatically replaces special characters with '.' when they are used for names so I'm fixing this
+            component <- gsub('[ \\(\\)]', '.', component)
+            component <- gsub('-', '.', component)
+            threshold <- scoring['Positivity.Threshold', 1]
+            scores <-
+                rbind(scores, c(compartment, component, threshold))
+        }
+        scores <- data.frame(scores, stringsAsFactors = FALSE)
+        scores$Threshold <- as.numeric(scores$Threshold)
+        return(scores)
+    }
+)
+
+##############################################################################
+# ROI Functions
+
+#' Method that reduces the current dataset to a specific region of interest, discarding all cell coordinates outside of that region
+#'
+#' @param x IrisSpatialFeatures ImageSet object
+#' @param ROI Region of interest (default: 'invasive_margin')
+#' @param ... Additional arguments
+#'
+#' @return IrisSpatialFeatures ImageSet object
+#' @examples
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' im_area <- extract_ROI(dataset,ROI='invasive_margin')
+#'
+#' @docType methods
+#' @export
+#' @rdname extract_ROI
+setGeneric("extract_ROI", function(x, ...)
+    standardGeneric("extract_ROI"))
+
+#' @rdname extract_ROI
+#' @aliases extract_ROI,ANY,ANY-method
+setMethod(
+    "extract_ROI",
+    signature = "ImageSet",
+    definition = function(x, ROI = 'invasive_margin') {
+        if (length(x@samples[[1]]@coordinates[[1]]@mask[[ROI]]) == 0) {
+            stop('There is no mask for "', ROI, '"')
+        }
+
+        x@samples <- lapply(x@samples, extract_ROI_sample, ROI)
+
+        #update the counts
+        x <- extract_counts(x)
+
+        #reset all spatial stats
+        x@nearest_neighbors <- list()
+        x@interactions <- list()
+        x@proximity <- list()
+
+        return(x)
+    }
+)
+
+setGeneric("extract_ROI_sample", function(x, ...)
+    standardGeneric("extract_ROI_sample"))
+setMethod(
+    "extract_ROI_sample",
+    signature = "Sample",
+    definition = function(x, ROI) {
+        x@coordinates <- lapply(x@coordinates, extract_ROI_Coordinate, ROI)
+        return(x)
+    }
+)
+
+
+setGeneric("extract_ROI_Coordinate", function(x, ...)
+    standardGeneric("extract_ROI_Coordinate"))
+setMethod(
+    "extract_ROI_Coordinate",
+    signature = "Coordinate",
+    definition = function(x, ROI) {
+        #reduce to the filter
+        mask <- x@mask[[ROI]]
+        filter <-
+            sapply(1:length(x@ppp$x), function(i, dat, mask)
+                mask[dat$x[i], dat$y[i]] == 1, x@ppp, mask)
+        x@ppp <- x@ppp[filter, ]
+        x@raw@data <- x@raw@data[filter, ]
+        x@size_in_px <- sum(mask > 0)
+
+        return(x)
+    }
+)

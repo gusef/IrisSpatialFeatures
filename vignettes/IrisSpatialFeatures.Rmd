@@ -20,9 +20,7 @@ Since the toy example only shows the area of a very small image, the resulting s
 
 ```{r reading}
 require(IrisSpatialFeatures)
-raw_data <- new("ImageSet")
-raw_data<- read_raw(raw_data,
-                    raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
+raw_data<- read_raw(path=system.file("extdata", package = "IrisSpatialFeatures"),
                     format='Mantra')
 
 #apply all the thresholds PD1 for T and other cells, PD-L1 for macrophages and tumor cells

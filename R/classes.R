@@ -1,5 +1,3 @@
-
-
 #' Class to represent the raw data that is output by inForm
 #'
 #' @slot data Raw coordinate data sheet
