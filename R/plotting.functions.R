@@ -1,5 +1,3 @@
-
-
 #' Plot all coordinates in a given dataset
 #'
 #' @param x Sample ImageSet object of the IrisSpatialFeatures package.
@@ -143,3 +141,43 @@ setMethod(
         dev.off()
     }
 )
+
+#' Plot all frames of an IrisSpatialFeatures ImageSet object.
+#'
+#' @param x Iris ImageSet boject
+#' @param ...
+#'
+#' @return A plot
+#' @examples
+#' dataset <- IrisSpatialFeatures_data
+#' plot(dataset)
+#' @docType methods
+#' @export
+#' @rdname plot
+#' @importFrom dplyr as_tibble
+#' @importFrom ggplot2 ggplot
+#' @import RColorBrewer
+#'
+setMethod("plot",
+    signature = c(x="ImageSet"),
+    function(x) {
+        tbl <- as_tibble(as.data.frame(x))
+
+        numbered <- tbl %>% group_by(sample,frame) %>% slice(1) %>% ungroup %>% arrange(sample,frame) %>% rowid_to_column()
+        low_ids <- numbered %>% group_by(sample) %>% filter(rowid==min(rowid)) %>% ungroup %>% rename(lownum=rowid) %>% select(lownum,sample)
+        numbered_frames <- numbered %>% left_join(low_ids,by="sample") %>% mutate(frame_index=rowid-lownum) %>% select(frame,sample,frame_index)
+        idxtbl <- tbl %>% left_join(numbered_frames,by=c("sample","frame"))
+        v <- ggplot(data=idxtbl,mapping=aes(x=x,y=y))+
+            geom_point(aes(color=marks),alpha=0.8,stroke=0)+
+            facet_grid(sample~frame_index)+
+            theme_minimal()+
+            scale_color_brewer(palette="Dark2")+
+            theme(strip.text.x = element_blank())+
+            geom_label(data = numbered_frames,
+                       mapping=aes(x=0,y=0,label =frame),
+                       inherit.aes=FALSE,
+                       hjust=0,
+                       vjust=0)+
+            coord_fixed(ratio = 1)
+        return(v)
+})
