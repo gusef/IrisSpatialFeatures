@@ -154,8 +154,9 @@ setMethod(
 #' @docType methods
 #' @export
 #' @rdname plot
-#' @importFrom dplyr as_tibble
-#' @importFrom ggplot2 ggplot
+#' @import dplyr
+#' @import ggplot2
+#' @import magrittr
 #' @import RColorBrewer
 #'
 setMethod("plot",

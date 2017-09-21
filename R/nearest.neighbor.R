@@ -1,6 +1,3 @@
-
-
-
 #' Extract the distance to each nearest neighbor for each cell-type
 #'
 #' @param x IrisSpatialFeatures ImageSet object
@@ -37,6 +34,51 @@ setMethod(
     }
 )
 
+#' Compare nearest neighbors by a data.frame
+#'
+#' @param x IrisSpatialFeatures ImageSet object that has had extract nearest neighbors run
+#' @param markerA First marker
+#' @param markerB Second marker
+#' @param reference Reference marker
+#' @param from_reference If true calculate distance from the reference to the markers by NN
+#'
+#' @return data.frame of markers and distances
+#'
+#' @docType methods
+#' @export
+#'
+#' @examples
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' extract_nearest_neighbor(dataset)
+#'
+#' @importFrom data.table rbindlist
+#' @rdname nn_comparison_dataframe
+setGeneric("nn_comparison_dataframe", function(x,markerA,markerB,reference,from_reference=TRUE)
+    standardGeneric("nn_comparison_dataframe"))
+
+#' @rdname nn_comparison_dataframe
+#' @aliases extract.nearest.neighbor,ANY,ANY-method
+setMethod(
+    "nn_comparison_dataframe",
+    signature = c("ImageSet","character","character","character","logical"),
+    definition = function(x, markerA, markerB, reference, from_reference=TRUE) {
+        samples <- names(nn@nearest_neighbors)
+        neighbors <- lapply(samples,function(sample) {
+            means = nn@nearest_neighbors[sample][[1]]$means
+            if (from_reference) {
+                v1 = data.frame(sample=sample,markerA=markerA,markerB=markerB,reference=reference,from_reference=from_reference,distanceA=means[reference,markerA],distanceB=means[reference,markerB])
+                return(v1)
+            } else {
+                v1 = data.frame(sample=sample,markerA=markerA,markerB=markerB,reference=reference,from_reference=from_reference,distanceA=means[markerA,reference],distanceB=means[markerB,reference])
+                return(v1)
+            }
+        })
+        return(rbindlist(neighbors))
+
+    }
+)
 
 setGeneric("nearest_neighbor_sample", function(x, ...)
     standardGeneric("nearest_neighbor_sample"))
@@ -212,6 +254,7 @@ setMethod(
 #' @param to Cell-type to which the nearest neighbor is calculated.
 #' @param ttest Flag indicating whether a paired t-test should be calculated. (default: TRUE)
 #' @param transposed Switches 'from' and 'to' cell-type. This way the (default: FALSE)
+#' @param remove_NAs dont plot samples with less than min cells
 #' @param ... Additional arguments.
 #' @return plot average nearest neighbor barplots for two cell types
 #'
@@ -240,7 +283,8 @@ setMethod(
                           from,
                           to,
                           ttest = TRUE,
-                          transposed = FALSE) {
+                          transposed = FALSE,
+                          remove_NAs = FALSE) {
         marker_names <- x@markers
 
         #grab the relevant markers
@@ -264,6 +308,7 @@ setMethod(
             y.se <-
                 extractNNVals(x@nearest_neighbors, 'SE', from, comp[2], transposed)
             current.mean <- (t(cbind(x.mean, y.mean)))
+            #print(current.mean)
             current.se <- (t(cbind(x.se, y.se)))
         } else{
             current.mean <- t(x.mean)
@@ -271,8 +316,14 @@ setMethod(
         }
 
         #remove NA values
-        current.se[is.na(current.mean)] <- 0
-        current.mean[is.na(current.mean)] <- 0
+        if (remove_NAs){
+            drop <- colSums(is.na(current.mean)) > 0
+            current.mean <- current.mean[,!drop]
+            current.se <- current.se[,!drop]
+        }else{
+            current.se[is.na(current.mean)] <- 0
+            current.mean[is.na(current.mean)] <- 0
+        }
 
         max_idx <- which.max(rowSums(current.mean))
         ord <- order(current.mean[max_idx, ], decreasing = TRUE)
@@ -290,7 +341,6 @@ setMethod(
                      marker_names[comp[2]])
             COLS <- c("lightgrey", "black")
         }
-
         bp <- barplot(
             current.mean,
             main = buildLabel(from, to, ext, transposed),
@@ -304,6 +354,8 @@ setMethod(
         )
 
         if (length(comp) > 1) {
+            # Add a check for NA values if there is an NA value in one row, we need it in the other row.
+            #print(current.mean)
             plotSE(bp, current.mean, current.se, 1)
             plotSE(bp, current.mean, current.se, 2)
         } else{
@@ -312,9 +364,10 @@ setMethod(
             current.se <- t(current.se)
             plotSE(bp, current.mean, current.se, 1)
         }
-
         #paired t test to test for significance
         if (ttest & length(comp) > 1) {
+            current.mean <- current.mean[,colSums(current.mean!=0)==2]
+            current.se <- current.se[,colSums(current.se!=0)==2]
             pval <-
                 t.test(current.mean[1, ], current.mean[2, ], paired = TRUE)$p.value
             mtext(paste('Paired t-test:', format(pval, digits = 4)), 3)
@@ -902,7 +955,218 @@ setMethod(
               grouped_sample=grouped_sample)
     names(v)<-sample_names
     df <- do.call("rbind",v)
-    return(df)
+    nnn <- new("NNN")
+    nnn@df <- df
+    nnn@microns_per_pixel <- data@microns_per_pixel
+    return(nnn)
+})
+
+#' Class to represent a normalized nearest neighbor.
+#'
+#' @slot df A dataframe of marker labels and nearest neighbor distances.
+#' @slot micros_per_pixel numeric for plotting scale
+NNN <- setClass(
+    "NNN",
+    slots = c(
+        df = "data.frame",
+        microns_per_pixel = "numeric"
+    )
+)
+
+#' Get the dataframe from a normalized nearest neighbor object.
+#'
+#' @param x Normalized nearest neighbor object
+#' @param ... Additional arguments
+#'
+#' @return A dataframe
+#' @examples
+#' dataset <- IrisSpatialFeatures_data
+#' dataframe <- as.data.frame(dataset)
+#' @docType methods
+#' @export
+#' @rdname as.data.frame
+setMethod("as.data.frame",
+          signature = c(x="NNN"),
+          function(x) {
+              return(x@df)
+          })
+
+setOldClass("htest")
+setOldClass("gg")
+#' Class to represent a comparison of two markers to a reference.
+#'
+#' @import ggplot2
+#' @slot to_reference_plot A plot comparing markerA and markerB's distance to the reference.
+#' @slot to_reference_ttest A paired ttest comparing markerA and markerB's distance to the reference.
+#' @slot from_reference_plot A plot comparing markerA and markerB's distance from the reference.
+#' @slot from_reference_ttest A ttest comparing markerA and markerB's distance from the reference.
+#' @slot to_reference_order For reordering other plots
+#' @slot from_reference_order For reordering other plots
+#' @slot to_reference_df The raw data
+#' @slot from_reference_df The raw data
+NNN_compare <- setClass(
+    "NNN_Compare",
+    slots = c(
+        to_reference_plot = "gg",
+        to_reference_ttest = "htest",
+        from_reference_plot = "gg",
+        from_reference_ttest = "htest",
+        to_reference_order = "character",
+        from_reference_order = "character",
+        to_reference_df = "data.frame",
+        from_reference_df = "data.frame"
+    )
+)
+
+#' Compare distances between two markers to a reference marker.
+#'
+#' @param NNN Normalized nearest neighbor object
+#' @param markerA Additional arguments
+#' @param markerB Additional arguments
+#' @param reference Additional arguments
+#' @param order Optional character vector with sample names in an order for plotting
+#'
+#' @return Analysis data
+#' @examples
+#' dataset <- IrisSpatialFeatures_data
+#' dataframe <- as.data.frame(dataset)
+#' @import dplyr
+#' @import ggplot2
+#' @import magrittr
+#' @import RColorBrewer
+#' @docType methods
+#' @export
+#' @rdname compare_normalized_nearest_neighbor
+setGeneric("compare_normalized_nearest_neighbor", function(NNN, markerA, markerB,reference,order=FALSE)
+    standardGeneric("compare_normalized_nearest_neighbor"))
+
+#' @rdname compare_normalized_nearest_neighbor
+setMethod("compare_normalized_nearest_neighbor",
+          signature = c(NNN="NNN",markerA="character",markerB="character",reference="character"),
+          function(NNN,markerA,markerB,reference,order=FALSE) {
+    t <- as_tibble(as.data.frame(NNN))
+    output <- new("NNN_Compare")
+    #do_analysis <- function(t,markerA,markerB,reference) {
+    font1 <- 8
+    font2 <- 8
+    pos1 <- t %>% filter(marker_i == markerA & marker_j == reference) %>% select(sample,mean)
+    neg1 <- t %>% filter(marker_i == markerB & marker_j == reference) %>% select(sample,mean)
+    pos2 <- t %>% filter(marker_j == markerA & marker_i == reference) %>% select(sample,mean)
+    neg2 <- t %>% filter(marker_j == markerB & marker_i == reference) %>% select(sample,mean)
+
+
+    output@to_reference_ttest<-t.test(pos1$mean,neg1$mean,paired=TRUE)
+    output@from_reference_ttest<-t.test(pos2$mean,neg2$mean,paired=TRUE)
+
+    # Plot them
+    # First reorder factors by distance
+    if(class(order)!="logical") {
+        ordered_samples = order
+    } else {
+        ordered_samples <- t %>% filter(marker_i!=reference & marker_j==reference) %>% group_by(sample) %>% summarize(max_val=max(mean)) %>% arrange(desc(max_val))
+        ordered_samples = ordered_samples$sample
+    }
+    #t$sample <- factor(t$sample,levels=ordered_samples$sample)
+
+    # Now plot
+    sub = t %>% filter(marker_i == markerA | marker_i == markerB) %>% filter(marker_j==reference)
+    output@to_reference_df = sub
+    output@to_reference_order = as.vector(ordered_samples)
+
+    output@to_reference_plot <- plot_nnn(sub,markerA,markerB,reference,
+                                         paste('From',markerA,'and',markerB,'to',reference),
+                                         paste('p =',signif(output@to_reference_ttest$p.value,3)),
+                                         paste('to',reference,'from'),
+                                         order = as.vector(ordered_samples),
+                                         font1,
+                                         font2,
+                                         NNN@microns_per_pixel)
+
+
+    if (class(order)!="logical") {
+        ordered_samples = order
+    } else {
+        ordered_samples <- t %>% filter(marker_i==reference & marker_j!=reference) %>% group_by(sample) %>% summarize(max_val=max(mean)) %>% arrange(desc(max_val))
+        ordered_samples = ordered_samples$sample
+    }
+    #switch for other direction
+    sub = t %>% filter(marker_j == markerA | marker_j == markerB) %>% filter(marker_i==reference)
+
+    sub2 = sub
+    sub2$marker_j<-sub$marker_i
+    sub2$marker_i<-sub$marker_j
+    output@from_reference_df = sub
+    output@from_reference_order = as.vector(ordered_samples)
+    output@from_reference_plot <- plot_nnn(sub2,markerA,markerB,reference,
+                                         paste('From',reference,'to',markerA,'and',markerB),
+                                         paste('p =',signif(output@from_reference_ttest$p.value,3)),
+                                         paste('from',reference,'to'),
+                                         order = as.vector(ordered_samples),
+                                         font1,
+                                         font2,
+                                         NNN@microns_per_pixel)
+
+    return(output)
 })
 
 
+#' Plot the normalized nearest neighbor (called internally)
+#'
+#' @param sub subset of data in a tibble
+#' @param markerA for factors
+#' @param markerB for factors
+#' @param reference for factors
+#' @param title top of plot
+#' @param subtitle on plot
+#' @param legendtitle title to put over legend
+#' @param order a vector of sample names to display from left to right,
+#'              if not specified will order by factor
+#' @param font1 font size 1
+#' @param font2 font size 2
+#' @param microns_per_pixel scale data by this
+#'
+#' @return gg
+#'
+#' @import dplyr
+#' @import ggplot2
+#' @import magrittr
+#' @docType methods
+#' @rdname plot_nnn
+setGeneric("plot_nnn", function(sub,markerA,markerB,reference,title,subtitle,legendtitle,order,font1,font2,microns_per_pixel)
+    standardGeneric("plot_nnn"))
+
+#' @rdname plot_nnn
+setMethod(
+    "plot_nnn",
+    signature(sub="tbl_df"),
+    definition <- function(sub,markerA,markerB,reference,title,subtitle,legendtitle,order=c(),font1=6,font2=4,microns_per_pixel=1) {
+        #sub = sub %>% filter(marker_i == markerA | marker_i == markerB) %>% filter(marker_j==reference)
+        # Get factors in the order we want
+        sub$marker_i<-factor(sub$marker_i,levels=c(markerA,markerB))
+        sub$marker_j<-factor(sub$marker_j,levels=c(markerA,markerB))
+        if(length(order)>0) {
+            sub$sample <- factor(sub$sample,levels=order)
+        }
+        # use our scaling
+        sub$mean <- sub$mean * microns_per_pixel
+        sub$`75%` <- sub$`75%` * microns_per_pixel
+        sub$`25%` <- sub$`25%` * microns_per_pixel
+        sub$`95%` <- sub$`95%` * microns_per_pixel
+        sub$`5%` <- sub$`5%` * microns_per_pixel
+        output<-ggplot(sub,aes(x=factor(marker_i),color=marker_i))+
+            geom_boxplot(aes(middle=mean,upper=`75%`,lower=`25%`,ymin=`5%`,ymax=`95%`),
+                         stat="identity")+
+            facet_wrap(~sample,ncol=26,strip.position="bottom")+
+            theme_minimal()+
+            theme(axis.text.y = element_text(size=font2),
+                  strip.text = element_text(angle=90,size=font1),
+                  strip.text.x = element_text(vjust=1),
+                  axis.text.x = element_blank(),
+                  axis.ticks.x = element_blank(),
+                  axis.title.x = element_blank())+
+            labs(title=title,
+                 subtitle=subtitle,
+                 color=legendtitle)+
+            ylab("microns")
+        return(output)
+    })

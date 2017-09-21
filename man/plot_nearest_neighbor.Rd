@@ -14,7 +14,7 @@ to test for significant differences.}
 plot_nearest_neighbor(x, ...)
 
 \S4method{plot_nearest_neighbor}{ImageSet}(x, from, to, ttest = TRUE,
-  transposed = FALSE)
+  transposed = FALSE, remove_NAs = FALSE)
 }
 \arguments{
 \item{x}{IrisSpatialFeatures ImageSet object.}
@@ -28,6 +28,8 @@ plot_nearest_neighbor(x, ...)
 \item{ttest}{Flag indicating whether a paired t-test should be calculated. (default: TRUE)}
 
 \item{transposed}{Switches 'from' and 'to' cell-type. This way the (default: FALSE)}
+
+\item{remove_NAs}{dont plot samples with less than min cells}
 }
 \value{
 plot average nearest neighbor barplots for two cell types
