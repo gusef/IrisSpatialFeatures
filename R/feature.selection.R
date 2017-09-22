@@ -84,18 +84,21 @@ setMethod(
     signature = "ImageSet",
     definition = function(x, name = '', rm.na = FALSE) {
         counts <- get_counts_per_mm2_noncollapsed(x)
-        counts <-
-            extract_count_combinations(sapply(counts, colMeans))
-        dat <- extract_count_features(counts, 'Counts')
+        counts <- sapply(counts, colMeans)
+
+        rownames(counts) <-
+            paste('Counts -', rownames(counts))
+        count_ratios <- extractRatios(counts, 'Counts')
+        dat <- rbind(counts,
+                     count_ratios)
 
         if (length(x@interactions) > 0) {
-            interactions <- extract_interaction_combinations(x@interactions)
             f_inter <-
-                lapply(interactions,
+                lapply(x@interactions,
                        extract_interaction_features,
                        'Interaction')
             f_inter <- do.call(rbind, f_inter)
-            dat <- rbind(dat, f_inter)
+            dat <- rbind(dat, t(f_nn))
         } else{
             message(paste('Skipping interactions .. ',
                    'please run extract_interactions to include them.',
@@ -108,7 +111,7 @@ setMethod(
                        extract_interaction_features,
                        'NN')
             f_nn <- do.call(rbind, f_nn)
-            dat <- rbind(dat, f_nn)
+            dat <- rbind(dat, t(f_nn))
         } else{
             message(paste(
             'Skipping nearest neighbors .. ',
@@ -141,16 +144,20 @@ extractSimpleValues <- function(mat, remove_self = TRUE) {
         combinations <-
             combinations[combinations[, 1] != combinations[, 2], ]
     }
-    collapsed_measurements <-
+    collapsed <-
         t(apply(combinations, 1, function(x, bm)
             bm[x[2], x[1], ], big_mat))
     combinations <- apply(combinations, 2, function(x, p)
         p[x], phenos)
-    rownames(collapsed_measurements) <-
+    rownames(collapsed) <-
         paste(combinations[, 1], ' -> ', combinations[, 2])
-    colnames(collapsed_measurements) <- names(mat)
-    collapsed_measurements[is.nan(collapsed_measurements)] <- 0
-    return(collapsed_measurements)
+    colnames(collapsed) <- names(mat)
+    collapsed[is.nan(collapsed)] <- 0
+
+    #remove all the duplicates
+    collapsed <- collapsed[!duplicated(rownames(collapsed)),]
+
+    return(collapsed)
 }
 
 getPaired <- function(nams) {
@@ -160,6 +167,7 @@ getPaired <- function(nams) {
 }
 
 extractRatios <- function(mat, nam) {
+    #if we look at interactions or nearest neighbors
     if (length(grep(' -> ', rownames(mat), fixed = TRUE)) == nrow(mat)) {
         nams <-
             t(sapply(strsplit(
@@ -167,7 +175,7 @@ extractRatios <- function(mat, nam) {
                     x[2]), ' -> '
             ), function(x)
                 x))
-        nams[, 1] <- sub('. $', '', nams[, 1])
+        nams[, 1] <- sub('[+-] $', '', nams[, 1])
         paired <- getPaired(paste(nams[, 1], nams[, 2]))
         nams <- nams[paired, ]
         COUNTS <- FALSE
@@ -215,128 +223,8 @@ extract_interaction_features <- function(interactions, nam) {
     f_int_ratios <- extractRatios(mat = f_interactions, nam)
     dat <- rbind(f_interactions,
                  f_int_ratios)
-    return(dat)
+    return(dat[,'means'])
 }
-
-
-collapse_marker_inter <- function(x, marker) {
-    coords <- grep(marker, colnames(x$total), fixed = TRUE)
-    #collapse
-    x$total <- cbind(x$total[, -coords], rowSums(x$total[, coords]))
-    x$total <- rbind(x$total[-coords, ], colSums(x$total[coords, ]))
-    x$nums <- c(x$nums[-coords], sum(x$nums[coords]))
-
-    #clean up the name
-    rownames(x$total)[nrow(x$total)] <-
-        colnames(x$total)[ncol(x$total)] <-
-        names(x$nums)[length(x$nums)] <- sub(' [^ ]+$', '', marker)
-
-    #fix the ordering so they are ordered aplhabetically again
-    x$total <-
-        x$total[order(rownames(x$total)), order(colnames(x$total))]
-    x$nums <- x$nums[order(names(x$nums))]
-    return(x)
-}
-
-get_collapsed_interactions <-
-    function(selector, marker_combos, interactions) {
-        current_markers <- marker_combos[selector]
-        inter <- interactions
-        for (marker in current_markers) {
-            inter <- lapply(inter, collapse_marker_inter, marker)
-        }
-        collapsed_interactions <-
-            lapply(inter, function(x)
-                sweep(x$total, 2, x$nums, '/'))
-        return(collapsed_interactions)
-    }
-
-extract_interaction_combinations <- function(interactions) {
-    all_markers <- colnames(interactions[[1]]$total)
-    marker_combos <- table(sub('.$', '', all_markers))
-    marker_combos <- names(marker_combos)[marker_combos > 1]
-    grid <-
-        as.matrix(expand.grid(lapply(1:length(marker_combos), function(x)
-            c(TRUE, FALSE))))
-    colnames(grid) <- marker_combos
-    inter <-
-        apply(grid,
-              1,
-              get_collapsed_interactions,
-              marker_combos,
-              interactions)
-    return(inter)
-}
-
-
-collapse_marker_nn <- function(set, marker) {
-    for (idx in 1:length(set)) {
-        class <- as.character(set[[idx]]$ppp$marks)
-        class[grep(marker, class, fixed = TRUE)] <-
-            sub(' [^ ]+$', '', marker)
-        set[[idx]]$ppp$marks <- as.factor(class)
-    }
-    return(set)
-}
-
-get_collapsed_nn <- function(selector, marker_combos, ppp) {
-    current_markers <- marker_combos[selector]
-    set <- ppp
-    for (marker in current_markers) {
-        set <- lapply(set, collapse_marker_nn, marker)
-    }
-    nn <- generate_NN(set)
-    nn <- lapply(nn, function(x)
-        x$means)
-    return(nn)
-}
-
-extract_nn_combinations <- function(ppp) {
-    all_markers <- levels(ppp[[1]][[1]]$ppp$marks)
-    marker_combos <- table(sub('.$', '', all_markers))
-    marker_combos <- names(marker_combos)[marker_combos > 1]
-    grid <-
-        as.matrix(expand.grid(lapply(1:length(marker_combos), function(x)
-            c(TRUE, FALSE))))
-    colnames(grid) <- marker_combos
-    nn <- apply(grid, 1, get_collapsed_nn, marker_combos, ppp)
-    return(nn)
-}
-
-
-collapse_combo_marker <- function(x, cnts) {
-    mrk <- cnts[rownames(cnts) == x, ]
-    if (is.matrix(mrk)) {
-        mrk <- colSums(mrk)
-    }
-    return(mrk)
-}
-
-#removes a marker and get all the coutns based on the collapsed marker
-count_combo <- function(drop_marker, cnts) {
-    drop_marker <- names(drop_marker)[drop_marker]
-    for (mark in drop_marker) {
-        rownames(cnts) <- sub(mark, '', rownames(cnts))
-    }
-    cnts <-
-        t(sapply(unique(rownames(cnts)), collapse_combo_marker, cnts))
-    return(cnts)
-}
-
-extract_count_combinations <-
-    function(cnts, markers = c(' PD1.', ' PDL1.')) {
-        all_markers <- rownames(cnts)
-        grid <-
-            as.matrix(expand.grid(lapply(1:length(markers), function(x)
-                c(TRUE, FALSE))))
-        colnames(grid) <- markers
-        all_cnts <- apply(grid, 1, count_combo, cnts)
-        all_cnts <- do.call(rbind, all_cnts)
-        all_cnts <- all_cnts[!duplicated(rownames(all_cnts)), ]
-        all_cnts <-
-            all_cnts[order(rownames(all_cnts), decreasing = TRUE), ]
-        return(all_cnts)
-    }
 
 extract_count_features <- function(f_counts, nam) {
     rownames(f_counts) <- paste(nam, '-', rownames(f_counts))
@@ -345,62 +233,3 @@ extract_count_features <- function(f_counts, nam) {
     return(dat)
 }
 
-nearestNeighborCoord <- function(coord, classes) {
-    ppp <- coord$ppp
-    res <- lapply(classes, getToNeighbors, classes, ppp)
-    means <- t(sapply(res, function(x)
-        x['means', ]))
-    vars <- t(sapply(res, function(x)
-        x['vars', ]))
-    nums <- t(sapply(res, function(x)
-        x['nums', ]))
-
-    rownames(nums) <-
-        rownames(means) <- rownames(vars) <- colnames(means)
-
-    #in some cases there are not all samples represented
-    means[!is.finite(means)] <- NA
-    vars[!is.finite(vars)] <- NA
-    nums[!is.finite(nums)] <- NA
-
-    return(list(
-        means = means,
-        vars = vars,
-        nums = nums
-    ))
-}
-
-nearestNeighborSample <- function(sample, classes) {
-    res <- lapply(sample, nearestNeighborCoord, classes)
-
-    means <- lapply(res, function(x)
-        x$means)
-    vars <- lapply(res, function(x)
-        x$vars)
-    nums <- lapply(res, function(x)
-        x$nums)
-
-    #collapse the different coordinates
-    means <- collapseMatrices(means, rowMeans)
-    vars <- collapseMatrices(vars, rowMeans)
-    nums <- collapseMatrices(nums, rowSums)
-
-    #there is a special case where there is only 1 cell of a type
-    #this leads to an NA variance. In this case the means are set to NA
-    # as well
-    means[is.na(vars)] <- NA
-
-    #calculate the standard error on the combined coordinates
-    ses <- sqrt(vars) / sqrt(nums)
-    return(list(means = means, SE = ses))
-}
-
-
-generate_NN <- function(dataset) {
-    classes <-
-        sort(unique(unlist(lapply(unlist(dataset, recursive = FALSE),
-            function(x)
-            levels(x$ppp$marks)))))
-    nn <- lapply(dataset, nearestNeighborSample, classes)
-    return(nn)
-}
