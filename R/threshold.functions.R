@@ -58,8 +58,7 @@ setMethod(
             sapply(x@samples, function(x)
                 x@sample_name)
         x <- extract_counts(x)
-        x@nearest_neighbors <- NULL
-        x@interactions <- NULL
+
         return(x)
     }
 )
