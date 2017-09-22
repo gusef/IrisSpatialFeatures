@@ -344,7 +344,7 @@ setMethod(
         bp <- barplot(
             current.mean,
             main = buildLabel(from, to, ext, transposed),
-            xlab = "Samples",
+            xlab = "",
             ylab = "Avg. distance to NN",
             col = COLS,
             legend = leg,
