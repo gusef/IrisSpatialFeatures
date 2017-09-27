@@ -341,9 +341,10 @@ setMethod(
                      marker_names[comp[2]])
             COLS <- c("lightgrey", "black")
         }
+        label <- buildLabel(from, to, ext, transposed)
         bp <- barplot(
             current.mean,
-            main = buildLabel(from, to, ext, transposed),
+            main = label,
             xlab = "",
             ylab = "Avg. distance to NN",
             col = COLS,
@@ -377,7 +378,8 @@ setMethod(
         return(list(
             means = current.mean,
             ses = current.se,
-            pval = pval
+            pval = pval,
+            label = label
         ))
     }
 )
