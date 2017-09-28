@@ -657,14 +657,14 @@ rayplot_single_coordinate <- function(x,
     df$cols[df$cols == to_type] <- to_col
 
     par(mar = c(4, 4, 4, 1))
-    plot(
-        df$x,
-        df$y,
-        col = as.character(df$cols),
-        pch = 18,
-        ylab = 'y (pixels)',
-        xlab = 'x (pixels)',
-        main = paste(samp_name, '-', x@coordinate_name)
+    plot(df$x,
+         df$y,
+         col = as.character(df$cols),
+         pch = 18,
+         ylim = rev(range(df$y)),
+         ylab = 'y (pixels)',
+         xlab = 'x (pixels)',
+         main = paste(samp_name, '-', x@coordinate_name)
     )
     segments(nearest$from_x,
              nearest$from_y,
