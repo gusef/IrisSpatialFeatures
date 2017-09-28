@@ -242,6 +242,9 @@ setMethod(
     }
 )
 
+###############################################################################################################
+##################################### Nearest neighbor plotting functions
+###############################################################################################################
 
 #' Plot average nearest neighbor barplots for two cell types. This measurement is not symmetric, so if 'from' and 'to' are switched it will result in different results.
 #' For the 'to' parameter this function allows a cell-type without '+' or '-' in the end. Indicating that the distances from the first cell-type should be calculated
@@ -421,9 +424,9 @@ buildLabel <- function(from, to, ext, transposed) {
     return(label)
 }
 
-#####################################
-#ray plots
-
+###############################################################################################################
+######################################ray plots
+###############################################################################################################
 
 #' Plot nearest neighbor ray plots for each samples
 #'
@@ -554,36 +557,11 @@ setMethod(
                           lineColor,
                           height,
                           width) {
+
+
         #extract the relevant cells
         if (sum(x@ppp$marks == from_type) > 0 &&
             sum(x@ppp$marks == to_type) > 0) {
-            from <- x@ppp[x@ppp$marks == from_type, ]
-            to <- x@ppp[x@ppp$marks == to_type, ]
-            #get limits
-            overlap <- superimpose(from, to)
-            xlim <- max(data.frame(overlap)$x)
-            ylim <- max(data.frame(overlap)$y)
-
-            #get distances
-            dist <- nncross(from, to)
-            nearest <- data.frame(cbind(data.frame(from),
-                                        dist$dist,
-                                        data.frame(to[dist$which, ])))
-            names(nearest) <-
-                c('from_x',
-                  'from_y',
-                  'from_type',
-                  'dist',
-                  'to_x',
-                  'to_y',
-                  'to_type')
-
-            #get the colors right
-            df <- data.frame(overlap)
-            df$cols <- as.character(df$marks)
-            df$cols[df$cols == from_type] <- from_col
-            df$cols[df$cols == to_type] <- to_col
-
 
             file_stub <- paste0(samp_name, '_', x@coordinate_name)
             if (format == '.pdf') {
@@ -598,32 +576,117 @@ setMethod(
                     height = 600)
             }
 
-            par(mar = c(4, 4, 4, 1))
-            plot(
-                df$x,
-                df$y,
-                col = as.character(df$cols),
-                pch = 18,
-                ylab = 'y (pixels)',
-                xlab = 'x (pixels)',
-                main = paste(samp_name, '-', x@coordinate_name)
-            )
-            segments(nearest$from_x,
-                     nearest$from_y,
-                     nearest$to_x,
-                     nearest$to_y,
-                     col = lineColor)
-            legend(
-                'bottomleft',
-                col = c(from_col, to_col),
-                legend = c(from_type, to_type),
-                pch = 18,
-                cex = 0.8
-            )
+            rayplot_single_coordinate(x,
+                                      from,
+                                      to,
+                                      samp_name,
+                                      from_col = '#EE7600',
+                                      to_col = '#028482',
+                                      lineColor = '#666666')
+
             dev.off()
         }
     }
 )
+
+
+#' Plot nearest neighbor ray plots for a single coordinate
+#'
+#' @param x An IrisSpatialFeatures ImageSet object
+#' @param from_col Cell type from which the rays are drawn
+#' @param to_type Cell type to which the rays are drawn
+#' @param samp_name Name of the sample
+#' @param from_col Color for the 'from' cell-type (Default: '#EE7600')
+#' @param to_col Color for the 'to' cell-type  (Default: '#028482')
+#'
+#' @export
+#'
+#' @importFrom spatstat nncross
+#' @importFrom spatstat superimpose
+#' @importFrom graphics legend
+#' @importFrom graphics par
+#' @importFrom graphics plot
+#' @importFrom graphics segments
+#' @importFrom grDevices dev.off
+#' @importFrom grDevices pdf
+#' @importFrom grDevices png
+#' @rdname rayplot_single_coordinate
+#' @examples
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' dataset <- extract_nearest_neighbor(dataset)
+#' rayplot_single_coordinate(x = dataset@samples[[1]]@coordinates[[1]],
+#'                           samp_name = dataset@samples[[1]]@sample_name,
+#'                           from_type = "SOX10+ PDL1+",
+#'                           to_type = "CD8+ PD1+")
+
+rayplot_single_coordinate <- function(x,
+                                      from_type,
+                                      to_type,
+                                      samp_name = '',
+                                      from_col = '#EE7600',
+                                      to_col = '#028482',
+                                      lineColor = '#666666'){
+
+    from <- x@ppp[x@ppp$marks == from_type, ]
+    to <- x@ppp[x@ppp$marks == to_type, ]
+    #get limits
+    overlap <- superimpose(from, to)
+    xlim <- max(data.frame(overlap)$x)
+    ylim <- max(data.frame(overlap)$y)
+
+    #get distances
+    dist <- nncross(from, to)
+    nearest <- data.frame(cbind(data.frame(from),
+                                dist$dist,
+                                data.frame(to[dist$which, ])))
+    names(nearest) <-
+        c('from_x',
+          'from_y',
+          'from_type',
+          'dist',
+          'to_x',
+          'to_y',
+          'to_type')
+
+    #get the colors right
+    df <- data.frame(overlap)
+    df$cols <- as.character(df$marks)
+    df$cols[df$cols == from_type] <- from_col
+    df$cols[df$cols == to_type] <- to_col
+
+    par(mar = c(4, 4, 4, 1))
+    plot(
+        df$x,
+        df$y,
+        col = as.character(df$cols),
+        pch = 18,
+        ylab = 'y (pixels)',
+        xlab = 'x (pixels)',
+        main = paste(samp_name, '-', x@coordinate_name)
+    )
+    segments(nearest$from_x,
+             nearest$from_y,
+             nearest$to_x,
+             nearest$to_y,
+             col = lineColor)
+    legend(
+        'bottomleft',
+        col = c(from_col, to_col),
+        legend = c(from_type, to_type),
+        pch = 18,
+        cex = 0.8
+    )
+}
+
+
+#####################################################################################################################################
+################ Normalized nearest neighbor functions
+#####################################################################################################################################
+
+
+
 
 #' Extract the distance to each nearest neighbor for specified
 #' cell-types, normalized by downsampling each cell-type to the
