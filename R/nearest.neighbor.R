@@ -393,7 +393,7 @@ buildLabel <- function(from, to, ext, transposed) {
 }
 
 ###############################################################################################################
-######################################ray plots
+##################################### ray plots
 ###############################################################################################################
 
 #' Plot nearest neighbor ray plots for each samples
@@ -466,7 +466,8 @@ setMethod(
             lineColor,
             use_pixel,
             height,
-            width
+            width,
+            x@microns_per_pixel
         )
     }
 )
@@ -486,7 +487,8 @@ setMethod(
                           lineColor,
                           use_pixel,
                           height,
-                          width) {
+                          width,
+                          microns_per_pixel) {
         lapply(
             x@coordinates,
             neighbor_ray_plot_coord,
@@ -500,7 +502,8 @@ setMethod(
             lineColor,
             use_pixel,
             height,
-            width
+            width,
+            microns_per_pixel
         )
     }
 )
@@ -530,7 +533,8 @@ setMethod(
                           lineColor,
                           use_pixel,
                           height,
-                          width) {
+                          width,
+                          microns_per_pixel) {
 
 
         #extract the relevant cells
@@ -557,7 +561,8 @@ setMethod(
                                       from_col = '#EE7600',
                                       to_col = '#028482',
                                       lineColor = '#666666',
-                                      use_pixel = use_pixel)
+                                      use_pixel = use_pixel,
+                                      microns_per_pixel = microns_per_pixel)
 
             dev.off()
         }
@@ -603,7 +608,8 @@ rayplot_single_coordinate <- function(x,
                                       from_col = '#EE7600',
                                       to_col = '#028482',
                                       lineColor = '#666666',
-                                      use_pixel = FALSE){
+                                      use_pixel = FALSE,
+                                      microns_per_pixel = 0.496){
 
     from <- x@ppp[x@ppp$marks == from_type, ]
     to <- x@ppp[x@ppp$marks == to_type, ]
@@ -611,10 +617,10 @@ rayplot_single_coordinate <- function(x,
     # figure out whether to use px or um
     if (!use_pixel){
         #bring measurements into micrometers
-        from$x <- from$x * x@microns_per_pixel
-        from$y <- from$y * x@microns_per_pixel
-        to$x <- to$x * x@microns_per_pixel
-        to$y <- to$y * x@microns_per_pixel
+        from$x <- from$x * microns_per_pixel
+        from$y <- from$y * microns_per_pixel
+        to$x <- to$x * microns_per_pixel
+        to$y <- to$y * microns_per_pixel
         unit <- 'um'
     } else {
         unit <- 'px'
