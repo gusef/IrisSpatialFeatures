@@ -231,6 +231,74 @@ setMethod(
     }
 )
 
+###########################################
+######### Collapse functions
+
+#' This function collapses two markers into one, and reruns the counting of cells.
+#' Mostly a convenience function for the Shiny interface so we start with a completely split set
+#' successively adding more markers
+#'
+#' @param image_set IrisSpatialFeatures ImageSet object.
+#' @param marker1 Name of the first marker that should be collapsed.
+#' @param marker2 Name of the second marker that should be collapsed.
+#' @param combined Name of the combined marker.
+#'
+#' @docType methods
+#' @return IrisSpatialFeatures ImageSet object.
+#' @examples
+#' dataset <- IrisSpatialFeatures_data
+#' ds <- collapse_markers(dataset, marker1 = "SOX10+ PDL1+",
+#'                        marker2 = "SOX10+ PDL1-", combined = "SOX10+")
+#'
+#' @export
+#' @rdname collapse_markers
+setGeneric("collapse_markers",
+           function(image_set, marker1, marker2, combined, ...) {
+               standardGeneric("collapse_markers")
+           },
+           valueClass = "ImageSet")
+
+#' @rdname collapse_markers
+#' @aliases collapse_markers,ANY,ANY-method
+setMethod(
+    "collapse_markers",
+    signature = c(image_set="ImageSet",marker1="character", marker2="character", combined="character"),
+    definition = function (image_set,
+                           marker1,
+                           marker2,
+                           combined) {
+        x <- image_set
+
+        #check if the markers are actually in the Iris object
+        if (!all(c(marker1, marker2) %in% x@markers)){
+            stop('At least one of the specified markers is not included in the dataset')
+        }
+
+        #collapse the marker
+        for (idx in 1:length(x@samples)){
+            for (jdx in 1:length(x@samples[[idx]]@coordinates)){
+
+                #fix the labeling
+                pheno <- x@samples[[idx]]@coordinates[[jdx]]@raw@data$Phenotype.combined
+                pheno[pheno %in% c(marker1, marker2)] <- combined
+
+                #add it to the ppp and raw data object
+                x@samples[[idx]]@coordinates[[jdx]]@raw@data$Phenotype.combined <- pheno
+                x@samples[[idx]]@coordinates[[jdx]]@ppp$marks <- as.factor(pheno)
+            }
+        }
+
+        #fix the markers in the object
+        x@markers <- sort(c(x@markers[!x@markers %in% c(marker1, marker2)], combined))
+        x <- extract_counts(x)
+        x@nearest_neighbors <- list()
+        x@interactions <- list()
+
+        return(x)
+    }
+)
+
+
 ##############################################################################
 # ROI Functions
 
