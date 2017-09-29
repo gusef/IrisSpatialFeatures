@@ -21,12 +21,13 @@
 #' @param readMasks Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: True)
 #' @param ROI Flag indicating whether ROI was specified so the image is only analyzed within that region a '_ROI.tif' needs to be present. (default: False)
 #' @param ignore_scoring Flag indicating whether the scoring file should be ignored (default: False)
+#' @param read_only_relevant_markers Flag that indicates whether all read inform output should be kept or only the relevant markers
 #'
 #' @return IrisSpatialFeatures ImageSet object.
 #' @examples
-#' raw_data <- new("ImageSet")
-#' raw_data <- read_raw(path=system.file("extdata", package = "IrisSpatialFeatures"),
-#'                      format='Mantra')
+#'  raw_data <- new("ImageSet")
+#'  raw_data <- read_raw(path=system.file("extdata", package = "IrisSpatialFeatures"),
+#'                       format='Mantra')
 #' @docType methods
 #' @export
 #' @importFrom methods new
@@ -44,6 +45,7 @@ setGeneric("read_raw",
                     readMasks = TRUE,
                     ROI = FALSE,
                     ignore_scoring = FALSE,
+                    read_only_relevant_markers = TRUE,
                     ...) standardGeneric("read_raw"),
            valueClass = "ImageSet")
 
@@ -63,7 +65,8 @@ setMethod(
                           invasive_margin_in_px,
                           readMasks,
                           ROI,
-                          ignore_scoring) {
+                          ignore_scoring,
+                          read_only_relevant_markers) {
         x <- new("ImageSet")
         x@microns_per_pixel = MicronsPerPixel
         raw_directories <- dir(path)
@@ -84,7 +87,8 @@ setMethod(
                 invasive_margin_in_px,
                 readMasks,
                 ROI,
-                ignore_scoring
+                ignore_scoring,
+                read_only_relevant_markers
             )
         names(x@samples) <- toupper(raw_directories)
 
@@ -113,7 +117,8 @@ setMethod(
                           invasive_margin_in_px,
                           readMasks,
                           ROI,
-                          ignore_scoring) {
+                          ignore_scoring,
+                          read_only_relevant_markers) {
         print(paste('Sample:', x@sample_name))
 
         #get sample directory
@@ -158,7 +163,8 @@ setMethod(
                 invasive_margin_in_px,
                 readMasks,
                 ROI,
-                ignore_scoring
+                ignore_scoring,
+                read_only_relevant_markers
             )
 
         names(x@coordinates) <- coordinates
@@ -185,7 +191,8 @@ setMethod(
                           invasive_margin_in_px,
                           readMasks,
                           ROI,
-                          ignore_scoring) {
+                          ignore_scoring,
+                          read_only_relevant_markers) {
         if (format == 'Vectra') {
             img_names <- image_names[grep(x@coordinate_name, image_names)]
         } else if (format == 'Mantra') {
@@ -209,12 +216,14 @@ setMethod(
                 sample_dir
             )
         }
+
         #grab all of the data files and put them into a list
-        x@raw@data <- read.csv(file.path(sample_dir, seg_data),
+        dat <- read.csv(file.path(sample_dir, seg_data),
                                sep = '\t',
                                as.is = TRUE)
 
-        x@raw@data <- x@raw@data[x@raw@data$Phenotype != '', ]
+        #use only entries that have a phenotype assigned
+        x@raw@data <- dat[dat$Phenotype != '', ]
 
         if (length(grep('_cell_seg_data_summary.txt$', img_names)) >
             0) {
@@ -276,6 +285,39 @@ setMethod(
                     sep = '\t',
                     as.is = TRUE
                 ))
+        }
+
+        #in most cases we need only a fraction of columns in the segmentation file
+        if (read_only_relevant_markers){
+            markers <- c('Phenotype',
+                         'Cell.ID',
+                         'Cell.X.Position',
+                         'Cell.Y.Position',
+                         'Nucleus.Area..pixels.',
+                         'Nucleus.Compactness',
+                         'Nucleus.Minor.Axis',
+                         'Nucleus.Major.Axis',
+                         "Membrane.Area..pixels.",
+                         "Membrane.Compactness",
+                         "Membrane.Minor.Axis",
+                         "Membrane.Major.Axis",
+                         "Entire.Cell.Area..pixels.",
+                         "Entire.Cell.Minor.Axis",
+                         "Entire.Cell.Major.Axis",
+                         "Confidence")
+
+            if (!is.null(x@raw@score)){
+                #extract all relevant markers
+                scores <- x@raw@score
+                scores <- scores[grep('Component',rownames(scores)),]
+                scores <- gsub('[ ()-]','.',scores)
+                scores <- colnames(x@raw@data)[unlist(lapply(scores,
+                                                             function(x,y)
+                                                                 grep(x,y),colnames(x@raw@data)))]
+                scores <- scores[grep('Mean',scores)]
+                markers <- c(markers, scores)
+            }
+            x@raw@data <- x@raw@data[,markers]
         }
 
         #fix the labels if necessary
@@ -364,7 +406,6 @@ setMethod(
             x@mask$ROI <- roi
 
         }
-
         return(x)
     }
 )
