@@ -34,52 +34,6 @@ setMethod(
     }
 )
 
-#' Compare nearest neighbors by a data.frame
-#'
-#' @param x IrisSpatialFeatures ImageSet object that has had extract nearest neighbors run
-#' @param markerA First marker
-#' @param markerB Second marker
-#' @param reference Reference marker
-#' @param from_reference If true calculate distance from the reference to the markers by NN
-#'
-#' @return data.frame of markers and distances
-#'
-#' @docType methods
-#' @export
-#'
-#' @examples
-#'
-#' #loading pre-read dataset
-#' dataset <- IrisSpatialFeatures_data
-#' extract_nearest_neighbor(dataset)
-#'
-#' @importFrom data.table rbindlist
-#' @rdname nn_comparison_dataframe
-setGeneric("nn_comparison_dataframe", function(x,markerA,markerB,reference,from_reference=TRUE)
-    standardGeneric("nn_comparison_dataframe"))
-
-#' @rdname nn_comparison_dataframe
-#' @aliases extract.nearest.neighbor,ANY,ANY-method
-setMethod(
-    "nn_comparison_dataframe",
-    signature = c("ImageSet","character","character","character","logical"),
-    definition = function(x, markerA, markerB, reference, from_reference=TRUE) {
-        samples <- names(nn@nearest_neighbors)
-        neighbors <- lapply(samples,function(sample) {
-            means = nn@nearest_neighbors[sample][[1]]$means
-            if (from_reference) {
-                v1 = data.frame(sample=sample,markerA=markerA,markerB=markerB,reference=reference,from_reference=from_reference,distanceA=means[reference,markerA],distanceB=means[reference,markerB])
-                return(v1)
-            } else {
-                v1 = data.frame(sample=sample,markerA=markerA,markerB=markerB,reference=reference,from_reference=from_reference,distanceA=means[markerA,reference],distanceB=means[markerB,reference])
-                return(v1)
-            }
-        })
-        return(rbindlist(neighbors))
-
-    }
-)
-
 setGeneric("nearest_neighbor_sample", function(x, ...)
     standardGeneric("nearest_neighbor_sample"))
 setMethod(
@@ -258,6 +212,7 @@ setMethod(
 #' @param ttest Flag indicating whether a paired t-test should be calculated. (default: TRUE)
 #' @param transposed Switches 'from' and 'to' cell-type. This way the (default: FALSE)
 #' @param remove_NAs dont plot samples with less than min cells
+#' @param use_pixel show the distances in pixels or micrometers (default: FALSE)
 #' @param ... Additional arguments.
 #' @return plot average nearest neighbor barplots for two cell types
 #'
@@ -287,7 +242,8 @@ setMethod(
                           to,
                           ttest = TRUE,
                           transposed = FALSE,
-                          remove_NAs = FALSE) {
+                          remove_NAs = FALSE,
+                          use_pixel = FALSE) {
         marker_names <- x@markers
 
         #grab the relevant markers
@@ -318,6 +274,16 @@ setMethod(
             current.se <- t(x.se)
         }
 
+        # figure out whether to use px or um
+        if (!use_pixel){
+            #bring measurements into micrometers
+            current.mean <- current.mean * x@microns_per_pixel
+            current.se <- current.se * x@microns_per_pixel
+            unit <- 'um'
+        } else {
+            unit <- 'px'
+        }
+
         #remove NA values
         if (remove_NAs){
             drop <- colSums(is.na(current.mean)) > 0
@@ -345,11 +311,12 @@ setMethod(
             COLS <- c("lightgrey", "black")
         }
         label <- buildLabel(from, to, ext, transposed)
+        ylab <- paste0("Avg. distance to NN (",unit,")")
         bp <- barplot(
             current.mean,
             main = label,
             xlab = "",
-            ylab = "Avg. distance to NN",
+            ylab = ylab,
             col = COLS,
             legend = leg,
             ylim = c(0, max(current.mean) + max(current.se)),
@@ -370,8 +337,8 @@ setMethod(
         }
         #paired t test to test for significance
         if (ttest & length(comp) > 1) {
-            current.mean <- current.mean[,colSums(current.mean!=0)==2]
-            current.se <- current.se[,colSums(current.se!=0)==2]
+            current.mean <- current.mean[,colSums(current.mean != 0)==2]
+            current.se <- current.se[,colSums(current.se !=0 )==2]
             pval <-
                 t.test(current.mean[1, ], current.mean[2, ], paired = TRUE)$p.value
             mtext(paste('Paired t-test:', format(pval, digits = 4)), 3)
@@ -382,7 +349,8 @@ setMethod(
             means = current.mean,
             ses = current.se,
             pval = pval,
-            label = label
+            label = label,
+            ylab = ylab
         ))
     }
 )
@@ -438,6 +406,7 @@ buildLabel <- function(from, to, ext, transposed) {
 #' @param format Format of the output file, can be '.pdf' or '.png' (Default: '.pdf')
 #' @param plot_dir Directory in which the images are written (Default: './')
 #' @param lineColor Color of the rays (Default: '#666666')
+#' @param use_pixel use pixels instead of micrometer for distance measurements (default: FALSE)
 #' @param height Height of the pdf. (Default: 7)
 #' @param width Width of the pdf. (Default: 10)
 #' @param ... Additional arguments.
@@ -474,6 +443,7 @@ setMethod(
                           format = '.pdf',
                           plot_dir = './',
                           lineColor = '#666666',
+                          use_pixel = FALSE,
                           height = 7,
                           width = 10) {
         #generate the mapping directory
@@ -494,6 +464,7 @@ setMethod(
             out_dir,
             format,
             lineColor,
+            use_pixel,
             height,
             width
         )
@@ -513,6 +484,7 @@ setMethod(
                           out_dir,
                           format,
                           lineColor,
+                          use_pixel,
                           height,
                           width) {
         lapply(
@@ -526,6 +498,7 @@ setMethod(
             out_dir,
             format,
             lineColor,
+            use_pixel,
             height,
             width
         )
@@ -555,6 +528,7 @@ setMethod(
                           out_dir,
                           format,
                           lineColor,
+                          use_pixel,
                           height,
                           width) {
 
@@ -582,7 +556,8 @@ setMethod(
                                       samp_name,
                                       from_col = '#EE7600',
                                       to_col = '#028482',
-                                      lineColor = '#666666')
+                                      lineColor = '#666666',
+                                      use_pixel = use_pixel)
 
             dev.off()
         }
@@ -627,10 +602,24 @@ rayplot_single_coordinate <- function(x,
                                       samp_name = '',
                                       from_col = '#EE7600',
                                       to_col = '#028482',
-                                      lineColor = '#666666'){
+                                      lineColor = '#666666',
+                                      use_pixel = FALSE){
 
     from <- x@ppp[x@ppp$marks == from_type, ]
     to <- x@ppp[x@ppp$marks == to_type, ]
+
+    # figure out whether to use px or um
+    if (!use_pixel){
+        #bring measurements into micrometers
+        from$x <- from$x * x@microns_per_pixel
+        from$y <- from$y * x@microns_per_pixel
+        to$x <- to$x * x@microns_per_pixel
+        to$y <- to$y * x@microns_per_pixel
+        unit <- 'um'
+    } else {
+        unit <- 'px'
+    }
+
     #get limits
     overlap <- superimpose(from, to)
     xlim <- max(data.frame(overlap)$x)
@@ -662,8 +651,8 @@ rayplot_single_coordinate <- function(x,
          col = as.character(df$cols),
          pch = 18,
          ylim = rev(range(df$y)),
-         ylab = 'y (pixels)',
-         xlab = 'x (pixels)',
+         ylab = paste0('y (', unit, ')'),
+         xlab = paste0('x (', unit, ')'),
          main = paste(samp_name, '-', x@coordinate_name)
     )
     segments(nearest$from_x,
@@ -680,6 +669,82 @@ rayplot_single_coordinate <- function(x,
     )
 }
 
+
+
+####################################################################################################################################
+####################################################################################################################################
+####################################################################################################################################
+####################################################################################################################################
+####################################################################################################################################
+####################################################################################################################################
+####################################################################################################################################
+
+#Let's wait before before including this into the master branch
+
+
+
+#####################################################################################################################################
+################ nn_comparison_dataframe
+#####################################################################################################################################
+#
+### I think the regular nearest neighbor function might return something very similar
+### The code is a working example
+##
+##
+### And I get an error when trying this piece of code:
+### dataset <- IrisSpatialFeatures_data
+### extract_nearest_neighbor(dataset)
+### nn_comparison_dataframe(dataset,"SOX10+ PDL1-","SOX10+ PDL1+", "CD8+ PD1+")
+### nn_comparison_dataframe(dataset,"SOX10+ PDL1-","SOX10+ PDL1+", "CD8+ PD1+",TRUE)
+###
+### The code should also check if extract_nearest_neighbor was already run before
+
+
+#' Compare nearest neighbors by a data.frame
+#'
+#' @param x IrisSpatialFeatures ImageSet object that has had extract nearest neighbors run
+#' @param markerA First marker
+#' @param markerB Second marker
+#' @param reference Reference marker
+#' @param from_reference If true calculate distance from the reference to the markers by NN
+#'
+#' @return data.frame of markers and distances
+#'
+#' @docType methods
+#' @export
+#'
+#' @examples
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' extract_nearest_neighbor(dataset)
+#'
+#' @importFrom data.table rbindlist
+#' @rdname nn_comparison_dataframe
+setGeneric("nn_comparison_dataframe", function(x,markerA,markerB,reference,from_reference=TRUE)
+    standardGeneric("nn_comparison_dataframe"))
+
+#' @rdname nn_comparison_dataframe
+#' @aliases extract.nearest.neighbor,ANY,ANY-method
+setMethod(
+    "nn_comparison_dataframe",
+    signature = c("ImageSet","character","character","character","logical"),
+    definition = function(x, markerA, markerB, reference, from_reference=TRUE) {
+        samples <- names(nn@nearest_neighbors)
+        neighbors <- lapply(samples,function(sample) {
+            means = nn@nearest_neighbors[sample][[1]]$means
+            if (from_reference) {
+                v1 = data.frame(sample=sample,markerA=markerA,markerB=markerB,reference=reference,from_reference=from_reference,distanceA=means[reference,markerA],distanceB=means[reference,markerB])
+                return(v1)
+            } else {
+                v1 = data.frame(sample=sample,markerA=markerA,markerB=markerB,reference=reference,from_reference=from_reference,distanceA=means[markerA,reference],distanceB=means[markerB,reference])
+                return(v1)
+            }
+        })
+        return(rbindlist(neighbors))
+
+    }
+)
 
 #####################################################################################################################################
 ################ Normalized nearest neighbor functions
