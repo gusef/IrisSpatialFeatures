@@ -31,6 +31,9 @@ int fill_in_cell(NumericMatrix &padded_map, int x, int y, int cell_id, NumericMa
     x_stack[sid] = x;
     y_stack[sid] = y;
 
+    //fill in the id
+    padded_map(x,y) = cell_id;
+
     //as long as the stack is not empty
     while (sid >= 0){
         if (sid >= 999){
@@ -49,26 +52,27 @@ int fill_in_cell(NumericMatrix &padded_map, int x, int y, int cell_id, NumericMa
             y = y_stack[sid];
             sid -= 1;
 
-            //fill in the id
-            padded_map(x,y) = cell_id;
-
             //then check all of the direct neighbors, if they are 0 push that coordinate onto the stack
             if (padded_map(x-1,y) == 0){
+                padded_map(x-1,y) = cell_id;
                 sid += 1;
                 x_stack[sid] = x-1;
                 y_stack[sid] = y;
             }
             if (padded_map(x,y-1) == 0){
+                padded_map(x,y-1) = cell_id;
                 sid += 1;
                 x_stack[sid] = x;
                 y_stack[sid] = y-1;
             }
             if (padded_map(x+1,y) == 0){
+                padded_map(x+1,y) = cell_id;
                 sid += 1;
                 x_stack[sid] = x+1;
                 y_stack[sid] = y;
             }
             if (padded_map(x,y+1) == 0){
+                padded_map(x,y+1) = cell_id;
                 sid += 1;
                 x_stack[sid] = x;
                 y_stack[sid] = y+1;
@@ -242,8 +246,8 @@ List watershedC(NumericMatrix padded_map, NumericMatrix cell_coords){
         if (padded_map(x,y) == 0){
             fill_in_cell(padded_map, x, y, cell_id, cell_coords);
         }else{
-         //This is the case where there is already a color filled in or the
-         //coordinate is on the membrane
+            //This is the case where there is already a color filled in or the
+            //coordinate is on the membrane
             if (padded_map(x,y)==(-1)){
                 problems.push_back(std::make_pair(cell_id,(int)-1));
             }else{
@@ -268,15 +272,15 @@ void outline_cells(NumericMatrix &marker_map, NumericMatrix &padded_map, int x, 
     x_stack[sid] = x;
     y_stack[sid] = y;
 
+    //fill in the starting point
+    padded_map(x,y) = 1;
+
     //as long as the stack is not empty
     while (sid >= 0){
         //pop coordinate from stack
         x = x_stack[sid];
         y = y_stack[sid];
         sid -= 1;
-
-        //fill in the id
-        padded_map(x,y) = 1;
 
         if (padded_map(x-1,y)==-1 ||
             padded_map(x,y-1)==-1 ||
@@ -290,22 +294,26 @@ void outline_cells(NumericMatrix &marker_map, NumericMatrix &padded_map, int x, 
         }
 
         //then check all of the direct neighbors, if they are 0 push that coordinate onto the stack
-       if (padded_map(x-1,y) == 0){
+        if (padded_map(x-1,y) == 0){
+            padded_map(x-1,y) = 1;
             sid += 1;
             x_stack[sid] = x-1;
             y_stack[sid] = y;
         }
         if (padded_map(x,y-1) == 0){
+            padded_map(x,y-1) = 1;
             sid += 1;
             x_stack[sid] = x;
             y_stack[sid] = y-1;
         }
         if (padded_map(x+1,y) == 0){
+            padded_map(x+1,y) = 1;
             sid += 1;
             x_stack[sid] = x+1;
             y_stack[sid] = y;
         }
         if (padded_map(x,y+1) == 0){
+            padded_map(x,y+1) = 1;
             sid += 1;
             x_stack[sid] = x;
             y_stack[sid] = y+1;
@@ -377,6 +385,9 @@ void fill_mask(NumericMatrix &mask, NumericMatrix &padded, int xx, int yy){
     x_stack[sid] = xx;
     y_stack[sid] = yy;
 
+    //fill in the starting point
+    padded(xx,yy) = 1;
+
     //as long as the stack is not empty
     while (sid >= 0){
         if (sid > 999){
@@ -392,25 +403,28 @@ void fill_mask(NumericMatrix &mask, NumericMatrix &padded, int xx, int yy){
 
         //fill in the id
         mask(x,y) = 2;
-        padded(x,y) = 1;
 
         //then check all of the direct neighbors, if they are 0 push that coordinate onto the stack
-       if (padded(x-1,y) == 0){
+        if (padded(x-1,y) == 0){
+            padded(x-1,y) = 1;
             sid += 1;
             x_stack[sid] = x-1;
             y_stack[sid] = y;
         }
         if (padded(x,y-1) == 0){
+            padded(x,y-1) = 1;
             sid += 1;
             x_stack[sid] = x;
             y_stack[sid] = y-1;
         }
         if (padded(x+1,y) == 0){
+            padded(x+1,y) = 1;
             sid += 1;
             x_stack[sid] = x+1;
             y_stack[sid] = y;
         }
         if (padded(x,y+1) == 0){
+            padded(x,y+1) = 1;
             sid += 1;
             x_stack[sid] = x;
             y_stack[sid] = y+1;

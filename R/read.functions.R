@@ -6,7 +6,6 @@
 #   ***_score_data.txt
 #   ***_cell_seg_data_summary.txt (which is optional)
 
-
 #' Read inForm output and store it in an IrisSpatialFeatures ImageSet object.
 #'
 #' @param path Directory that contains the raw files
@@ -14,18 +13,15 @@
 #' @param format Output format: Currently only "Vectra" and "Mantra" are supported.
 #' @param dir_filter Filter to select only certain directory names.
 #' @param read_nuc_seg_map Flag indicating whether the nuclear map should be read.
-#' @param read_dapi_map Flag indicating whether the dapi layer should be read.
-#' @param use_binary_seg_maps Flag indicating whether the dapi layer should be read.
+#' @param read_component_tiff Flag indicating whether the component tiff should be read
 #' @param MicronsPerPixel Length of one pixel. Default: 0.496, corresponding to a 20x Mantra/Vectra images
 #' @param invasive_margin_in_px The width of the invasive margin in pixels
 #' @param readMasks Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: True)
-#' @param ROI Flag indicating whether ROI was specified so the image is only analyzed within that region a '_ROI.tif' needs to be present. (default: False)
 #' @param ignore_scoring Flag indicating whether the scoring file should be ignored (default: False)
 #' @param read_only_relevant_markers Flag that indicates whether all read inform output should be kept or only the relevant markers
 #'
 #' @return IrisSpatialFeatures ImageSet object.
 #' @examples
-#'  raw_data <- new("ImageSet")
 #'  raw_data <- read_raw(path=system.file("extdata", package = "IrisSpatialFeatures"),
 #'                       format='Mantra')
 #' @docType methods
@@ -38,12 +34,9 @@ setGeneric("read_raw",
                     format = 'Vectra',
                     dir_filter = '',
                     read_nuc_seg_map = FALSE,
-                    read_dapi_map = FALSE,
-                    use_binary_seg_maps = FALSE,
                     MicronsPerPixel = 0.496,
                     invasive_margin_in_px = 100,
                     readMasks = TRUE,
-                    ROI = FALSE,
                     ignore_scoring = FALSE,
                     read_only_relevant_markers = TRUE,
                     ...) standardGeneric("read_raw"),
@@ -59,12 +52,9 @@ setMethod(
                           format,
                           dir_filter,
                           read_nuc_seg_map,
-                          read_dapi_map,
-                          use_binary_seg_maps,
                           MicronsPerPixel,
                           invasive_margin_in_px,
                           readMasks,
-                          ROI,
                           ignore_scoring,
                           read_only_relevant_markers) {
         x <- new("ImageSet")
@@ -82,11 +72,8 @@ setMethod(
                 format,
                 dir_filter,
                 read_nuc_seg_map,
-                read_dapi_map,
-                use_binary_seg_maps,
                 invasive_margin_in_px,
                 readMasks,
-                ROI,
                 ignore_scoring,
                 read_only_relevant_markers
             )
@@ -112,11 +99,8 @@ setMethod(
                           format,
                           dir_filter,
                           read_nuc_seg_map,
-                          read_dapi_map,
-                          use_binary_seg_maps,
                           invasive_margin_in_px,
                           readMasks,
-                          ROI,
                           ignore_scoring,
                           read_only_relevant_markers) {
         print(paste('Sample:', x@sample_name))
@@ -158,11 +142,8 @@ setMethod(
                 label_fix,
                 format,
                 read_nuc_seg_map,
-                read_dapi_map,
-                use_binary_seg_maps,
                 invasive_margin_in_px,
                 readMasks,
-                ROI,
                 ignore_scoring,
                 read_only_relevant_markers
             )
@@ -175,6 +156,7 @@ setMethod(
 #' @importFrom tiff readTIFF
 #' @importFrom spatstat owin
 #' @importFrom utils read.csv
+#' @importFrom gdalUtils gdal_translate
 setGeneric("read_raw_coordinate", function(x, ...)
     standardGeneric("read_raw_coordinate"))
 setMethod(
@@ -186,11 +168,8 @@ setMethod(
                           label_fix,
                           format,
                           read_nuc_seg_map,
-                          read_dapi_map,
-                          use_binary_seg_maps,
                           invasive_margin_in_px,
                           readMasks,
-                          ROI,
                           ignore_scoring,
                           read_only_relevant_markers) {
         if (format == 'Vectra') {
@@ -235,37 +214,58 @@ setMethod(
             ))
         }
 
+        #check if there is a binary segmentation map file
+        bin_file <- grep('_binary_seg_maps.tif', img_names)
+        if (length(bin_file) > 0) {
+            bin_file <- file.path(sample_dir,img_names[bin_file])
 
-        if (use_binary_seg_maps) {
-            maps <- readTIFF(file.path(sample_dir,
-                                       img_names[grep('_binary_seg_maps.tif', img_names)]), all =
-                                 TRUE)
-            x@raw@mem_seg_map <- maps[[2]]
+            #extract the maps
+            maps <- readTIFF(bin_file, info = T, all = TRUE)
+
+            #extract the names
+            nams <- sapply(maps, function(x){
+                info <- attributes(x)$description
+                if (length(grep('<CompartmentType>',info)) == 0){
+                    info <- 'Mask'
+                }else{
+                    info <- strsplit(strsplit(info,
+                                              '<CompartmentType>')[[1]][2],
+                                     '</CompartmentType>')[[1]][1]
+                }
+                return(info)
+            })
+            names(maps) <- nams
+
+
+            #first map is the nuclear map
             if (read_nuc_seg_map) {
-                x@raw@nuc_seg_map <- maps[[1]]
+                x@raw@nuc_seg_map <- maps['Nucleus']
             }
 
+            #second map is the membrane map
+            binary <- apply(maps[['Membrane']],2,function(x)x>0)
+            x@raw@mem_seg_map <- binary
+
+            if ("Mask" %in% names(maps)){
+                binary <- apply(maps[['Mask']],2,function(x)x>0)
+                x@mask$ROI <- t(mask)
+            }
 
         } else{
             if (length(grep('_memb_seg_map.tif', img_names)) > 0) {
                 x@raw@mem_seg_map <- readTIFF(file.path(sample_dir,
                                                         img_names[grep('_memb_seg_map.tif', img_names)]))
+            } else {
+                print('No membrane map found, skipping .. ')
             }
 
             if (read_nuc_seg_map &&
                 length(grep('_nuc_seg_map.tif', img_names)) > 0) {
                 x@raw@nuc_seg_map <- readTIFF(file.path(sample_dir,
                                                         img_names[grep('_nuc_seg_map.tif', img_names)]))
+            }else {
+                print('No nuclear map found, skipping .. ')
             }
-        }
-        if (read_dapi_map &&
-            length(grep('_component_data.tif', img_names)) > 0) {
-            dapi <- readTIFF(file.path(sample_dir,
-                                       img_names[grep('_component_data.tif', img_names)]), all = TRUE)[[1]]
-            if (class(dapi) == 'array') {
-                dapi <- dapi[, , 4]
-            }
-            x@raw@dapi_map <- dapi
         }
 
         if (!ignore_scoring) {
@@ -368,43 +368,25 @@ setMethod(
             x@size_in_px <- x_max * y_max
         }
 
-        if (ROI) {
-            #extract ROI mask
-            roi <- img_names[grep('_ROI.tif', img_names)]
-            if (length(roi) == 0) {
-                stop(
-                    paste(
-                        '_ROI.tif for',
-                        x@coordinate_name,
-                        'in',
-                        sample_dir,
-                        'does not exists!'
-                    )
-                )
-            }
-            roi <- file.path(sample_dir, roi)
-            roi <- extract_mask(roi)
+        if (!is.null(x@mask$ROI)) {
 
             #drop all coordinates outside of the image
             filter <-
                 sapply(1:length(x@ppp$x), function(i, dat, mask)
-                    mask[dat$x[i], dat$y[i]] == 1, x@ppp, roi)
+                    mask[dat$x[i], dat$y[i]] == 1, x@ppp, x@mask$ROI)
             x@ppp <- x@ppp[filter, ]
             x@raw@data <- x@raw@data[filter, ]
 
             #change the size of the image
-            x@size_in_px <- sum(roi > 0)
+            x@size_in_px <- sum(x@mask$ROI > 0)
 
             #if there were other masks read we set all these masks to 0
             if (readMasks) {
                 #reduce the other masks
                 for (i in 1:length(x@masks)) {
-                    x@masks[[i]] <- x@masks[[i]][roi == 0] <- 0
+                    x@masks[[i]] <- x@masks[[i]][x@mask$ROI == 0] <- 0
                 }
-
             }
-            x@mask$ROI <- roi
-
         }
         return(x)
     }

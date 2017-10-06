@@ -6,7 +6,7 @@
 #!       such as PD1 and PD-L1
 #' @slot mem_seg_map Membrane map as output by inForm
 #' @slot nuc_seg_map Nuclear map as output by inForm (optional)
-#' @slot dapi_map DAPI stain map as output by inForm (optional)
+#' @slot component_tiff component tiff as output by inForm (optional)
 #' @docType class
 raw_data <- setClass(
     "raw_data",
@@ -15,8 +15,8 @@ raw_data <- setClass(
         summary = 'matrix',
         score = 'matrix',
         mem_seg_map = 'matrix',
-        nuc_seg_map = 'matrix',
-        dapi_map = 'matrix'
+        nuc_seg_map = 'matrix'
+        #,component_tiff = 'list'
     )
 )
 

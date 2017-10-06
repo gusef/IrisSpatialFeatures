@@ -111,7 +111,8 @@ setMethod(
     signature = "Coordinate",
     definition = function(x, all_levels) {
         #extract membrane map and set membranes to -1
-        if (is.null(x@raw@mem_seg_map)) {
+        if (is.null(x@raw@mem_seg_map) ||
+            any(dim(x@raw@mem_seg_map) == 0)) {
             stop(
                 'The interaction analysis can only be run on datasets that include the membrane maps. Try the proximity analysis instead.'
             )

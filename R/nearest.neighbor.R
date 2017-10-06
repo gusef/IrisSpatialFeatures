@@ -694,7 +694,6 @@ rayplot_single_coordinate <- function(x,
 #####################################################################################################################################
 #
 ### I think the regular nearest neighbor function might return something very similar
-### The code is a working example
 ##
 ##
 ### And I get an error when trying this piece of code:
@@ -703,9 +702,6 @@ rayplot_single_coordinate <- function(x,
 ### nn_comparison_dataframe(dataset,"SOX10+ PDL1-","SOX10+ PDL1+", "CD8+ PD1+")
 ### nn_comparison_dataframe(dataset,"SOX10+ PDL1-","SOX10+ PDL1+", "CD8+ PD1+",TRUE)
 ###
-### The code should also check if extract_nearest_neighbor was already run before
-
-
 #' Compare nearest neighbors by a data.frame
 #'
 #' @param x IrisSpatialFeatures ImageSet object that has had extract nearest neighbors run

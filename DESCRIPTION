@@ -7,7 +7,7 @@ Date: 2017-07-31
 Author: Daniel Gusenleitner, Jason L. Weirather
 Maintainer: Daniel Gusenleitner <Daniel_Gusenleitner@dfci.harvard.edu>
 Depends: R (>= 3.4)
-Imports: Rcpp (>= 0.12.7), SpatialTools, gplots, spatstat, tiff,
+Imports: Rcpp (>= 0.12.7), SpatialTools, gplots, spatstat, tiff, 
         RColorBrewer, methods, grDevices, graphics, stats, utils,
         matrixStats, data.table, ggplot2, dplyr, magrittr
 Description: IrisSpatialFeatures reads the output of the PerkinElmer inForm software and
