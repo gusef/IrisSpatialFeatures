@@ -11,7 +11,8 @@ neighbor_ray_plot(x, ...)
 
 \S4method{neighbor_ray_plot}{ImageSet}(x, from_type, to_type,
   from_col = "#EE7600", to_col = "#028482", format = ".pdf",
-  plot_dir = "./", lineColor = "#666666", height = 7, width = 10)
+  plot_dir = "./", lineColor = "#666666", use_pixel = FALSE, height = 7,
+  width = 10)
 }
 \arguments{
 \item{x}{An IrisSpatialFeatures ImageSet object}
@@ -31,6 +32,8 @@ neighbor_ray_plot(x, ...)
 \item{plot_dir}{Directory in which the images are written (Default: './')}
 
 \item{lineColor}{Color of the rays (Default: '#666666')}
+
+\item{use_pixel}{use pixels instead of micrometer for distance measurements (default: FALSE)}
 
 \item{height}{Height of the pdf. (Default: 7)}
 

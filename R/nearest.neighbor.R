@@ -555,8 +555,8 @@ setMethod(
             }
 
             rayplot_single_coordinate(x,
-                                      from,
-                                      to,
+                                      from_type,
+                                      to_type,
                                       samp_name,
                                       from_col = '#EE7600',
                                       to_col = '#028482',

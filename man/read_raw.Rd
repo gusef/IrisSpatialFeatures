@@ -8,14 +8,13 @@
 \title{Read inForm output and store it in an IrisSpatialFeatures ImageSet object.}
 \usage{
 read_raw(path, label_fix = list(), format = "Vectra", dir_filter = "",
-  read_nuc_seg_map = FALSE, read_dapi_map = FALSE,
-  use_binary_seg_maps = FALSE, MicronsPerPixel = 0.496,
-  invasive_margin_in_px = 100, readMasks = TRUE, ROI = FALSE,
-  ignore_scoring = FALSE, ...)
+  read_nuc_seg_map = FALSE, MicronsPerPixel = 0.496,
+  invasive_margin_in_px = 100, readMasks = TRUE, ignore_scoring = FALSE,
+  read_only_relevant_markers = TRUE, ...)
 
 \S4method{read_raw}{character}(path, label_fix, format, dir_filter,
-  read_nuc_seg_map, read_dapi_map, use_binary_seg_maps, MicronsPerPixel,
-  invasive_margin_in_px, readMasks, ROI, ignore_scoring)
+  read_nuc_seg_map, MicronsPerPixel, invasive_margin_in_px, readMasks,
+  ignore_scoring, read_only_relevant_markers)
 }
 \arguments{
 \item{path}{Directory that contains the raw files}
@@ -28,19 +27,17 @@ read_raw(path, label_fix = list(), format = "Vectra", dir_filter = "",
 
 \item{read_nuc_seg_map}{Flag indicating whether the nuclear map should be read.}
 
-\item{read_dapi_map}{Flag indicating whether the dapi layer should be read.}
-
-\item{use_binary_seg_maps}{Flag indicating whether the dapi layer should be read.}
-
 \item{MicronsPerPixel}{Length of one pixel. Default: 0.496, corresponding to a 20x Mantra/Vectra images}
 
 \item{invasive_margin_in_px}{The width of the invasive margin in pixels}
 
 \item{readMasks}{Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: True)}
 
-\item{ROI}{Flag indicating whether ROI was specified so the image is only analyzed within that region a '_ROI.tif' needs to be present. (default: False)}
-
 \item{ignore_scoring}{Flag indicating whether the scoring file should be ignored (default: False)}
+
+\item{read_only_relevant_markers}{Flag that indicates whether all read inform output should be kept or only the relevant markers}
+
+\item{read_component_tiff}{Flag indicating whether the component tiff should be read}
 }
 \value{
 IrisSpatialFeatures ImageSet object.
@@ -49,7 +46,6 @@ IrisSpatialFeatures ImageSet object.
 Read inForm output and store it in an IrisSpatialFeatures ImageSet object.
 }
 \examples{
-raw_data <- new("ImageSet")
-raw_data <- read_raw(path=system.file("extdata", package = "IrisSpatialFeatures"),
-                     format='Mantra')
+ raw_data <- read_raw(path=system.file("extdata", package = "IrisSpatialFeatures"),
+                      format='Mantra')
 }

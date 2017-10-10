@@ -5,8 +5,6 @@
 #' @param ... Additional arguments
 #' @return list of interactions
 #'
-#' @examples
-#' extract_interactions(new("ImageSet"))
 #'
 #' @docType methods
 #' @export

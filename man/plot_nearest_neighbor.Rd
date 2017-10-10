@@ -14,7 +14,7 @@ to test for significant differences.}
 plot_nearest_neighbor(x, ...)
 
 \S4method{plot_nearest_neighbor}{ImageSet}(x, from, to, ttest = TRUE,
-  transposed = FALSE, remove_NAs = FALSE)
+  transposed = FALSE, remove_NAs = FALSE, use_pixel = FALSE)
 }
 \arguments{
 \item{x}{IrisSpatialFeatures ImageSet object.}
@@ -30,6 +30,8 @@ plot_nearest_neighbor(x, ...)
 \item{transposed}{Switches 'from' and 'to' cell-type. This way the (default: FALSE)}
 
 \item{remove_NAs}{dont plot samples with less than min cells}
+
+\item{use_pixel}{show the distances in pixels or micrometers (default: FALSE)}
 }
 \value{
 plot average nearest neighbor barplots for two cell types

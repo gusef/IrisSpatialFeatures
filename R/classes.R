@@ -20,15 +20,7 @@ raw_data <- setClass(
     )
 )
 
-#' "ppp" class
-#'
-#' @name ppp-class
-#' @aliases ppp
-#' @family ppp
-#'
-#' @exportClass ppp
-#' @importFrom spatstat ppp
-setOldClass("ppp")
+setOldClass(c("ppp"))
 
 #' Class to represent a single imaging coordinate
 #'

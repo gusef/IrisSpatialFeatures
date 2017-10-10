@@ -156,7 +156,6 @@ setMethod(
 #' @importFrom tiff readTIFF
 #' @importFrom spatstat owin
 #' @importFrom utils read.csv
-#' @importFrom gdalUtils gdal_translate
 setGeneric("read_raw_coordinate", function(x, ...)
     standardGeneric("read_raw_coordinate"))
 setMethod(

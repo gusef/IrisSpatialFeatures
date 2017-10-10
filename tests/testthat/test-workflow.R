@@ -1,11 +1,9 @@
 context("workflow")
 test_that("steps of a workflow excute", {
     # Test read_raw
-    raw_data <- new("ImageSet")
-    raw_data<- read_raw(raw_data,
-                        raw_dir_name=system.file("extdata", package = "IrisSpatialFeatures"),
+    raw_data <- read_raw(path=system.file("extdata", package = "IrisSpatialFeatures"),
                         format='Mantra')
-    expect_that(length(raw_data@markers),equals(3))
+    expect_equal(length(raw_data@markers),3)
     # Test threshold_dataset
     dataset <- threshold_dataset(raw_data,
                                  marker='PD-Ligand-1 (Opal 690)',
@@ -16,6 +14,5 @@ test_that("steps of a workflow excute", {
                                  marker_name='PD1',
                                  base=c('CD8+','OTHER'))
 
-    expect_that(length(dataset@markers),equals(6))
-    #
+    expect_equal(length(dataset@markers),6)
 })

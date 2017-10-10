@@ -21,6 +21,6 @@ Class to represent the raw data that is output by inForm
 
 \item{\code{nuc_seg_map}}{Nuclear map as output by inForm (optional)}
 
-\item{\code{dapi_map}}{DAPI stain map as output by inForm (optional)}
+\item{\code{component_tiff}}{component tiff as output by inForm (optional)}
 }}
 

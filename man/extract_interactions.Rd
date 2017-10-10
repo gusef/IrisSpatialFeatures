@@ -23,8 +23,6 @@ list of interactions
 Extract interactions between all cell-types
 }
 \examples{
-extract_interactions(new("ImageSet"))
-
 
 #loading pre-read dataset
 dataset <- IrisSpatialFeatures_data
