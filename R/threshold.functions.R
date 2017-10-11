@@ -247,8 +247,7 @@ setMethod(
 #' @return IrisSpatialFeatures ImageSet object.
 #' @examples
 #' dataset <- IrisSpatialFeatures_data
-#' ds <- collapse_markers(dataset, marker1 = "SOX10+ PDL1+",
-#'                        marker2 = "SOX10+ PDL1-", combined = "SOX10+")
+#' ds <- collapse_markers(dataset,marker1="SOX10+ PDL1+",marker2="SOX10+ PDL1-", combined="SOX10+")
 #'
 #' @export
 #' @rdname collapse_markers
