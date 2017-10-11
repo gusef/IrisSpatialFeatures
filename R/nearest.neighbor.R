@@ -582,6 +582,7 @@ setMethod(
 #' @param use_pixel Express units as pixels (Default: FALSE)
 #' @param microns_per_pixel Conversion (Default: 0.496)
 #'
+#' @docType methods
 #' @export
 #'
 #' @importFrom spatstat nncross
@@ -613,6 +614,7 @@ setGeneric("rayplot_single_coordinate", function(x,
                                                 use_pixel=FALSE,
                                                 microns_per_pixel=0.496)
     standardGeneric("rayplot_single_coordinate"))
+#' @rdname rayplot_single_coordinate
 setMethod(
     "rayplot_single_coordinate",
     signature = "Coordinate",

@@ -26,6 +26,7 @@
 #' @docType methods
 #' @export
 #' @importFrom methods new
+#' @importFrom methods .valueClassTest
 #' @rdname read_raw
 setGeneric("read_raw",
            function(path,
@@ -246,7 +247,7 @@ setMethod(
 
             if ("Mask" %in% names(maps)){
                 binary <- apply(maps[['Mask']],2,function(x)x>0)
-                x@mask$ROI <- t(mask)
+                x@mask$ROI <- t(binary)
             }
 
         } else{

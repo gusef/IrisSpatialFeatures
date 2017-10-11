@@ -250,6 +250,7 @@ setMethod(
 #' ds <- collapse_markers(dataset,marker1="SOX10+ PDL1+",marker2="SOX10+ PDL1-", combined="SOX10+")
 #'
 #' @export
+#' @importFrom methods .valueClassTest
 #' @rdname collapse_markers
 setGeneric("collapse_markers",
            function(image_set, marker1, marker2, combined) {
