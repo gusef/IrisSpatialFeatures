@@ -581,6 +581,7 @@ setMethod(
 #' @param lineColor Color for the line (Default: '#666666')
 #' @param use_pixel Express units as pixels (Default: FALSE)
 #' @param microns_per_pixel Conversion (Default: 0.496)
+#' @return a plot
 #'
 #' @docType methods
 #' @export

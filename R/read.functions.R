@@ -219,7 +219,7 @@ setMethod(
             bin_file <- file.path(sample_dir,img_names[bin_file])
 
             #extract the maps
-            maps <- readTIFF(bin_file, info = T, all = TRUE)
+            maps <- readTIFF(bin_file, info = TRUE, all = TRUE)
 
             #extract the names
             nams <- sapply(maps, function(x){
