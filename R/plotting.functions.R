@@ -157,6 +157,7 @@ setMethod(
 #' @import ggplot2
 #' @import magrittr
 #' @import RColorBrewer
+#' @import tibble
 #'
 setMethod("plot",
     signature = c(x="ImageSet"),

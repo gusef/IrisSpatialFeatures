@@ -2,14 +2,14 @@ Package: IrisSpatialFeatures
 Type: Package
 Title: A package to extract spatial features based on multiplex IF
         images
-Version: 0.99.6
-Date: 2017-07-31
+Version: 1.0.0
+Date: 2017-10-11
 Author: Daniel Gusenleitner, Jason L. Weirather
 Maintainer: Daniel Gusenleitner <Daniel_Gusenleitner@dfci.harvard.edu>
 Depends: R (>= 3.4)
 Imports: Rcpp (>= 0.12.7), SpatialTools, gplots, spatstat, tiff, 
         RColorBrewer, methods, grDevices, graphics, stats, utils,
-        matrixStats, data.table, ggplot2, dplyr, magrittr
+        data.table, ggplot2, dplyr, magrittr, tibble
 Description: IrisSpatialFeatures reads the output of the PerkinElmer inForm software and
     calculates a variety of spatial statistics. In addition to simple 
     counts, it can derive average nearest neighbors for each cell-type and 

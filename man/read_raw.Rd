@@ -10,11 +10,12 @@
 read_raw(path, label_fix = list(), format = "Vectra", dir_filter = "",
   read_nuc_seg_map = FALSE, MicronsPerPixel = 0.496,
   invasive_margin_in_px = 100, readMasks = TRUE, ignore_scoring = FALSE,
-  read_only_relevant_markers = TRUE, ...)
+  read_only_relevant_markers = TRUE)
 
-\S4method{read_raw}{character}(path, label_fix, format, dir_filter,
-  read_nuc_seg_map, MicronsPerPixel, invasive_margin_in_px, readMasks,
-  ignore_scoring, read_only_relevant_markers)
+\S4method{read_raw}{character}(path, label_fix = list(), format = "Vectra",
+  dir_filter = "", read_nuc_seg_map = FALSE, MicronsPerPixel = 0.496,
+  invasive_margin_in_px = 100, readMasks = TRUE, ignore_scoring = FALSE,
+  read_only_relevant_markers = TRUE)
 }
 \arguments{
 \item{path}{Directory that contains the raw files}
@@ -36,8 +37,6 @@ read_raw(path, label_fix = list(), format = "Vectra", dir_filter = "",
 \item{ignore_scoring}{Flag indicating whether the scoring file should be ignored (default: False)}
 
 \item{read_only_relevant_markers}{Flag that indicates whether all read inform output should be kept or only the relevant markers}
-
-\item{read_component_tiff}{Flag indicating whether the component tiff should be read}
 }
 \value{
 IrisSpatialFeatures ImageSet object.
