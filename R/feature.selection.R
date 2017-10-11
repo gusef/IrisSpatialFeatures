@@ -71,7 +71,7 @@ feature_selection <- function(dat, lab) {
 #' dataset <- extract_proximity(dataset,only_closest=TRUE,radii=25)
 #' dataset <- extract_interactions(dataset)
 #' extract_features(dataset)
- #' @docType methods
+#' @docType methods
 #' @export
 #' @rdname extract_features
 setGeneric("extract_features", function(x, ...)
