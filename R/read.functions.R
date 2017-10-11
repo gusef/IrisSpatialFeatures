@@ -13,7 +13,6 @@
 #' @param format Output format: Currently only "Vectra" and "Mantra" are supported.
 #' @param dir_filter Filter to select only certain directory names.
 #' @param read_nuc_seg_map Flag indicating whether the nuclear map should be read.
-#' @param read_component_tiff Flag indicating whether the component tiff should be read
 #' @param MicronsPerPixel Length of one pixel. Default: 0.496, corresponding to a 20x Mantra/Vectra images
 #' @param invasive_margin_in_px The width of the invasive margin in pixels
 #' @param readMasks Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: True)
@@ -38,8 +37,8 @@ setGeneric("read_raw",
                     invasive_margin_in_px = 100,
                     readMasks = TRUE,
                     ignore_scoring = FALSE,
-                    read_only_relevant_markers = TRUE,
-                    ...) standardGeneric("read_raw"),
+                    read_only_relevant_markers = TRUE
+                    ) standardGeneric("read_raw"),
            valueClass = "ImageSet")
 
 #' @rdname read_raw

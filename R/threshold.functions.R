@@ -26,7 +26,7 @@
 #' @export
 #' @rdname threshold_dataset
 setGeneric("threshold_dataset",
-           function(image_set, marker, marker_name, ...) {
+           function(image_set, marker, marker_name, base=NULL, pheno_name='Phenotype', remove_blanks=TRUE) {
                standardGeneric("threshold_dataset")
            },
     valueClass = "ImageSet")
@@ -35,7 +35,7 @@ setGeneric("threshold_dataset",
 #' @aliases threshold_dataset,ANY,ANY-method
 setMethod(
     "threshold_dataset",
-    signature = c(image_set="ImageSet",marker="character",marker_name="character"),
+    signature = "ImageSet",
     definition = function (image_set,
                            marker,
                            marker_name,
@@ -253,7 +253,7 @@ setMethod(
 #' @export
 #' @rdname collapse_markers
 setGeneric("collapse_markers",
-           function(image_set, marker1, marker2, combined, ...) {
+           function(image_set, marker1, marker2, combined) {
                standardGeneric("collapse_markers")
            },
            valueClass = "ImageSet")
@@ -262,7 +262,7 @@ setGeneric("collapse_markers",
 #' @aliases collapse_markers,ANY,ANY-method
 setMethod(
     "collapse_markers",
-    signature = c(image_set="ImageSet",marker1="character", marker2="character", combined="character"),
+    signature = "ImageSet",
     definition = function (image_set,
                            marker1,
                            marker2,

@@ -572,12 +572,15 @@ setMethod(
 
 #' Plot nearest neighbor ray plots for a single coordinate
 #'
-#' @param x An IrisSpatialFeatures ImageSet object
-#' @param from_col Cell type from which the rays are drawn
+#' @param x An Coordinate object
+#' @param from_type Cell type from which the rays are drawn
 #' @param to_type Cell type to which the rays are drawn
 #' @param samp_name Name of the sample
 #' @param from_col Color for the 'from' cell-type (Default: '#EE7600')
 #' @param to_col Color for the 'to' cell-type  (Default: '#028482')
+#' @param lineColor Color for the line (Default: '#666666')
+#' @param use_pixel Express units as pixels (Default: FALSE)
+#' @param microns_per_pixel Conversion (Default: 0.496)
 #'
 #' @export
 #'
@@ -600,8 +603,20 @@ setMethod(
 #'                           samp_name = dataset@samples[[1]]@sample_name,
 #'                           from_type = "SOX10+ PDL1+",
 #'                           to_type = "CD8+ PD1+")
-
-rayplot_single_coordinate <- function(x,
+setGeneric("rayplot_single_coordinate", function(x,
+                                                from_type,
+                                                to_type,
+                                                samp_name='',
+                                                from_col= '#EE7600',
+                                                to_col= '#028482',
+                                                lineColor = '#666666',
+                                                use_pixel=FALSE,
+                                                microns_per_pixel=0.496)
+    standardGeneric("rayplot_single_coordinate"))
+setMethod(
+    "rayplot_single_coordinate",
+    signature = "Coordinate",
+    function(x,
                                       from_type,
                                       to_type,
                                       samp_name = '',
@@ -673,4 +688,4 @@ rayplot_single_coordinate <- function(x,
         pch = 18,
         cex = 0.8
     )
-}
+})

@@ -144,8 +144,7 @@ setMethod(
 
 #' Plot all frames of an IrisSpatialFeatures ImageSet object.
 #'
-#' @param x Iris ImageSet boject
-#' @param ...
+#' @param x Iris ImageSet object
 #'
 #' @return A plot
 #' @examples

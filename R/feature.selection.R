@@ -94,7 +94,7 @@ setMethod(
 
         if (length(x@interactions) > 0) {
             f_inter <-
-                lapply(x@interactions,
+                lapply(extract_interaction_combinations(x@interactions),
                        extract_interaction_features,
                        'Interaction')
             f_inter <- do.call(rbind, f_inter)
@@ -128,6 +128,40 @@ setMethod(
     }
 )
 
+# Reshape interaction into a matrix
+extract_interaction_combinations <- function(interactions){
+    all_markers <- colnames(interactions[[1]]$total)
+    marker_combos <- table(sub('.$','',all_markers))
+    marker_combos <- names(marker_combos)[marker_combos>1]
+    grid <- as.matrix(expand.grid(lapply(1:length(marker_combos),function(x)c(TRUE,FALSE))))
+    colnames(grid) <- marker_combos
+    inter <- apply(grid,1,get_collapsed_interactions,marker_combos,interactions)
+    return(inter)
+}
+get_collapsed_interactions <- function(selector,marker_combos,interactions){
+    current_markers <- marker_combos[selector]
+    inter <- interactions
+    for (marker in current_markers){
+        inter <- lapply(inter,collapse_marker_inter,marker)
+    }
+    collapsed_interactions <- lapply(inter,function(x)sweep(x$total,2,x$nums,'/'))
+    return(collapsed_interactions)
+}
+collapse_marker_inter <- function(x,marker){
+    coords <- grep(marker,colnames(x$total),fixed = TRUE)
+    #collapse
+    x$total <- cbind(x$total[,-coords],rowSums(x$total[,coords]))
+    x$total <- rbind(x$total[-coords,],colSums(x$total[coords,]))
+    x$nums <- c(x$nums[-coords],sum(x$nums[coords]))
+
+    #clean up the name
+    rownames(x$total)[nrow(x$total)] <- colnames(x$total)[ncol(x$total)] <- names(x$nums)[length(x$nums)] <- sub(' [^ ]+$','',marker)
+
+    #fix the ordering so they are ordered aplhabetically again
+    x$total <- x$total[order(rownames(x$total)),order(colnames(x$total))]
+    x$nums <- x$nums[order(names(x$nums))]
+    return(x)
+}
 
 #extracts the values for NN and interaction analysis
 extractSimpleValues <- function(mat, remove_self = TRUE) {
