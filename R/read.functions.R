@@ -382,8 +382,8 @@ setMethod(
             #if there were other masks read we set all these masks to 0
             if (readMasks) {
                 #reduce the other masks
-                for (i in 1:length(x@masks)) {
-                    x@masks[[i]] <- x@masks[[i]][x@mask$ROI == 0] <- 0
+                for (i in 1:length(x@mask)) {
+                    x@mask[[i]] <- x@mask[[i]][x@mask$ROI == 0] <- 0
                 }
             }
         }
