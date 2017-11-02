@@ -383,7 +383,7 @@ setMethod(
             if (readMasks) {
                 #reduce the other masks
                 for (i in 1:length(x@mask)) {
-                    x@mask[[i]] <- x@mask[[i]][x@mask$ROI == 0] <- 0
+                    x@mask[[i]][x@mask$ROI == 0] <- 0
                 }
             }
         }
