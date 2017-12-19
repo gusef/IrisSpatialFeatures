@@ -5,7 +5,7 @@ Title: A package to extract spatial features based on multiplex IF
 Version: 0.99.6
 Date: 2017-07-31
 Author: Daniel Gusenleitner, Jason L. Weirather
-Maintainer: Daniel Gusenleitner <Daniel_Gusenleitner@dfci.harvard.edu>
+Maintainer: Daniel Gusenleitner <gusef24@gmail.com>
 Depends: R (>= 3.4)
 Imports: Rcpp (>= 0.12.7), SpatialTools, gplots, spatstat, tiff, 
         RColorBrewer, methods, grDevices, graphics, stats, utils,
