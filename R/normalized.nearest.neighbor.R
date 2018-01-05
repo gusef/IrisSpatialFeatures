@@ -1,12 +1,84 @@
-####################################################################################################################################
-####################################################################################################################################
-####################################################################################################################################
-####################################################################################################################################
-####################################################################################################################################
-####################################################################################################################################
-####################################################################################################################################
+#' Calculate Nearest Neighbor for testing outputs
+#'
+#' @param x IrisSpatialFeatures ImageSet object that has had extract nearest neighbors run
+#' @param reference Reference marker
+#' @param markerA First marker
+#' @param markerB Second marker
+#'
+#' @return data.frame of markers and distances
+#'
+#' @docType methods
+#' @export
+#'
+#' @examples
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' extract_nearest_neighbor(dataset)
+#'
+#' @rdname nn.test
+setGeneric("nn.test", function(x,reference,markerA,markerB)
+    standardGeneric("nn.test"))
 
-#Let's wait before before including this into the master branch
+#' @rdname nn.test
+#' @aliases ANY,ANY-method
+setMethod(
+    "nn.test",
+    signature = c("ImageSet","character","character","character"),
+    definition = function(x,reference, markerA, markerB) {
+        print('haro thar')
+        return(as.data.frame(x))
+    }
+)
+
+
+#' Compare nearest neighbors by a data.frame
+#'
+#' @param x IrisSpatialFeatures ImageSet object that has had extract nearest neighbors run
+#' @param markerA First marker
+#' @param markerB Second marker
+#' @param reference Reference marker
+#' @param from_reference If true calculate distance from the reference to the markers by NN
+#'
+#' @return data.frame of markers and distances
+#'
+#' @docType methods
+#' @export
+#'
+#' @examples
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' extract_nearest_neighbor(dataset)
+#'
+#' @importFrom data.table rbindlist
+#' @rdname nn_comparison_dataframe
+setGeneric("nn_comparison_dataframe", function(x,markerA,markerB,reference,from_reference=TRUE)
+    standardGeneric("nn_comparison_dataframe"))
+
+#' @rdname nn_comparison_dataframe
+#' @aliases extract.nearest.neighbor,ANY,ANY-method
+setMethod(
+    "nn_comparison_dataframe",
+    signature = c("ImageSet","character","character","character","logical"),
+    definition = function(x, markerA, markerB, reference, from_reference=TRUE) {
+        samples <- names(nn@nearest_neighbors)
+        neighbors <- lapply(samples,function(sample) {
+            means = nn@nearest_neighbors[sample][[1]]$means
+            if (from_reference) {
+                v1 = data.frame(sample=sample,markerA=markerA,markerB=markerB,reference=reference,from_reference=from_reference,distanceA=means[reference,markerA],distanceB=means[reference,markerB])
+                return(v1)
+            } else {
+                v1 = data.frame(sample=sample,markerA=markerA,markerB=markerB,reference=reference,from_reference=from_reference,distanceA=means[markerA,reference],distanceB=means[markerB,reference])
+                return(v1)
+            }
+        })
+        return(rbindlist(neighbors))
+
+    }
+)
+
+
 
 
 
