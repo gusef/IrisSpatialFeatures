@@ -13,7 +13,6 @@
 #' @param format Output format: Currently only "Vectra" and "Mantra" are supported.
 #' @param dir_filter Filter to select only certain directory names.
 #' @param read_nuc_seg_map Flag indicating whether the nuclear map should be read.
-#' @param read_component_tiff Flag indicating whether the component tiff should be read
 #' @param MicronsPerPixel Length of one pixel. Default: 0.496, corresponding to a 20x Mantra/Vectra images
 #' @param invasive_margin_in_px The width of the invasive margin in pixels
 #' @param readMasks Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: True)
@@ -27,6 +26,7 @@
 #' @docType methods
 #' @export
 #' @importFrom methods new
+#' @importFrom methods .valueClassTest
 #' @rdname read_raw
 setGeneric("read_raw",
            function(path,
@@ -38,8 +38,8 @@ setGeneric("read_raw",
                     invasive_margin_in_px = 100,
                     readMasks = TRUE,
                     ignore_scoring = FALSE,
-                    read_only_relevant_markers = TRUE,
-                    ...) standardGeneric("read_raw"),
+                    read_only_relevant_markers = TRUE
+                    ) standardGeneric("read_raw"),
            valueClass = "ImageSet")
 
 #' @rdname read_raw
@@ -219,7 +219,7 @@ setMethod(
             bin_file <- file.path(sample_dir,img_names[bin_file])
 
             #extract the maps
-            maps <- readTIFF(bin_file, info = T, all = TRUE)
+            maps <- readTIFF(bin_file, info = TRUE, all = TRUE)
 
             #extract the names
             nams <- sapply(maps, function(x){
@@ -247,7 +247,7 @@ setMethod(
 
             if ("Mask" %in% names(maps)){
                 binary <- apply(maps[['Mask']],2,function(x)x>0)
-                x@mask$ROI <- t(mask)
+                x@mask$ROI <- t(binary)
             }
 
         } else{
@@ -382,8 +382,8 @@ setMethod(
             #if there were other masks read we set all these masks to 0
             if (readMasks) {
                 #reduce the other masks
-                for (i in 1:length(x@masks)) {
-                    x@masks[[i]] <- x@masks[[i]][x@mask$ROI == 0] <- 0
+                for (i in 1:length(x@mask)) {
+                    x@mask[[i]][x@mask$ROI == 0] <- 0
                 }
             }
         }

@@ -71,7 +71,7 @@ feature_selection <- function(dat, lab) {
 #' dataset <- extract_proximity(dataset,only_closest=TRUE,radii=25)
 #' dataset <- extract_interactions(dataset)
 #' extract_features(dataset)
- #' @docType methods
+#' @docType methods
 #' @export
 #' @rdname extract_features
 setGeneric("extract_features", function(x, ...)
@@ -93,12 +93,14 @@ setMethod(
                      count_ratios)
 
         if (length(x@interactions) > 0) {
+            interactions <- extract_interaction_combinations(x@interactions)
             f_inter <-
-                lapply(x@interactions,
+                lapply(interactions,
                        extract_interaction_features,
                        'Interaction')
+
             f_inter <- do.call(rbind, f_inter)
-            dat <- rbind(dat, t(f_nn))
+            dat <- rbind(dat, t(f_inter))
         } else{
             message(paste('Skipping interactions .. ',
                    'please run extract_interactions to include them.',
@@ -108,7 +110,7 @@ setMethod(
         if (length(x@nearest_neighbors) > 0) {
             f_nn <-
                 lapply(x@nearest_neighbors,
-                       extract_interaction_features,
+                       extract_nn_features,
                        'NN')
             f_nn <- do.call(rbind, f_nn)
             dat <- rbind(dat, t(f_nn))
@@ -128,6 +130,11 @@ setMethod(
     }
 )
 
+# Reshape interaction into a matrix
+extract_interaction_combinations <- function(interactions){
+    normalized <- lapply(interactions,function(x)x$avg)
+    return(normalized)
+}
 
 #extracts the values for NN and interaction analysis
 extractSimpleValues <- function(mat, remove_self = TRUE) {
@@ -217,14 +224,26 @@ extractRatios <- function(mat, nam) {
 }
 
 extract_interaction_features <- function(interactions, nam) {
-    f_interactions <- extractSimpleValues(interactions)
+    f_interactions <- extractSimpleValues(interactions, remove_self = TRUE)
     rownames(f_interactions) <-
         paste(nam, '-', rownames(f_interactions))
     f_int_ratios <- extractRatios(mat = f_interactions, nam)
     dat <- rbind(f_interactions,
                  f_int_ratios)
+    return(dat[,'mean'])
+}
+
+
+extract_nn_features <- function(nn, nam) {
+    f_nn <- extractSimpleValues(nn)
+    rownames(f_nn) <-
+        paste(nam, '-', rownames(f_nn))
+    f_nn_ratios <- extractRatios(mat = f_nn, nam)
+    dat <- rbind(f_nn,
+                 f_nn_ratios)
     return(dat[,'means'])
 }
+
 
 extract_count_features <- function(f_counts, nam) {
     rownames(f_counts) <- paste(nam, '-', rownames(f_counts))

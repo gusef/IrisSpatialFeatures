@@ -3,15 +3,15 @@
 \docType{methods}
 \name{threshold_dataset}
 \alias{threshold_dataset}
-\alias{threshold_dataset,ImageSet,character,character-method}
+\alias{threshold_dataset,ImageSet-method}
 \alias{threshold_dataset,ANY,ANY-method}
 \title{This function reads the manually determined thresholds of certain markers (e.g. PD1, PD-L1) and splits selected celltypes into marker+ and marker- celltypes.}
 \usage{
-threshold_dataset(image_set, marker, marker_name, ...)
+threshold_dataset(image_set, marker, marker_name, base = NULL,
+  pheno_name = "Phenotype", remove_blanks = TRUE)
 
-\S4method{threshold_dataset}{ImageSet,character,character}(image_set, marker,
-  marker_name, base = NULL, pheno_name = "Phenotype",
-  remove_blanks = TRUE)
+\S4method{threshold_dataset}{ImageSet}(image_set, marker, marker_name,
+  base = NULL, pheno_name = "Phenotype", remove_blanks = TRUE)
 }
 \arguments{
 \item{image_set}{IrisSpatialFeatures ImageSet object.}
