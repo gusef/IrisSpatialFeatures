@@ -279,11 +279,11 @@ setMethod(
             for (jdx in 1:length(x@samples[[idx]]@coordinates)){
 
                 #fix the labeling
-                pheno <- x@samples[[idx]]@coordinates[[jdx]]@raw@data$Phenotype.combined
+                pheno <- x@samples[[idx]]@coordinates[[jdx]]@raw@data$Phenotype
                 pheno[pheno %in% c(marker1, marker2)] <- combined
 
                 #add it to the ppp and raw data object
-                x@samples[[idx]]@coordinates[[jdx]]@raw@data$Phenotype.combined <- pheno
+                x@samples[[idx]]@coordinates[[jdx]]@raw@data$Phenotype <- pheno
                 x@samples[[idx]]@coordinates[[jdx]]@ppp$marks <- as.factor(pheno)
             }
         }
