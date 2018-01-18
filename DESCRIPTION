@@ -9,7 +9,7 @@ Maintainer: Daniel Gusenleitner <gusef24@gmail.com>
 Depends: R (>= 3.4)
 Imports: Rcpp (>= 0.12.7), SpatialTools, gplots, spatstat, tiff, 
         RColorBrewer, methods, grDevices, graphics, stats, utils,
-        data.table, ggplot2, dplyr, magrittr, tibble
+        data.table, ggplot2, dplyr, magrittr, tibble, reshape2
 Description: IrisSpatialFeatures reads the output of the PerkinElmer inForm software and
     calculates a variety of spatial statistics. In addition to simple 
     counts, it can derive average nearest neighbors for each cell-type and 

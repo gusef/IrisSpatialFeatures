@@ -1,3 +1,39 @@
+#' Dump the nearest neighbor data that was extracted
+#'
+#' @param x IrisSpatialFeatures ImageSet object
+#'
+#' @return data frame of aggrogated nn data
+#' @docType methods
+#' @export
+#'
+#' @rdname aggregated_nn_data_frame
+#' @importFrom reshape2 melt
+#' @import dplyr
+#' @import magrittr
+#' @import tibble
+setGeneric("aggregated_nn_data_frame", function(x, ...)
+    standardGeneric("aggregated_nn_data_frame"))
+
+#' @rdname aggregated_nn_data_frame
+#' @aliases ANY,ANY-method
+setMethod(
+    "aggregated_nn_data_frame",
+    signature = "ImageSet",
+    definition = function (x) {
+        mynames <- names(x@nearest_neighbors)
+        subframes <- lapply(mynames,function(n) {
+            t <- x@nearest_neighbors[[n]]
+            mymeans <- melt(x@nearest_neighbors[[n]]$means) %>% rename(mean = value) %>% rename(markerA = Var1) %>% rename(markerB = Var2)
+            myse <- melt(x@nearest_neighbors[[n]]$SE) %>% rename(SE = value) %>% rename(markerA = Var1) %>% rename(markerB = Var2)
+            j = mymeans %>% inner_join(myse,by = c("markerA", "markerB"))
+            j$sample <- n
+            return(j)
+        })
+        return(do.call(rbind,subframes) %>% select(sample,markerA,markerB,mean,SE))
+    }
+)
+
+
 #' Extract the distance to each nearest neighbor for each cell-type
 #'
 #' @param x IrisSpatialFeatures ImageSet object
