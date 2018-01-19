@@ -1,6 +1,7 @@
 #' Dump the nearest neighbor data that was extracted
 #'
 #' @param x IrisSpatialFeatures ImageSet object
+#' @param use_pixel show the distances in pixels or micrometers (default: FALSE)
 #'
 #' @return data frame of aggrogated nn data
 #' @docType methods
@@ -19,17 +20,24 @@ setGeneric("aggregated_nn_data_frame", function(x, ...)
 setMethod(
     "aggregated_nn_data_frame",
     signature = "ImageSet",
-    definition = function (x) {
+    definition = function (x, use_pixel=FALSE) {
+        myunits = 'microns'
+        myscale = x@microns_per_pixel
+        if (use_pixel) {
+            myunits = 'pixels'
+            myscale = 1
+        }
         mynames <- names(x@nearest_neighbors)
         subframes <- lapply(mynames,function(n) {
             t <- x@nearest_neighbors[[n]]
-            mymeans <- melt(x@nearest_neighbors[[n]]$means) %>% rename(mean = value) %>% rename(markerA = Var1) %>% rename(markerB = Var2)
-            myse <- melt(x@nearest_neighbors[[n]]$SE) %>% rename(SE = value) %>% rename(markerA = Var1) %>% rename(markerB = Var2)
+            mymeans <- melt(x@nearest_neighbors[[n]]$means) %>% rename(mean = value) %>% rename(markerA = Var2) %>% rename(markerB = Var1) %>% mutate(mean = mean * myscale)
+            myse <- melt(x@nearest_neighbors[[n]]$SE) %>% rename(SE = value) %>% rename(markerA = Var2) %>% rename(markerB = Var1) %>% mutate(SE = SE * myscale)
             j = mymeans %>% inner_join(myse,by = c("markerA", "markerB"))
             j$sample <- n
+            j$units <- myunits
             return(j)
         })
-        return(do.call(rbind,subframes) %>% select(sample,markerA,markerB,mean,SE))
+        return(do.call(rbind,subframes) %>% select(sample,markerA,markerB,mean,SE,units))
     }
 )
 
