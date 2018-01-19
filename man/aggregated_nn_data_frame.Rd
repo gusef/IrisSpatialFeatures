@@ -9,10 +9,12 @@
 \usage{
 aggregated_nn_data_frame(x, ...)
 
-\S4method{aggregated_nn_data_frame}{ImageSet}(x)
+\S4method{aggregated_nn_data_frame}{ImageSet}(x, use_pixel = FALSE)
 }
 \arguments{
 \item{x}{IrisSpatialFeatures ImageSet object}
+
+\item{use_pixel}{show the distances in pixels or micrometers (default: FALSE)}
 }
 \value{
 data frame of aggrogated nn data
