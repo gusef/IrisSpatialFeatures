@@ -1,3 +1,42 @@
+#' DataFrame from all the counts on a per mm2 basis non-collapsed
+#'
+#' @param x IrisSpatialFeatures ImageSet object.
+#' @param ... Additional arguments
+#' @examples
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' counts_per_mm2_data_frame(dataset)
+#'
+#' @return data frame
+#' @docType methods
+#' @export
+#' @rdname counts_per_mm2_data_frame
+setGeneric("counts_per_mm2_data_frame",
+           function(x, ...)
+               standardGeneric("counts_per_mm2_data_frame"))
+
+#' @rdname counts_per_mm2_data_frame
+#' @aliases counts_per_mm2_data_frame,ANY,ANY-method
+setMethod(
+    "counts_per_mm2_data_frame",
+    signature = "ImageSet",
+    definition = function(x) {
+        cnts <- get_counts_per_mm2_noncollapsed(x)
+        dfs <- lapply(names(cnts),function(sample){
+            mat <- cnts[[sample]]
+            df <- melt(mat)
+            colnames(df) <- c('frame','marker','density')
+            df$sample <- sample
+            df <- df[,c('sample','frame','marker','density')]
+            return(df)
+        })
+        return(do.call(rbind,dfs))
+    }
+)
+
+
+
 ##################################
 ####### Get all count data
 
