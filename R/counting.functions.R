@@ -23,7 +23,6 @@ setMethod(
     signature = "ImageSet",
     definition = function(x) {
         v <- counts_per_mm2_data_frame(x)
-        v <- counts_per_mm2_sample_data_frame(data)
         v <- v %>% group_by(sample,marker) %>%
                    summarize(mean_density=mean(density,na.rm=TRUE),
                              measured_count=sum(!is.na(density)),
