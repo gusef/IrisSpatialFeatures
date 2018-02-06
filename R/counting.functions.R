@@ -1,3 +1,42 @@
+#' DataFrame from all the counts on a per mm2 basis per sample
+#'
+#' @param x IrisSpatialFeatures ImageSet object.
+#' @param ... Additional arguments
+#' @examples
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' counts_per_mm2_sample_data_frame(dataset)
+#'
+#' @return data frame
+#' @docType methods
+#' @export
+#' @rdname counts_per_mm2_sample_data_frame
+setGeneric("counts_per_mm2_sample_data_frame",
+           function(x, ...)
+               standardGeneric("counts_per_mm2_sample_data_frame"))
+
+#' @rdname counts_per_mm2_sample_data_frame
+#' @aliases  counts_per_mm2_sample_data_frame,ANY,ANY-method
+setMethod(
+    "counts_per_mm2_sample_data_frame",
+    signature = "ImageSet",
+    definition = function(x) {
+        v <- counts_per_mm2_data_frame(x)
+        v <- counts_per_mm2_sample_data_frame(data)
+        v <- v %>% group_by(sample,marker) %>%
+                   summarize(mean_density=mean(density,na.rm=TRUE),
+                             measured_count=sum(!is.na(density)),
+                             frame_count=n(),
+                             stddev=sd(density,na.rm=TRUE),
+                             stderr=sd(density,na.rm=TRUE)/sqrt(sum(!is.na(density)))
+        )
+        return(v)
+    }
+)
+
+
+
 #' DataFrame from all the counts on a per mm2 basis non-collapsed
 #'
 #' @param x IrisSpatialFeatures ImageSet object.
