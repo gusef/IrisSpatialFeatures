@@ -98,6 +98,70 @@ setMethod(
     }
 )
 
+#' Extract and dump nearest neighbor raw data
+#'
+#' @param x IrisSpatialFeatures ImageSet object
+#' @param from MarkerA
+#' @param to MarkerB
+#' @param bin_width width of bin
+#' @param max_distance fartherst distance from 0 to consider
+#' @param use_pixel show the distances in pixels or micrometers (default: FALSE)
+#' @param split_frames if true then output per-frame data instead of per-sample (default: FALSE)
+#'
+#' @return data frame of binned nn data
+#' @docType methods
+#' @export
+#'
+#' @rdname binned_gated_nn_data_frame
+#' @import dplyr
+#' @import magrittr
+#' @import tibble
+setGeneric("binned_gated_nn_data_frame", function(x, ...)
+    standardGeneric("binned_gated_nn_data_frame"))
+
+#' @rdname binned_gated_nn_data_frame
+#' @aliases ANY,ANY-method
+setMethod(
+    "binned_gated_nn_data_frame",
+    signature = "ImageSet",
+    definition = function (x, from, to, bin_width=20, max_distance=300, use_pixel=FALSE, split_frames=FALSE) {
+            type = "split_from"
+            if (length(from)==2) {
+                mara = from[1]
+                marb = from[2]
+            } else if (length(to)==2) {
+                mara = to[1]
+                marb = to[2]
+                type = "split_to"
+            } else{
+                stop("one of the inputs should be length 2 the other length 1")
+            }
+            split_frames_str = c("sample")
+            if (split_frames) {
+                split_frames_str = c("sample","frame")
+            }
+            if (type=="split_from") {
+                nf <- as.tibble(nn_data_frame(x,c(mara,marb),to,use_pixel=use_pixel))
+                ncf <- nf[nf[,'distance']<max_distance,] %>% group_by(.dots=c(split_frames_str,"markerA"), gr = cut(distance,breaks=seq(0,max_distance,by=bin_width))) %>% summarize(n=n()) %>% group_by(.dots=(c("gr",split_frames_str))) %>% spread(markerA,n)
+            } else {
+                nf <- as.tibble(nn_data_frame(x,from,c(mara,marb),use_pixel=use_pixel))
+                ncf <- nf[nf[,'distance']<max_distance,] %>% group_by(.dots=c(split_frames_str,"markerB"), gr = cut(distance,breaks=seq(0,max_distance,by=bin_width))) %>% summarize(n=n()) %>% group_by(.dots=(c("gr",split_frames_str))) %>% spread(markerB,n)
+            }
+            colnames(ncf)[which(colnames(ncf) == mara)] <- "markerX"
+            colnames(ncf)[which(colnames(ncf) == marb)] <- "markerY"
+            ncf <- ncf %>% replace_na(markerX=0,markerY=0)
+            ncf <- ncf %>% mutate(total=markerX+markerY) %>% mutate(proportion = markerX/total)
+            ncf$markerX_name = mara
+            ncf$markerY_name = marb
+            ncf$type = type
+            if (type=="split_from") {
+                ncf$reference = to
+            } else{
+                ncf$reference = from
+            }
+            return(ncf)
+        }
+)
 
 #' Extract the distance to each nearest neighbor for each cell-type
 #'
