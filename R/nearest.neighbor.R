@@ -82,6 +82,7 @@ setMethod(
                     for (to_marker in to) {
                         dis <- nncross(ppp[ppp$marks == from_marker, ], ppp[ppp$marks == to_marker, ])[, 1]
                         dis <- data.frame(dis*myscale)
+                        if (dim(dis)[1] == 0) { next }
                         colnames(dis) <- "distance"
                         dis$units <- myunits
                         dis$sample <- sample_name
@@ -149,7 +150,7 @@ setMethod(
             }
             colnames(ncf)[which(colnames(ncf) == mara)] <- "markerX"
             colnames(ncf)[which(colnames(ncf) == marb)] <- "markerY"
-            ncf <- ncf %>% replace_na(markerX=0,markerY=0)
+            ncf <- ncf %>% replace(is.na(.),0)
             ncf <- ncf %>% mutate(total=markerX+markerY) %>% mutate(proportion = markerX/total)
             ncf$markerX_name = mara
             ncf$markerY_name = marb
