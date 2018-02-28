@@ -41,6 +41,63 @@ setMethod(
     }
 )
 
+#' Extract and dump nearest neighbor raw data
+#'
+#' @param x IrisSpatialFeatures ImageSet object
+#' @param from MarkerA
+#' @param to MarkerB
+#' @param use_pixel show the distances in pixels or micrometers (default: FALSE)
+#'
+#' @return data frame of aggrogated nn data
+#' @docType methods
+#' @export
+#'
+#' @rdname nn_data_frame
+#' @importFrom spatstat nncross
+#' @importFrom reshape2 melt
+#' @import dplyr
+#' @import magrittr
+#' @import tibble
+setGeneric("nn_data_frame", function(x, ...)
+    standardGeneric("nn_data_frame"))
+
+#' @rdname nn_data_frame
+#' @aliases ANY,ANY-method
+setMethod(
+    "nn_data_frame",
+    signature = "ImageSet",
+    definition = function (x, from, to, use_pixel=FALSE) {
+        myunits = 'microns'
+        myscale = x@microns_per_pixel
+        if (use_pixel) {
+            myunits = 'pixels'
+            myscale = 1
+        }
+        z = 0
+        results = list()
+        for(sample_name in names(x@samples)) {
+            for(coordinate_name in names(x@samples[[sample_name]]@coordinates)) {
+                ppp = x@samples[[sample_name]]@coordinates[[coordinate_name]]@ppp
+                for (from_marker in from) {
+                    for (to_marker in to) {
+                        dis <- nncross(ppp[ppp$marks == from_marker, ], ppp[ppp$marks == to_marker, ])[, 1]
+                        dis <- data.frame(dis*myscale)
+                        colnames(dis) <- "distance"
+                        dis$units <- myunits
+                        dis$sample <- sample_name
+                        dis$frame <- coordinate_name
+                        dis$markerA <- from_marker
+                        dis$markerB <- to_marker
+                        z <- z + 1
+                        results[[z]] = dis
+                    }
+                }
+            }
+        }
+        return(do.call(rbind, results))
+    }
+)
+
 
 #' Extract the distance to each nearest neighbor for each cell-type
 #'
