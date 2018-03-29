@@ -69,7 +69,8 @@ setMethod(
             df <- df[,c('sample','frame','marker','density')]
             return(df)
         })
-        return(do.call(rbind,dfs))
+        v <- do.call(rbind,dfs)
+        return(v)
     }
 )
 
