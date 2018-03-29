@@ -1,3 +1,41 @@
+#' DataFrame from all the counts on a per mm2 basis per sample
+#'
+#' @param x IrisSpatialFeatures ImageSet object.
+#' @param ... Additional arguments
+#' @examples
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' interactions_sample_data_frame(dataset)
+#'
+#' @importFrom reshape2 melt
+#' @return data frame
+#' @docType methods
+#' @export
+#' @rdname interactions_sample_data_frame
+setGeneric("interactions_sample_data_frame",
+           function(x, ...)
+               standardGeneric("interactions_sample_data_frame"))
+
+#' @rdname interactions_sample_data_frame
+#' @aliases  interactions_sample_data_frame,ANY,ANY-method
+setMethod(
+    "interactions_sample_data_frame",
+    signature = "ImageSet",
+    definition = function(x) {
+        v <- get_all_interactions(x)
+        dfs <- lapply(names(v),function(sample){
+            mat <- v[[sample]]
+            mat <- melt(mat)
+            colnames(mat) <- c('neighbor','reference','proportion')
+            mat$sample <- sample
+            return(mat)
+        })
+        dfs <- do.call(rbind,dfs)[,c('sample','reference','neighbor','proportion')]
+        return(as.tibble(dfs))
+    }
+)
+
 
 #' Extract interactions between all cell-types
 #'
@@ -101,6 +139,136 @@ setMethod(
         ))
     }
 )
+
+#' DataFrame from all the interaction counts on a per mm2 basis per frame grouped by sample
+#' This function is more like a density of edges between nodes on the interaction graph
+#' than an average neighbor count
+#'
+#' @param x IrisSpatialFeatures ImageSet object.
+#' @param ... Additional arguments
+#' @examples
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' interactions_sample_data_frame(dataset)
+#'
+#' @return data frame
+#' @import magrittr dplyr tibble
+#' @docType methods
+#' @export
+#' @rdname interaction_counts_sample_data_frame
+setGeneric("interaction_counts_sample_data_frame",
+           function(x, ...)
+               standardGeneric("interaction_counts_sample_data_frame"))
+
+#' @rdname interaction_counts_sample_data_frame
+#' @aliases  interaction_counts_sample_data_frame,ANY,ANY-method
+setMethod(
+    "interaction_counts_sample_data_frame",
+    signature = "ImageSet",
+    definition = function(x) {
+        sresults <- interaction_counts_data_frame(x)
+        sresults <- sresults %>% group_by(sample,reference_phenotype,neighbor_phenotype) %>% summarize(mean=mean(interactions_per_mm2),stderr=sd(interactions_per_mm2)/sqrt(n()),frame_count=n())
+        return(sresults)
+    }
+)
+
+#' DataFrame from all the interaction counts on a per mm2 basis per frame
+#' This function is more like a density of edges between nodes on the interaction graph
+#' than an average neighbor count
+#'
+#' @param x IrisSpatialFeatures ImageSet object.
+#' @param ... Additional arguments
+#' @examples
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' interactions_sample_data_frame(dataset)
+#'
+#' @return data frame
+#' @import magrittr dplyr tibble
+#' @docType methods
+#' @export
+#' @rdname interaction_counts_data_frame
+setGeneric("interaction_counts_data_frame",
+           function(x, ...)
+               standardGeneric("interaction_counts_data_frame"))
+
+#' @rdname interaction_counts_data_frame
+#' @aliases  interaction_counts_data_frame,ANY,ANY-method
+setMethod(
+    "interaction_counts_data_frame",
+    signature = "ImageSet",
+    definition = function(x) {
+        #dfs <- lapply(names(x@samples),function(sample){
+        #for (sample_name in names(x@samples)) {
+        sresults <- lapply(names(x@samples),function(sample_name){
+            sample <- x@samples[[sample_name]]
+            fresults <- lapply(names(sample@coordinates),function(frame_name){
+                frame <- sample@coordinates[[frame_name]]
+                evts <- interaction_events(frame,x@markers)
+
+                marks = as.character(evts$ppp$marks)
+                fdata <- lapply(seq(1,length(evts$ints),1),function(i){
+                    neighbors = evts$ints[[i]]
+                    rmark = marks[i]
+                    #print(neighbors)
+                    if (is.null(neighbors)) { return(NULL) }
+                    #print('hi')
+                    vals = lapply(neighbors,function(j){
+                        nmark = marks[j]
+                        return(c(j,nmark))
+                    })
+                    vals = as.data.frame(do.call(rbind,vals))
+                    colnames(vals) <- c("neighbor_id","neighbor_phenotype")
+                    vals$reference_id = i
+                    vals$reference_phenotype = rmark
+                    return(vals)
+                })
+                fdata <- do.call(rbind,fdata)
+                fdata$neighbor_id <- as.numeric(fdata$neighbor_id)
+                fdata$reference_id <- as.numeric(fdata$reference_id)
+                cnts = as.data.frame(fdata %>% group_by(neighbor_phenotype,reference_phenotype) %>% summarize(interaction_count=n()))
+                # Check for zero remainder
+                values = list()
+                z = 0
+                for (marki in x@markers) {
+                    for (markj in x@markers) {
+                        if (dim(cnts %>% filter(neighbor_phenotype==markj & reference_phenotype==marki))[1]==0) {
+                            z = z + 1
+                            values[[z]] <- c(markj,marki)
+                        }
+                    }
+                }
+                #print(cnts)
+                if(length(values)>0) {
+                    values <- as.data.frame(do.call(rbind,values))
+                    colnames(values) <- c("neighbor_phenotype","reference_phenotype")
+                    values$interaction_count = 0
+                    #print(values)
+                    #print(cnts)
+                    #cnts <- cnts %>% bind_rows(values)
+                    cnts <- rbind(cnts,values)
+                }
+                cnts$size_in_px <- frame@size_in_px
+                cnts$frame <- frame_name
+                cnts$frame <- as.character(cnts$frame)
+                cnts$sample <- sample_name
+                #print(cnts)
+                return(cnts)
+            })
+            #print(fresults)
+            fresults <- do.call(rbind,fresults)
+            return(fresults)
+        })
+        sresults <- do.call(rbind,sresults)
+        sresults <- sresults[,c('sample','frame','size_in_px','reference_phenotype','neighbor_phenotype','interaction_count')]
+        sresults <- sresults %>% mutate(interactions_per_mm2=1000000*interaction_count/(size_in_px*(x@microns_per_pixel ^2)))
+        return(sresults)
+    }
+)
+
+
 
 setGeneric("interaction_events", function(x, ...)
     standardGeneric("interaction_events"))
