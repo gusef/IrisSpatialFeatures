@@ -209,6 +209,10 @@ setMethod(
                 evts <- interaction_events(frame,x@markers)
 
                 marks = as.character(evts$ppp$marks)
+                if (length(evts$ints)==0) { 
+                    print("zero interactions case. whole frame will not contribute. if you want to force zero counts for these, add this.")
+                    return(NULL)
+                }
                 fdata <- lapply(seq(1,length(evts$ints),1),function(i){
                     neighbors = evts$ints[[i]]
                     rmark = marks[i]
