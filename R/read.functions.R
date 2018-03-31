@@ -125,7 +125,7 @@ setMethod(
             if (length(grep('MULTI', coords)) > 0) {
                 coordinates <- sub('^.+MULTI_', '', coords)
             } else{
-                coordinates <- sub('^[^_]+_', '', coords)
+                coordinates <- gsub('^.*_([^_]+)$', '\\1', coords)
             }
         } else{
             stop('Unknown image format')
@@ -246,6 +246,7 @@ setMethod(
             x@raw@mem_seg_map <- binary
 
             if ("Mask" %in% names(maps)){
+                print("Mask found")
                 binary <- apply(maps[['Mask']],2,function(x)x>0)
                 x@mask$ROI <- t(binary)
             }
@@ -387,6 +388,7 @@ setMethod(
                 }
             }
         }
+        print(paste0("pixel size: ",x@size_in_px))
         return(x)
     }
 )
