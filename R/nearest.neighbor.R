@@ -368,14 +368,14 @@ setMethod(
 
 #' Plot average nearest neighbor barplots for two cell types. This measurement is not symmetric, so if 'from' and 'to' are switched it will result in different results.
 #' For the 'to' parameter this function allows a cell-type without '+' or '-' in the end. Indicating that the distances from the first cell-type should be calculated
-#' against both '+/-' and a paired t-test should be calculated. For example we want to calculate the average distance between SOX10 PDL1+ melanoma cells against
-#' both CD8 PD1+ and CD8 PD1- cells, the 'CD8 PD1' would be speficified as 'to' parameter, 2 distances would be calculated for each sample and a two-sided paired t-test calculated
+#' against both '+/-' and a paired sign rank should be calculated. For example we want to calculate the average distance between SOX10 PDL1+ melanoma cells against
+#' both CD8 PD1+ and CD8 PD1- cells, the 'CD8 PD1' would be speficified as 'to' parameter, 2 distances would be calculated for each sample and a two-sided paired signed rank test calculated
 #' to test for significant differences.
 #'
 #' @param x IrisSpatialFeatures ImageSet object.
 #' @param from Cell-type from which the nearest neighbor is calculated.
 #' @param to Cell-type to which the nearest neighbor is calculated.
-#' @param ttest Flag indicating whether a paired t-test should be calculated. (default: TRUE)
+#' @param signedrank Flag indicating whether a paired signed rank test should be calculated. (default: TRUE)
 #' @param transposed Switches 'from' and 'to' cell-type. This way the (default: FALSE)
 #' @param remove_NAs dont plot samples with less than min cells
 #' @param use_pixel show the distances in pixels or micrometers (default: FALSE)
@@ -384,7 +384,7 @@ setMethod(
 #'
 #' @importFrom graphics barplot
 #' @importFrom graphics mtext
-#' @importFrom stats t.test
+#' @importFrom stats wilcox.test
 #' @docType methods
 #' @export
 #' @rdname plot_nearest_neighbor
@@ -406,7 +406,7 @@ setMethod(
     definition = function(x,
                           from,
                           to,
-                          ttest = TRUE,
+                          signedrank = TRUE,
                           transposed = FALSE,
                           remove_NAs = FALSE,
                           use_pixel = FALSE) {
@@ -501,13 +501,13 @@ setMethod(
             current.se <- t(current.se)
             plotSE(bp, current.mean, current.se, 1)
         }
-        #paired t test to test for significance
-        if (ttest & length(comp) > 1) {
+        #paired signed rank test to test for significance
+        if (signedrank & length(comp) > 1) {
             current.mean <- current.mean[,colSums(current.mean != 0)==2]
             current.se <- current.se[,colSums(current.se !=0 )==2]
             pval <-
-                t.test(current.mean[1, ], current.mean[2, ], paired = TRUE)$p.value
-            mtext(paste('Paired t-test:', format(pval, digits = 4)), 3)
+                wilcox.test(current.mean[1, ], current.mean[2, ], paired = TRUE)$p.value
+            mtext(paste('Paired Signed Rank Test:', format(pval, digits = 4)), 3)
         } else{
             pval <- NA
         }

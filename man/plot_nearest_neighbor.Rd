@@ -7,13 +7,13 @@
 \alias{plot_nearest_neighbor,ANY,ANY-method}
 \title{Plot average nearest neighbor barplots for two cell types. This measurement is not symmetric, so if 'from' and 'to' are switched it will result in different results.
 For the 'to' parameter this function allows a cell-type without '+' or '-' in the end. Indicating that the distances from the first cell-type should be calculated
-against both '+/-' and a paired t-test should be calculated. For example we want to calculate the average distance between SOX10 PDL1+ melanoma cells against
-both CD8 PD1+ and CD8 PD1- cells, the 'CD8 PD1' would be speficified as 'to' parameter, 2 distances would be calculated for each sample and a two-sided paired t-test calculated
+against both '+/-' and a paired sign rank should be calculated. For example we want to calculate the average distance between SOX10 PDL1+ melanoma cells against
+both CD8 PD1+ and CD8 PD1- cells, the 'CD8 PD1' would be speficified as 'to' parameter, 2 distances would be calculated for each sample and a two-sided paired signed rank test calculated
 to test for significant differences.}
 \usage{
 plot_nearest_neighbor(x, ...)
 
-\S4method{plot_nearest_neighbor}{ImageSet}(x, from, to, ttest = TRUE,
+\S4method{plot_nearest_neighbor}{ImageSet}(x, from, to, signedrank = TRUE,
   transposed = FALSE, remove_NAs = FALSE, use_pixel = FALSE)
 }
 \arguments{
@@ -25,7 +25,7 @@ plot_nearest_neighbor(x, ...)
 
 \item{to}{Cell-type to which the nearest neighbor is calculated.}
 
-\item{ttest}{Flag indicating whether a paired t-test should be calculated. (default: TRUE)}
+\item{signedrank}{Flag indicating whether a paired signed rank test should be calculated. (default: TRUE)}
 
 \item{transposed}{Switches 'from' and 'to' cell-type. This way the (default: FALSE)}
 
@@ -39,8 +39,8 @@ plot average nearest neighbor barplots for two cell types
 \description{
 Plot average nearest neighbor barplots for two cell types. This measurement is not symmetric, so if 'from' and 'to' are switched it will result in different results.
 For the 'to' parameter this function allows a cell-type without '+' or '-' in the end. Indicating that the distances from the first cell-type should be calculated
-against both '+/-' and a paired t-test should be calculated. For example we want to calculate the average distance between SOX10 PDL1+ melanoma cells against
-both CD8 PD1+ and CD8 PD1- cells, the 'CD8 PD1' would be speficified as 'to' parameter, 2 distances would be calculated for each sample and a two-sided paired t-test calculated
+against both '+/-' and a paired sign rank should be calculated. For example we want to calculate the average distance between SOX10 PDL1+ melanoma cells against
+both CD8 PD1+ and CD8 PD1- cells, the 'CD8 PD1' would be speficified as 'to' parameter, 2 distances would be calculated for each sample and a two-sided paired signed rank test calculated
 to test for significant differences.
 }
 \examples{
