@@ -44,7 +44,7 @@ frame_count_density <- counts_per_mm2_data_frame(data)
 #### 4. Extract raw counts from the data for samples and individual frames
 
 ```r
-sample_count <- counts_data_sample_frame(data)
+sample_count <- counts_sample_data_frame(data)
 frame_count <- counts_data_frame(data)
 ```
 
