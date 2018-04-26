@@ -7,22 +7,24 @@
 \alias{read_raw,ANY,ANY-method}
 \title{Read inForm output and store it in an IrisSpatialFeatures ImageSet object.}
 \usage{
-read_raw(path, label_fix = list(), format = "Vectra", dir_filter = "",
+read_raw(path, label_fix = list(), format = "", dir_filter = "",
   read_nuc_seg_map = FALSE, MicronsPerPixel = 0.496,
-  invasive_margin_in_px = 100, readMasks = TRUE, ignore_scoring = FALSE,
-  read_only_relevant_markers = TRUE)
+  invasive_margin_in_px = 100, readTumorAndMarginMasks = FALSE,
+  customMask = "", ignore_scoring = FALSE,
+  read_only_relevant_markers = TRUE, verbose = TRUE)
 
-\S4method{read_raw}{character}(path, label_fix = list(), format = "Vectra",
+\S4method{read_raw}{character}(path, label_fix = list(), format = "",
   dir_filter = "", read_nuc_seg_map = FALSE, MicronsPerPixel = 0.496,
-  invasive_margin_in_px = 100, readMasks = TRUE, ignore_scoring = FALSE,
-  read_only_relevant_markers = TRUE)
+  invasive_margin_in_px = 100, readTumorAndMarginMasks = FALSE,
+  customMask = "", ignore_scoring = FALSE,
+  read_only_relevant_markers = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{path}{Directory that contains the raw files}
 
 \item{label_fix}{List of length 2 character vector that is used to fix filenames.}
 
-\item{format}{Output format: Currently only "Vectra" and "Mantra" are supported.}
+\item{format}{Output format: Currently only "Vectra" and "Mantra" are supported. Autodetect by default.}
 
 \item{dir_filter}{Filter to select only certain directory names.}
 
@@ -32,11 +34,15 @@ read_raw(path, label_fix = list(), format = "Vectra", dir_filter = "",
 
 \item{invasive_margin_in_px}{The width of the invasive margin in pixels}
 
-\item{readMasks}{Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: True)}
+\item{readTumorAndMarginMasks}{Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: False)}
+
+\item{customMask}{Setting this indicates to the tif file for each frame with *_<customMask>.tif should be used as the mask. This overrides binary_seg mask.}
 
 \item{ignore_scoring}{Flag indicating whether the scoring file should be ignored (default: False)}
 
 \item{read_only_relevant_markers}{Flag that indicates whether all read inform output should be kept or only the relevant markers}
+
+\item{verbose}{Print helpful information (default: True)}
 }
 \value{
 IrisSpatialFeatures ImageSet object.

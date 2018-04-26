@@ -74,7 +74,68 @@ setMethod(
     }
 )
 
+#' DataFrame from all the counts per frame
+#'
+#' @param x IrisSpatialFeatures ImageSet object.
+#' @param ... Additional arguments
+#' @examples
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' counts_data_frame(dataset)
+#'
+#' @return data frame
+#' @docType methods
+#' @export
+#' @rdname counts_data_frame
+setGeneric("counts_data_frame",
+           function(x, ...)
+               standardGeneric("counts_data_frame"))
 
+#' @rdname counts_data_frame
+#' @aliases counts_data_frame,ANY,ANY-method
+setMethod(
+    "counts_data_frame",
+    signature = "ImageSet",
+    definition = function(x) {
+        cdata <- as.data.frame(x) %>% group_by(frame,sample,marks) %>% summarize(count=n())
+        marks <- as.data.frame(unique(cdata$marks))
+        colnames(marks) <- "marks"
+        subjects <- cdata %>% select(sample,frame) %>% distinct()
+        all <- subjects %>% merge(marks)
+        cnts <- all %>% left_join(cdata, by=c("sample","frame","marks")) %>% replace(.,is.na(.),0)
+        return(cnts)
+    }
+)
+
+#' DataFrame from all the counts per frame
+#'
+#' @param x IrisSpatialFeatures ImageSet object.
+#' @param ... Additional arguments
+#' @examples
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' counts_sample_data_frame(dataset)
+#'
+#' @return data frame
+#' @docType methods
+#' @export
+#' @rdname counts_sample_data_frame
+setGeneric("counts_sample_data_frame",
+           function(x, ...)
+               standardGeneric("counts_sample_data_frame"))
+
+#' @rdname counts_sample_data_frame
+#' @aliases counts_sample_data_frame,ANY,ANY-method
+setMethod(
+    "counts_sample_data_frame",
+    signature = "ImageSet",
+    definition = function(x) {
+        cnts <- counts_data_frame(x) %>% group_by(sample,marks) %>% summarize(frame_count=n(),total_count=sum(count),mean_count=mean(count),stddev=sd(count),stderr=sd(count)/sqrt(n()))
+        return(cnts)
+    }
+)
 
 ##################################
 ####### Get all count data

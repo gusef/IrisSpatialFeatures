@@ -306,6 +306,7 @@ setMethod(
 #'
 #' @param x IrisSpatialFeatures ImageSet object
 #' @param ROI Region of interest (default: 'invasive_margin')
+#' @param verbose Print some details (default: False)
 #' @param ... Additional arguments
 #'
 #' @return IrisSpatialFeatures ImageSet object
@@ -326,12 +327,12 @@ setGeneric("extract_ROI", function(x, ...)
 setMethod(
     "extract_ROI",
     signature = "ImageSet",
-    definition = function(x, ROI = 'invasive_margin') {
+    definition = function(x, ROI = 'invasive_margin', verbose = FALSE) {
         if (length(x@samples[[1]]@coordinates[[1]]@mask[[ROI]]) == 0) {
             stop('There is no mask for "', ROI, '"')
         }
 
-        x@samples <- lapply(x@samples, extract_ROI_sample, ROI)
+        x@samples <- lapply(x@samples, extract_ROI_sample, ROI, verbose)
 
         #update the counts
         x <- extract_counts(x)
@@ -350,8 +351,8 @@ setGeneric("extract_ROI_sample", function(x, ...)
 setMethod(
     "extract_ROI_sample",
     signature = "Sample",
-    definition = function(x, ROI) {
-        x@coordinates <- lapply(x@coordinates, extract_ROI_Coordinate, ROI)
+    definition = function(x, ROI, verbose) {
+        x@coordinates <- lapply(x@coordinates, extract_ROI_Coordinate, ROI, verbose)
         return(x)
     }
 )
@@ -362,7 +363,7 @@ setGeneric("extract_ROI_Coordinate", function(x, ...)
 setMethod(
     "extract_ROI_Coordinate",
     signature = "Coordinate",
-    definition = function(x, ROI) {
+    definition = function(x, ROI, verbose) {
         #reduce to the filter
         mask <- x@mask[[ROI]]
         filter <-
@@ -370,8 +371,9 @@ setMethod(
                 mask[dat$x[i], dat$y[i]] == 1, x@ppp, mask)
         x@ppp <- x@ppp[filter, ]
         x@raw@data <- x@raw@data[filter, ]
+        if (verbose) { print(paste0("Old pixel size ",x@size_in_px)) }
         x@size_in_px <- sum(mask > 0)
-
+        if (verbose)  { print(paste0("New pixel size ",x@size_in_px)) }
         return(x)
     }
 )

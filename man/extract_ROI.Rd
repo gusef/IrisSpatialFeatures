@@ -9,7 +9,8 @@
 \usage{
 extract_ROI(x, ...)
 
-\S4method{extract_ROI}{ImageSet}(x, ROI = "invasive_margin")
+\S4method{extract_ROI}{ImageSet}(x, ROI = "invasive_margin",
+  verbose = FALSE)
 }
 \arguments{
 \item{x}{IrisSpatialFeatures ImageSet object}
@@ -17,6 +18,8 @@ extract_ROI(x, ...)
 \item{...}{Additional arguments}
 
 \item{ROI}{Region of interest (default: 'invasive_margin')}
+
+\item{verbose}{Print some details (default: False)}
 }
 \value{
 IrisSpatialFeatures ImageSet object

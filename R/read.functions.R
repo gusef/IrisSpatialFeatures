@@ -10,14 +10,16 @@
 #'
 #' @param path Directory that contains the raw files
 #' @param label_fix List of length 2 character vector that is used to fix filenames.
-#' @param format Output format: Currently only "Vectra" and "Mantra" are supported.
+#' @param format Output format: Currently only "Vectra" and "Mantra" are supported. Autodetect by default.
 #' @param dir_filter Filter to select only certain directory names.
 #' @param read_nuc_seg_map Flag indicating whether the nuclear map should be read.
 #' @param MicronsPerPixel Length of one pixel. Default: 0.496, corresponding to a 20x Mantra/Vectra images
 #' @param invasive_margin_in_px The width of the invasive margin in pixels
-#' @param readMasks Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: True)
+#' @param readTumorAndMarginMasks Flag indicating whether the "_Tumor.tif" and "_Invasive_Margin.tif" should be read (default: False)
+#' @param customMask Setting this indicates to the tif file for each frame with *_<customMask>.tif should be used as the mask. This overrides binary_seg mask.
 #' @param ignore_scoring Flag indicating whether the scoring file should be ignored (default: False)
 #' @param read_only_relevant_markers Flag that indicates whether all read inform output should be kept or only the relevant markers
+#' @param verbose Print helpful information (default: True)
 #'
 #' @return IrisSpatialFeatures ImageSet object.
 #' @examples
@@ -31,14 +33,16 @@
 setGeneric("read_raw",
            function(path,
                     label_fix = list(),
-                    format = 'Vectra',
+                    format = '',
                     dir_filter = '',
                     read_nuc_seg_map = FALSE,
                     MicronsPerPixel = 0.496,
                     invasive_margin_in_px = 100,
-                    readMasks = TRUE,
+                    readTumorAndMarginMasks = FALSE,
+                    customMask = '',
                     ignore_scoring = FALSE,
-                    read_only_relevant_markers = TRUE
+                    read_only_relevant_markers = TRUE,
+                    verbose = TRUE
                     ) standardGeneric("read_raw"),
            valueClass = "ImageSet")
 
@@ -54,9 +58,11 @@ setMethod(
                           read_nuc_seg_map,
                           MicronsPerPixel,
                           invasive_margin_in_px,
-                          readMasks,
+                          readTumorAndMarginMasks,
+                          customMask,
                           ignore_scoring,
-                          read_only_relevant_markers) {
+                          read_only_relevant_markers,
+                          verbose) {
         x <- new("ImageSet")
         x@microns_per_pixel = MicronsPerPixel
         raw_directories <- dir(path)
@@ -73,9 +79,11 @@ setMethod(
                 dir_filter,
                 read_nuc_seg_map,
                 invasive_margin_in_px,
-                readMasks,
+                readTumorAndMarginMasks,
+                customMask,
                 ignore_scoring,
-                read_only_relevant_markers
+                read_only_relevant_markers,
+                verbose
             )
         names(x@samples) <- toupper(raw_directories)
 
@@ -100,10 +108,12 @@ setMethod(
                           dir_filter,
                           read_nuc_seg_map,
                           invasive_margin_in_px,
-                          readMasks,
+                          readTumorAndMarginMasks,
+                          customMask,
                           ignore_scoring,
-                          read_only_relevant_markers) {
-        print(paste('Sample:', x@sample_name))
+                          read_only_relevant_markers,
+                          verbose) {
+        if (verbose) { print(paste('Sample:', x@sample_name)) }
 
         #get sample directory
         sample_dir <- file.path(raw_dir_name, x@sample_name)
@@ -113,6 +123,20 @@ setMethod(
         if (dir_filter != '') {
             image_names <- image_names[grep(dir_filter, image_names)]
         }
+
+
+        # Autodetect format if desiered
+        check_names <- image_names[grep('_cell_seg_data.txt$', image_names)]
+        if (format=="" && length(grep('\\[\\d+,\\d+\\]_cell_seg_data.txt$',check_names)) > 0) {
+            if (verbose) { print("detected Vectra format") }
+            format = "Vectra"
+        } else if (format == "" && length(grep('\\d+_cell_seg_data.txt$',check_names))) {
+            if (verbose) { print("detected Mantra format") }
+            format = "Mantra"
+        } else if (format == "") {
+            stop("ERROR failed to detect format")
+        }
+
 
         #figure out the different coordinates for each sample
         if (format == 'Vectra') {
@@ -143,9 +167,11 @@ setMethod(
                 format,
                 read_nuc_seg_map,
                 invasive_margin_in_px,
-                readMasks,
+                readTumorAndMarginMasks,
+                customMask,
                 ignore_scoring,
-                read_only_relevant_markers
+                read_only_relevant_markers,
+                verbose
             )
 
         names(x@coordinates) <- coordinates
@@ -168,9 +194,12 @@ setMethod(
                           format,
                           read_nuc_seg_map,
                           invasive_margin_in_px,
-                          readMasks,
+                          readTumorAndMarginMasks,
+                          customMask,
                           ignore_scoring,
-                          read_only_relevant_markers) {
+                          read_only_relevant_markers,
+                          verbose) {
+
         if (format == 'Vectra') {
             img_names <- image_names[grep(x@coordinate_name, image_names)]
         } else if (format == 'Mantra') {
@@ -215,9 +244,15 @@ setMethod(
 
         #check if there is a binary segmentation map file
         bin_file <- grep('_binary_seg_maps.tif', img_names)
-        if (length(bin_file) > 0) {
-            bin_file <- file.path(sample_dir,img_names[bin_file])
+        custom_file <- grep(paste0('_',customMask,'.tif'),img_names)
+        if (length(custom_file) > 0 && customMask!="") {
+            custom_file <- file.path(sample_dir,img_names[custom_file])
+            if (verbose) { print(paste0("applying custom mask ",custom_file)) }
+            x@mask$ROI <- extract_mask(custom_file)
 
+        } else if (length(bin_file) > 0) {
+            bin_file <- file.path(sample_dir,img_names[bin_file])
+            if (verbose) { print(paste0("applying standard binary_seg_maps mask ",bin_file)) }
             #extract the maps
             maps <- readTIFF(bin_file, info = TRUE, all = TRUE)
 
@@ -246,7 +281,7 @@ setMethod(
             x@raw@mem_seg_map <- binary
 
             if ("Mask" %in% names(maps)){
-                print("Mask found")
+                if (verbose) { print("Mask found") }
                 binary <- apply(maps[['Mask']],2,function(x)x>0)
                 x@mask$ROI <- t(binary)
             }
@@ -256,7 +291,7 @@ setMethod(
                 x@raw@mem_seg_map <- readTIFF(file.path(sample_dir,
                                                         img_names[grep('_memb_seg_map.tif', img_names)]))
             } else {
-                print('No membrane map found, skipping .. ')
+                if (verbose) { print('No membrane map found, skipping .. ') }
             }
 
             if (read_nuc_seg_map &&
@@ -264,7 +299,7 @@ setMethod(
                 x@raw@nuc_seg_map <- readTIFF(file.path(sample_dir,
                                                         img_names[grep('_nuc_seg_map.tif', img_names)]))
             }else {
-                print('No nuclear map found, skipping .. ')
+                if (verbose) { print('No nuclear map found, skipping .. ') }
             }
         }
 
@@ -351,7 +386,7 @@ setMethod(
             )
         )
 
-        if (readMasks) {
+        if (readTumorAndMarginMasks) {
             #extract mask data
             x <-
                 extract_mask_data(x,
@@ -362,9 +397,11 @@ setMethod(
         }
 
         if (length(x@mask) > 0) {
+            if (verbose) { print("Mask has been read") }
             di <- dim(x@mask[[1]])
             x@size_in_px <- di[1] * di[2]
         } else{
+            if (verbose) { print("Warning, no read mask. Using coordinate bounds.") }
             x@size_in_px <- x_max * y_max
         }
 
@@ -379,16 +416,16 @@ setMethod(
 
             #change the size of the image
             x@size_in_px <- sum(x@mask$ROI > 0)
-
+            if (verbose) { print("setting size_in_px according to ROI")}
             #if there were other masks read we set all these masks to 0
-            if (readMasks) {
+            if (readTumorAndMarginMasks) {
                 #reduce the other masks
                 for (i in 1:length(x@mask)) {
                     x@mask[[i]][x@mask$ROI == 0] <- 0
                 }
             }
         }
-        print(paste0("pixel size: ",x@size_in_px))
+        if (verbose) { print(paste0("pixel size: ",x@size_in_px)) }
         return(x)
     }
 )
