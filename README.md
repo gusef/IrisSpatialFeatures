@@ -59,9 +59,9 @@ tumor <- extract_ROI(data,'tumor')
 stroma <- extract_ROI(data,'stroma')
 invasive_margin <- extract_ROI(data,'invasive_margin')
 
-tumor_counts <- counts_per_mm2_sample_data_frame(tumor)
-stroma_counts <- counts_per_mm2_sample_data_frame(stroma)
-invasive_margin_counts <- counts_per_mm2_sample_data_frame(invasive_margin)
+tumor_count_density <- counts_per_mm2_sample_data_frame(tumor)
+stroma_count_density <- counts_per_mm2_sample_data_frame(stroma)
+invasive_margin_count_density <- counts_per_mm2_sample_data_frame(invasive_margin)
 ```
 
 #### 6. Analyze the complete tumor in samples with a tumor and margin defined
@@ -71,5 +71,5 @@ Only requires *_Tumor.tif for each frame. We use it as a custom mask and don't c
 ```r
 tumor <- read_raw('Test tumor IM mixed case copy', 
                  customMask='Tumor')
-tumor_counts <- counts_per_mm2_sample_data_frame(tumor)
+tumor_count_density <- counts_per_mm2_sample_data_frame(tumor)
 ```
