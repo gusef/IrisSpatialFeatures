@@ -1,10 +1,7 @@
-FROM zamora/r-devtools
-
-RUN apt-get update \ 
-    && apt-get install -y --no-install-recommends \
-		libtiff5-dev \
-		fftw-dev \
-	&& rm -rf /var/lib/apt/lists/*
-RUN Rscript -e 'source("https://bioconductor.org/biocLite.R");biocLite()'
-RUN Rscript -e 'library(devtools);install_github("gusef/Iris")'
-RUN echo "library(IrisSpatialFeatures)" > $HOME/.Rprofile
+FROM jupyter/r-notebook
+RUN git clone https://github.com/gusef/IrisSpatialFeatures.git
+RUN Rscript -e 'source("https://bioconductor.org/biocLite.R");biocLite("BiocInstaller")'
+RUN Rscript -e "install.packages(c('SpatialTools','gplots','spatstat','tiff','data.table','matrixStats'),repos = 'http://cran.us.r-project.org')"
+RUN Rscript -e 'devtools::install_local("IrisSpatialFeatures")'
+RUN rm -r IrisSpatialFeatures
+RUN Rscript -e "install.packages('tidyverse',repos = 'http://cran.us.r-project.org')"
