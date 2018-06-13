@@ -199,20 +199,20 @@ setMethod(
                           ignore_scoring,
                           read_only_relevant_markers,
                           verbose) {
-
         if (format == 'Vectra') {
             img_names <- image_names[grep(x@coordinate_name, image_names)]
         } else if (format == 'Mantra') {
             file_parts <- image_names
             if (length(grep('MULTI', x@coordinate_name)) > 0) {
                 file_parts <- sub('^.+MULTI_', '', file_parts)
+                if (verbose) { print("Odd Mantra format .. has not been tested in a long long time.") }
+                img_names <-
+                    image_names[grep(paste0(x@coordinate_name, '_'), file_parts)]
             } else{
-                file_parts <- sub('^[^_]+_', '', file_parts)
+                img_names <-
+                    image_names[grep(paste0(x@coordinate_name,'_[^0-9]+$'), file_parts,perl=TRUE)]
             }
-            img_names <-
-                image_names[grep(paste0(x@coordinate_name, '_'), file_parts)]
         }
-
         seg_data <-
             img_names[grep('cell_seg_data.txt$', img_names)]
         if (length(seg_data) != 1) {
