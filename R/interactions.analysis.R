@@ -1,3 +1,4 @@
+
 #' DataFrame from all the counts on a per mm2 basis per sample
 #'
 #' @param x IrisSpatialFeatures ImageSet object.
@@ -168,7 +169,7 @@ setMethod(
     signature = "ImageSet",
     definition = function(x) {
         sresults <- interaction_counts_data_frame(x)
-        sresults <- sresults %>% group_by(sample,reference_phenotype,neighbor_phenotype) %>% summarize(mean=mean(interactions_per_mm2),stderr=sd(interactions_per_mm2)/sqrt(n()),frame_count=n())
+        sresults <- sresults %>% group_by(sample,reference_phenotype,neighbor_phenotype) %>% summarize(total_interactions=sum(interaction_count),mean_interactions_per_mm2=mean(interactions_per_mm2),stderr_interactions_per_mm2=sd(interactions_per_mm2)/sqrt(n()),frame_count=n())
         return(sresults)
     }
 )
@@ -203,13 +204,20 @@ setMethod(
         #dfs <- lapply(names(x@samples),function(sample){
         #for (sample_name in names(x@samples)) {
         sresults <- lapply(names(x@samples),function(sample_name){
+            print(sample_name)
             sample <- x@samples[[sample_name]]
             fresults <- lapply(names(sample@coordinates),function(frame_name){
                 frame <- sample@coordinates[[frame_name]]
-                evts <- interaction_events(frame,x@markers)
+                if (length(x@interactions)==0) {
+                    evts <- interaction_events(frame,x@markers)
+                } else {
+                    evts = list()
+                    evts[['ppp']] = x@interactions[[sample_name]]$ppp[[frame_name]]
+                    evts[['ints']] = x@interactions[[sample_name]]$ints[[frame_name]]
+                }
 
                 marks = as.character(evts$ppp$marks)
-                if (length(evts$ints)==0) { 
+                if (length(evts$ints)==0) {
                     print("zero interactions case. whole frame will not contribute. if you want to force zero counts for these, add this.")
                     return(NULL)
                 }
