@@ -199,6 +199,7 @@ setMethod(
 
         # fix our levels if they are explicitly defined
         x@ppp$marks <- factor(x@ppp$marks,levels=new_phenotypes)
+        x@raw@data$Phenotype <- as.character(x@ppp$marks)
 
         return(x)
     }
@@ -309,6 +310,14 @@ setMethod(
 
         #fix the markers in the object
         x@markers <- sort(c(x@markers[!x@markers %in% c(marker1, marker2)], combined))
+        ## now lets go through and fix these
+        for (sample in names(x@samples)) {
+            for (coordinate in names(x@samples[[sample]]@coordinates)) {
+                x@samples[[sample]]@coordinates[[coordinate]]@ppp$marks <- factor(x@samples[[sample]]@coordinates[[coordinate]]@ppp$marks,levels=x@markers)
+            }
+        }
+
+
         x <- extract_counts(x)
         x@nearest_neighbors <- list()
         x@interactions <- list()

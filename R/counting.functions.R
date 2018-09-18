@@ -99,10 +99,13 @@ setMethod(
     signature = "ImageSet",
     definition = function(x) {
         cdata <- as.data.frame(x) %>% group_by(frame,sample,marks) %>% summarize(count=n())
-        marks <- as.data.frame(unique(cdata$marks))
+        cdata$marks <- as.character(cdata$marks)
+        #marks <- as.data.frame(unique(cdata$marks))
+        marks <- as.data.frame(as.character(unique(levels(x@samples[[1]]@coordinates[[1]]@ppp$marks))))
         colnames(marks) <- "marks"
         subjects <- cdata %>% select(sample,frame) %>% distinct()
         all <- subjects %>% merge(marks)
+        all$marks <- as.character(all$marks)
         cnts <- all %>% left_join(cdata, by=c("sample","frame","marks")) %>% replace(.,is.na(.),0)
         return(cnts)
     }
