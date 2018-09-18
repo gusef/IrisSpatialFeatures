@@ -108,6 +108,22 @@ setMethod(
                            pheno_name,
                            sample_name,
                            remove_blanks) {
+
+        # Create a list of phenotypes we will be using after this
+        newlist = list()
+        i <- 0
+        for (phenotype in levels(x@ppp$marks)) {
+            i <- i + 1
+            if (phenotype %in% base) {
+                newlist[[i]] <- paste0(phenotype,' ',marker_name,'+')
+                i <- i+1
+                newlist[[i]] <- paste0(phenotype,' ',marker_name,'-')
+            } else {
+                newlist[[i]] <- phenotype
+            }
+        }
+        new_phenotypes <- unlist(newlist)
+
         #remove the cells that are not called by inForm (usually not very many!)
         if (remove_blanks) {
             x@raw@data <- x@raw@data[x@raw@data[[pheno_name]] != '', ]
@@ -180,6 +196,9 @@ setMethod(
             paste0(current_base[positive_cells[current]], ' ', marker_name, '+')
         x@ppp$marks <-
             as.factor(x@raw@data$Phenotype.combined)
+
+        # fix our levels if they are explicitly defined
+        x@ppp$marks <- factor(x@ppp$marks,levels=new_phenotypes)
 
         return(x)
     }

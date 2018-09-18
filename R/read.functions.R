@@ -19,6 +19,7 @@
 #' @param customMask Setting this indicates to the tif file for each frame with *_<customMask>.tif should be used as the mask. This overrides binary_seg mask.
 #' @param ignore_scoring Flag indicating whether the scoring file should be ignored (default: False)
 #' @param read_only_relevant_markers Flag that indicates whether all read inform output should be kept or only the relevant markers
+#' @param specified_phenotypes You can explicitly list which phenotypes are expected to be in the sample. This is useful when some values should be counted as zero when they are completely absent.
 #' @param verbose Print helpful information (default: True)
 #'
 #' @return IrisSpatialFeatures ImageSet object.
@@ -42,6 +43,7 @@ setGeneric("read_raw",
                     customMask = '',
                     ignore_scoring = FALSE,
                     read_only_relevant_markers = TRUE,
+                    specified_phenotypes = NULL,
                     verbose = TRUE
                     ) standardGeneric("read_raw"),
            valueClass = "ImageSet")
@@ -62,6 +64,7 @@ setMethod(
                           customMask,
                           ignore_scoring,
                           read_only_relevant_markers,
+                          specified_phenotypes,
                           verbose) {
         x <- new("ImageSet")
         x@microns_per_pixel = MicronsPerPixel
@@ -83,6 +86,7 @@ setMethod(
                 customMask,
                 ignore_scoring,
                 read_only_relevant_markers,
+                specified_phenotypes,
                 verbose
             )
         names(x@samples) <- toupper(raw_directories)
@@ -112,6 +116,7 @@ setMethod(
                           customMask,
                           ignore_scoring,
                           read_only_relevant_markers,
+                          specified_phenotypes,
                           verbose) {
         if (verbose) { print(paste('Sample:', x@sample_name)) }
 
@@ -171,6 +176,7 @@ setMethod(
                 customMask,
                 ignore_scoring,
                 read_only_relevant_markers,
+                specified_phenotypes,
                 verbose
             )
 
@@ -198,6 +204,7 @@ setMethod(
                           customMask,
                           ignore_scoring,
                           read_only_relevant_markers,
+                          specified_phenotypes,
                           verbose) {
         if (format == 'Vectra') {
             img_names <- image_names[grep(x@coordinate_name, image_names)]
@@ -385,6 +392,12 @@ setMethod(
                 marks = factor(x@raw@data$Phenotype)
             )
         )
+
+        # fix the levels of the marks to include all phenotypes that are measured
+        # even if they aren't present if they are explicitly specified
+        if (!is.null(specified_phenotypes)) {
+            x@ppp$marks <- factor(x@ppp$marks,levels=specified_phenotypes)
+        }
 
         if (readTumorAndMarginMasks) {
             #extract mask data

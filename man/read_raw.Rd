@@ -11,13 +11,15 @@ read_raw(path, label_fix = list(), format = "", dir_filter = "",
   read_nuc_seg_map = FALSE, MicronsPerPixel = 0.496,
   invasive_margin_in_px = 100, readTumorAndMarginMasks = FALSE,
   customMask = "", ignore_scoring = FALSE,
-  read_only_relevant_markers = TRUE, verbose = TRUE)
+  read_only_relevant_markers = TRUE, specified_phenotypes = NULL,
+  verbose = TRUE)
 
 \S4method{read_raw}{character}(path, label_fix = list(), format = "",
   dir_filter = "", read_nuc_seg_map = FALSE, MicronsPerPixel = 0.496,
   invasive_margin_in_px = 100, readTumorAndMarginMasks = FALSE,
   customMask = "", ignore_scoring = FALSE,
-  read_only_relevant_markers = TRUE, verbose = TRUE)
+  read_only_relevant_markers = TRUE, specified_phenotypes = NULL,
+  verbose = TRUE)
 }
 \arguments{
 \item{path}{Directory that contains the raw files}
@@ -41,6 +43,8 @@ read_raw(path, label_fix = list(), format = "", dir_filter = "",
 \item{ignore_scoring}{Flag indicating whether the scoring file should be ignored (default: False)}
 
 \item{read_only_relevant_markers}{Flag that indicates whether all read inform output should be kept or only the relevant markers}
+
+\item{specified_phenotypes}{You can explicitly list which phenotypes are expected to be in the sample. This is useful when some values should be counted as zero when they are completely absent.}
 
 \item{verbose}{Print helpful information (default: True)}
 }
