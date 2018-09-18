@@ -32,51 +32,6 @@ setMethod(
 )
 
 
-#' Compare nearest neighbors by a data.frame
-#'
-#' @param x IrisSpatialFeatures ImageSet object that has had extract nearest neighbors run
-#' @param markerA First marker
-#' @param markerB Second marker
-#' @param reference Reference marker
-#' @param from_reference If true calculate distance from the reference to the markers by NN
-#'
-#' @return data.frame of markers and distances
-#'
-#' @docType methods
-#' @export
-#'
-#' @examples
-#'
-#' #loading pre-read dataset
-#' dataset <- IrisSpatialFeatures_data
-#' extract_nearest_neighbor(dataset)
-#'
-#' @importFrom data.table rbindlist
-#' @rdname nn_comparison_dataframe
-setGeneric("nn_comparison_dataframe", function(x,markerA,markerB,reference,from_reference=TRUE)
-    standardGeneric("nn_comparison_dataframe"))
-
-#' @rdname nn_comparison_dataframe
-#' @aliases extract.nearest.neighbor,ANY,ANY-method
-setMethod(
-    "nn_comparison_dataframe",
-    signature = c("ImageSet","character","character","character","logical"),
-    definition = function(x, markerA, markerB, reference, from_reference=TRUE) {
-        samples <- names(nn@nearest_neighbors)
-        neighbors <- lapply(samples,function(sample) {
-            means = nn@nearest_neighbors[sample][[1]]$means
-            if (from_reference) {
-                v1 = data.frame(sample=sample,markerA=markerA,markerB=markerB,reference=reference,from_reference=from_reference,distanceA=means[reference,markerA],distanceB=means[reference,markerB])
-                return(v1)
-            } else {
-                v1 = data.frame(sample=sample,markerA=markerA,markerB=markerB,reference=reference,from_reference=from_reference,distanceA=means[markerA,reference],distanceB=means[markerB,reference])
-                return(v1)
-            }
-        })
-        return(rbindlist(neighbors))
-
-    }
-)
 
 
 
@@ -125,9 +80,9 @@ setMethod(
     "nn_comparison_dataframe",
     signature = c("ImageSet","character","character","character","logical"),
     definition = function(x, markerA, markerB, reference, from_reference=TRUE) {
-        samples <- names(nn@nearest_neighbors)
+        samples <- names(x@nearest_neighbors)
         neighbors <- lapply(samples,function(sample) {
-            means = nn@nearest_neighbors[sample][[1]]$means
+            means = x@nearest_neighbors[sample][[1]]$means
             if (from_reference) {
                 v1 = data.frame(sample=sample,markerA=markerA,markerB=markerB,reference=reference,from_reference=from_reference,distanceA=means[reference,markerA],distanceB=means[reference,markerB])
                 return(v1)
@@ -136,10 +91,86 @@ setMethod(
                 return(v1)
             }
         })
-        return(rbindlist(neighbors))
-
+        res <- rbindlist(neighbors)
+        res$delta <- res$distanceA - res$distanceB
+        return(res)
     }
 )
+
+
+############ Permutation Test NN ##############
+#' Calculate a permutation test result for nearest neighbors to say for each sample to see 
+#' if the neighbor distance something seen under the null assumption
+#'
+#' @param x IrisSpatialFeatures ImageSet object that has had extract nearest neighbors run
+#' @param markerA First marker
+#' @param markerB Second marker
+#' @param reference Reference marker
+#' @param from_reference If true calculate distance from the reference to the markers by NN
+#' @param permutations Set to 100 by default
+#'
+#' @return data.frame of markers and distances
+#'
+#' @docType methods
+#' @export
+#'
+#' @examples
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' nn_comparison_permutation_test(dataset)
+#'
+#' @importFrom data.table rbindlist
+#' @rdname nn_comparison_permutation_test
+setGeneric("nn_comparison_permutation_test", function(x,markerA,markerB,reference,from_reference=TRUE,permutations=20,subset=NULL)
+    standardGeneric("nn_comparison_permutation_test"))
+
+#' @rdname nn_comparison_permutation_test
+#' @aliases extract.nearest.neighbor,ANY,ANY-method
+setMethod(
+    "nn_comparison_permutation_test",
+    signature = c("ImageSet","character","character","character","logical","numeric","character"),
+    definition = function(x, markerA, markerB, reference, from_reference=TRUE,permutations=20,subset=NULL) {
+        obs <- as.tibble(nn_comparison_dataframe(x,markerA,markerB,reference,from_reference))
+        expected <- lapply(seq(1,permutations),function(i){
+            print(i)
+            datar1 <- extract_nearest_neighbor(shuffle_labels(data,subset=subset))
+            vr <- nn_comparison_dataframe(datar1,'CD68+ PDL1+','CD68+ PDL1-','Tumor',FALSE)
+            vr$iter <- i
+            return(vr)
+        })
+        expected <- rbindlist(expected)
+        ci <- expected %>% group_by(sample) %>% summarize(`5%`=quantile(delta,probs=0.05),
+                                      `95%`=quantile(delta,probs=0.95), expected_delta_mean=mean(delta),expected_delta_sd=sd(delta))
+        annot <- obs %>% full_join(ci,by=c('sample')) 
+        annot$z_score <- (annot$delta-annot$expected_delta_mean)/(annot$expected_delta_sd/sqrt(permutations))
+        annot$permutations = permutations
+
+        # now get the p value
+        subset = annot %>% rename(observed = delta) %>% select(sample,observed,z_score,permutations)
+        r2 = as.tibble(expected) %>% full_join(subset,by=c('sample'))
+        low_values = annot %>% filter(z_score <=0)
+        high_values = annot %>% filter(z_score > 0)
+        low = r2 %>% filter(z_score <=0) %>% filter(delta <= observed)
+        high = r2 %>% filter(z_score >0) %>% filter(delta >= observed)
+        hcnt = high %>% group_by(sample) %>% summarize(count=n())
+        high_values = high_values %>% full_join(hcnt,by=c('sample')) %>% mutate(p_value=count/permutations)  
+        high_values$p_value <- replace_na(high_values$p_value,0)
+
+        lcnt = low %>% group_by(sample) %>% summarize(count=n())
+        low_values = low_values %>% full_join(lcnt,by=c('sample')) %>% mutate(p_value=count/permutations)
+        low_values$p_value <- replace_na(low_values$p_value,0)
+
+        myna = annot %>% filter(is.na(z_score))
+        myna = annot %>% filter(is.na(z_score))
+        myna$count = NA
+        myna$p_value = NA
+        output = rbind(high_values,low_values,myna) %>% arrange(sample)
+
+        return(list(result=output,expected=expected))
+    }
+)
+
 
 #####################################################################################################################################
 ################ Normalized nearest neighbor functions
