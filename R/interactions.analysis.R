@@ -41,6 +41,8 @@ setMethod(
 #' Extract interactions between all cell-types
 #'
 #' @param x IrisSpatialFeatures ImageSet object
+#' @param membrane_border_width_px the width of the membrane border (default 2)
+#' @param interaction_distance_px distance beyond the membrane 
 #' @param ... Additional arguments
 #' @return list of interactions
 #'
@@ -55,7 +57,10 @@ setMethod(
 #' dataset <- IrisSpatialFeatures_data
 #' dataset <- extract_interactions(dataset)
 #'
-setGeneric("extract_interactions", function(x, ...)
+setGeneric("extract_interactions", function(x,
+                                            membrane_border_width_px=2,
+                                            interaction_distance_px=2, 
+                                            ...)
     standardGeneric("extract_interactions"))
 
 #' @rdname extract_interactions
@@ -63,23 +68,40 @@ setGeneric("extract_interactions", function(x, ...)
 setMethod(
     "extract_interactions",
     signature = "ImageSet",
-    definition = function(x) {
+    definition = function(x, 
+                          membrane_border_width_px, 
+                          interaction_distance_px) {
         x@interactions <-
-            lapply(x@samples, interactions_per_sample, x@markers)
+            lapply(x@samples, 
+                          interactions_per_sample, 
+                          membrane_border_width_px, 
+                          interaction_distance_px, 
+                          x@markers)
         names(x@interactions) <- names(x@samples)
         return(x)
     }
 )
 
-setGeneric("interactions_per_sample", function(x, ...)
+setGeneric("interactions_per_sample", function(x,
+                                            membrane_border_width_px,
+                                            interaction_distance_px, 
+                                            all_levels, 
+                                            ...)
     standardGeneric("interactions_per_sample"))
 setMethod(
     "interactions_per_sample",
     signature = "Sample",
-    definition = function(x, all_levels) {
+    definition = function(x, 
+                          membrane_border_width_px, 
+                          interaction_distance_px, 
+                          all_levels) {
         message(paste(x@sample_name, ' ... processing...'))
         interactions <-
-            lapply(x@coordinates, interaction_events, all_levels)
+            lapply(x@coordinates, 
+                          interaction_events, 
+                          membrane_border_width_px, 
+                          interaction_distance_px,
+                          all_levels)
 
         areas_with_counts <- sapply(interactions, length) > 0
         if (sum(areas_with_counts) == 0) {
@@ -146,6 +168,8 @@ setMethod(
 #' than an average neighbor count
 #'
 #' @param x IrisSpatialFeatures ImageSet object.
+#' @param membrane_border_width_px the width of the membrane divide in pixels
+#' @param interaction_distance_px the number of pixels beyond the membrane divide
 #' @param ... Additional arguments
 #' @examples
 #'
@@ -159,7 +183,9 @@ setMethod(
 #' @export
 #' @rdname interaction_counts_sample_data_frame
 setGeneric("interaction_counts_sample_data_frame",
-           function(x, ...)
+           function(x, 
+                    membrane_border_width_px=2, 
+                    interaction_distance_px=2, ...)
                standardGeneric("interaction_counts_sample_data_frame"))
 
 #' @rdname interaction_counts_sample_data_frame
@@ -167,8 +193,12 @@ setGeneric("interaction_counts_sample_data_frame",
 setMethod(
     "interaction_counts_sample_data_frame",
     signature = "ImageSet",
-    definition = function(x) {
-        sresults <- interaction_counts_data_frame(x)
+    definition = function(x, 
+                    membrane_border_width_px, 
+                    interaction_distance_px) {
+        sresults <- interaction_counts_data_frame(x, 
+                                                  membrane_border_width_px, 
+                                                  interaction_distance_px)
         sresults <- sresults %>% group_by(sample,reference_phenotype,neighbor_phenotype) %>% summarize(total_interactions=sum(interaction_count),mean_interactions_per_mm2=mean(interactions_per_mm2),stderr_interactions_per_mm2=sd(interactions_per_mm2)/sqrt(n()),frame_count=n())
         return(sresults)
     }
@@ -179,6 +209,8 @@ setMethod(
 #' than an average neighbor count
 #'
 #' @param x IrisSpatialFeatures ImageSet object.
+#' @param membrane_border_width_px the width of the membrane divide in pixels
+#' @param interaction_distance_px the number of pixels beyond the membrane divide
 #' @param ... Additional arguments
 #' @examples
 #'
@@ -192,7 +224,10 @@ setMethod(
 #' @export
 #' @rdname interaction_counts_data_frame
 setGeneric("interaction_counts_data_frame",
-           function(x, ...)
+           function(x, 
+                    membrane_border_width_px=2, 
+                    interaction_distance_px=2, 
+                    ...)
                standardGeneric("interaction_counts_data_frame"))
 
 #' @rdname interaction_counts_data_frame
@@ -200,7 +235,9 @@ setGeneric("interaction_counts_data_frame",
 setMethod(
     "interaction_counts_data_frame",
     signature = "ImageSet",
-    definition = function(x) {
+    definition = function(x, 
+                    membrane_border_width_px, 
+                    interaction_distance_px) {
         #dfs <- lapply(names(x@samples),function(sample){
         #for (sample_name in names(x@samples)) {
         sresults <- lapply(names(x@samples),function(sample_name){
@@ -209,7 +246,10 @@ setMethod(
             fresults <- lapply(names(sample@coordinates),function(frame_name){
                 frame <- sample@coordinates[[frame_name]]
                 if (length(x@interactions)==0) {
-                    evts <- interaction_events(frame,x@markers)
+                    evts <- interaction_events(frame, 
+                                               membrane_border_width_px, 
+                                               interaction_distance_px,
+                                               x@markers)
                 } else {
                     evts = list()
                     evts[['ppp']] = x@interactions[[sample_name]]$ppp[[frame_name]]
@@ -282,12 +322,18 @@ setMethod(
 
 
 
-setGeneric("interaction_events", function(x, ...)
+setGeneric("interaction_events", function(x,
+                                          membrane_border_width_px,
+                                          interaction_distance_px, 
+                                          all_levels, ...)
     standardGeneric("interaction_events"))
 setMethod(
     "interaction_events",
     signature = "Coordinate",
-    definition = function(x, all_levels) {
+    definition = function(x,
+                          membrane_border_width_px,
+                          interaction_distance_px, 
+                          all_levels) {
         #extract membrane map and set membranes to -1
         if (is.null(x@raw@mem_seg_map) ||
             any(dim(x@raw@mem_seg_map) == 0)) {
@@ -305,10 +351,17 @@ setMethod(
 
         #update the values
         filled_map <- ret$map
+        #saveRDS(filled_map,'test.RDS')
+        #writeTIFF(t(as.matrix(filled_map)),'test.tiff',compression='LZW')
+        #print(paste0(membrane_border_width_px," ",interaction_distance_px))
         x <- ret$x
 
         #extract the interactions
-        interactions <- getNeighbors(filled_map)
+        interactions <- getNeighbors(filled_map,
+                                     membrane_border_width_px,
+                                     interaction_distance_px)
+        #print(interactions)
+        #stop()
 
         #extract the means and variances
         inter_stats <-
@@ -435,8 +488,11 @@ setMethod(
 )
 
 
-getNeighbors <- function(filled_map) {
-    interactions <- getInteractionsC(filled_map)[[1]]
+getNeighbors <- function(filled_map,
+                         membrane_border_width_px,
+                         interaction_distance_px) {
+    step <- membrane_border_width_px+interaction_distance_px
+    interactions <- getInteractionsC(filled_map,step)[[1]]
     interactions <- interactions[-(1:2)]
     #transform the list so the indices correspond to the names
     interactions <-

@@ -9,8 +9,8 @@ generate_maskC <- function(marker_map, padded_map, cell_coords) {
     .Call('_IrisSpatialFeatures_generate_maskC', PACKAGE = 'IrisSpatialFeatures', marker_map, padded_map, cell_coords)
 }
 
-getInteractionsC <- function(filled_map) {
-    .Call('_IrisSpatialFeatures_getInteractionsC', PACKAGE = 'IrisSpatialFeatures', filled_map)
+getInteractionsC <- function(filled_map, step) {
+    .Call('_IrisSpatialFeatures_getInteractionsC', PACKAGE = 'IrisSpatialFeatures', filled_map, step)
 }
 
 fillMaskC <- function(mask, padded, cell_coords) {

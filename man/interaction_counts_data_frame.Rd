@@ -9,12 +9,18 @@
 This function is more like a density of edges between nodes on the interaction graph
 than an average neighbor count}
 \usage{
-interaction_counts_data_frame(x, ...)
+interaction_counts_data_frame(x, membrane_border_width_px = 2,
+  interaction_distance_px = 2, ...)
 
-\S4method{interaction_counts_data_frame}{ImageSet}(x)
+\S4method{interaction_counts_data_frame}{ImageSet}(x, membrane_border_width_px,
+  interaction_distance_px)
 }
 \arguments{
 \item{x}{IrisSpatialFeatures ImageSet object.}
+
+\item{membrane_border_width_px}{the width of the membrane divide in pixels}
+
+\item{interaction_distance_px}{the number of pixels beyond the membrane divide}
 
 \item{...}{Additional arguments}
 }

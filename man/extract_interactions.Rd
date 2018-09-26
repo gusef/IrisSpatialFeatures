@@ -7,12 +7,18 @@
 \alias{extract_interactions,ANY,ANY-method}
 \title{Extract interactions between all cell-types}
 \usage{
-extract_interactions(x, ...)
+extract_interactions(x, membrane_border_width_px = 2,
+  interaction_distance_px = 2, ...)
 
-\S4method{extract_interactions}{ImageSet}(x)
+\S4method{extract_interactions}{ImageSet}(x, membrane_border_width_px,
+  interaction_distance_px)
 }
 \arguments{
 \item{x}{IrisSpatialFeatures ImageSet object}
+
+\item{membrane_border_width_px}{the width of the membrane border (default 2)}
+
+\item{interaction_distance_px}{distance beyond the membrane}
 
 \item{...}{Additional arguments}
 }

@@ -31,13 +31,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // getInteractionsC
-List getInteractionsC(NumericMatrix filled_map);
-RcppExport SEXP _IrisSpatialFeatures_getInteractionsC(SEXP filled_mapSEXP) {
+List getInteractionsC(NumericMatrix filled_map, int step);
+RcppExport SEXP _IrisSpatialFeatures_getInteractionsC(SEXP filled_mapSEXP, SEXP stepSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type filled_map(filled_mapSEXP);
-    rcpp_result_gen = Rcpp::wrap(getInteractionsC(filled_map));
+    Rcpp::traits::input_parameter< int >::type step(stepSEXP);
+    rcpp_result_gen = Rcpp::wrap(getInteractionsC(filled_map, step));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -70,7 +71,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_IrisSpatialFeatures_watershedC", (DL_FUNC) &_IrisSpatialFeatures_watershedC, 2},
     {"_IrisSpatialFeatures_generate_maskC", (DL_FUNC) &_IrisSpatialFeatures_generate_maskC, 3},
-    {"_IrisSpatialFeatures_getInteractionsC", (DL_FUNC) &_IrisSpatialFeatures_getInteractionsC, 1},
+    {"_IrisSpatialFeatures_getInteractionsC", (DL_FUNC) &_IrisSpatialFeatures_getInteractionsC, 2},
     {"_IrisSpatialFeatures_fillMaskC", (DL_FUNC) &_IrisSpatialFeatures_fillMaskC, 3},
     {"_IrisSpatialFeatures_growMarginC", (DL_FUNC) &_IrisSpatialFeatures_growMarginC, 2},
     {NULL, NULL, 0}

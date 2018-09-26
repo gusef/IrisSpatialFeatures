@@ -341,26 +341,38 @@ NumericMatrix generate_maskC(NumericMatrix marker_map, NumericMatrix padded_map,
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // [[Rcpp::export]]
-List getInteractionsC(NumericMatrix filled_map){
+List getInteractionsC(NumericMatrix filled_map, int step){
 
     std::map<int,std::vector<int> > interactions;
     int nrow = filled_map.nrow();
     int ncol = filled_map.ncol();
-
-    for (int x=2;x<nrow-2;x++){
-        for (int y=2;y<ncol-2;y++){
-            if (filled_map(x-2,y)>0 && filled_map(x-2,y)!=filled_map(x,y)){
-                interactions[filled_map(x,y)].push_back(filled_map(x-2,y));
+    //int step = 4; // was 2
+    for (int x=step;x<nrow-step;x++){
+        for (int y=step;y<ncol-step;y++){
+            if (filled_map(x-step,y)>0 && filled_map(x-step,y)!=filled_map(x,y)){
+                interactions[filled_map(x,y)].push_back(filled_map(x-step,y));
             }
-            if (filled_map(x,y-2)>0 && filled_map(x,y-2)!=filled_map(x,y)){
-                interactions[filled_map(x,y)].push_back(filled_map(x,y-2));
+            if (filled_map(x,y-step)>0 && filled_map(x,y-step)!=filled_map(x,y)){
+                interactions[filled_map(x,y)].push_back(filled_map(x,y-step));
             }
-            if (filled_map(x+2,y)>0 && filled_map(x+2,y)!=filled_map(x,y)){
-                interactions[filled_map(x,y)].push_back(filled_map(x+2,y));
+            if (filled_map(x+step,y)>0 && filled_map(x+step,y)!=filled_map(x,y)){
+                interactions[filled_map(x,y)].push_back(filled_map(x+step,y));
             }
-            if (filled_map(x,y+2)>0 && filled_map(x,y+2)!=filled_map(x,y)){
-                interactions[filled_map(x,y)].push_back(filled_map(x,y+2));
+            if (filled_map(x,y+step)>0 && filled_map(x,y+step)!=filled_map(x,y)){
+                interactions[filled_map(x,y)].push_back(filled_map(x,y+step));
             }
+            if (filled_map(x+step,y+step)>0 && filled_map(x+step,y+step)!=filled_map(x,y)){
+                interactions[filled_map(x,y)].push_back(filled_map(x+step,y+step));
+            }
+            if (filled_map(x+step,y-step)>0 && filled_map(x+step,y-step)!=filled_map(x,y)){
+                interactions[filled_map(x,y)].push_back(filled_map(x+step,y-step));
+            }
+            if (filled_map(x-step,y+step)>0 && filled_map(x-step,y+step)!=filled_map(x,y)){
+                interactions[filled_map(x,y)].push_back(filled_map(x-step,y+step));
+            }        
+            if (filled_map(x-step,y-step)>0 && filled_map(x-step,y-step)!=filled_map(x,y)){
+                interactions[filled_map(x,y)].push_back(filled_map(x-step,y-step));
+            }        
         }
     }
 
