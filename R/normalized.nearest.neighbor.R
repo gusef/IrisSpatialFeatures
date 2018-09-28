@@ -134,7 +134,7 @@ setMethod(
         obs <- as.tibble(nn_comparison_dataframe(x,markerA,markerB,reference,from_reference))
         expected <- lapply(seq(1,permutations),function(i){
             print(i)
-            datar1 <- extract_nearest_neighbor(shuffle_labels(data,subset=subset))
+            datar1 <- extract_nearest_neighbor(shuffle_labels(x,subset=subset))
             vr <- nn_comparison_dataframe(datar1,'CD68+ PDL1+','CD68+ PDL1-','Tumor',FALSE)
             vr$iter <- i
             return(vr)
@@ -163,8 +163,12 @@ setMethod(
 
         myna = annot %>% filter(is.na(z_score))
         myna = annot %>% filter(is.na(z_score))
-        myna$count = NA
-        myna$p_value = NA
+        if (length(myna$sample) > 0) {
+           myna$count = NA
+           myna$p_value = NA
+        }
+        #myna$count = NA
+        #myna$p_value = NA
         output = rbind(high_values,low_values,myna) %>% arrange(sample)
 
         return(list(result=output,expected=expected))

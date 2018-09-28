@@ -238,13 +238,12 @@ setMethod(
     definition = function(x, 
                     membrane_border_width_px, 
                     interaction_distance_px) {
-        #dfs <- lapply(names(x@samples),function(sample){
-        #for (sample_name in names(x@samples)) {
         sresults <- lapply(names(x@samples),function(sample_name){
             print(sample_name)
             sample <- x@samples[[sample_name]]
             fresults <- lapply(names(sample@coordinates),function(frame_name){
                 frame <- sample@coordinates[[frame_name]]
+                print(frame_name)
                 if (length(x@interactions)==0) {
                     evts <- interaction_events(frame, 
                                                membrane_border_width_px, 
@@ -261,28 +260,40 @@ setMethod(
                     print("zero interactions case. whole frame will not contribute. if you want to force zero counts for these, add this.")
                     return(NULL)
                 }
+                #print("make data frame")
+                #fdata <- lapply(seq(1,length(evts$ints),1),function(i){
+                #    neighbors = evts$ints[[i]]
+                #    if (is.null(neighbors)) { return(NULL) }
+                #    vals = lapply(neighbors,function(j){
+                #        return(c(j,marks[j]))
+                #    })
+                #    vals = as.data.frame(do.call(rbind,vals))
+                #    colnames(vals) <- c("neighbor_id","neighbor_phenotype")
+                #    vals$reference_id = i
+                #    vals$reference_phenotype = marks[i]
+                #    return(vals)
+                #})
                 fdata <- lapply(seq(1,length(evts$ints),1),function(i){
-                    neighbors = evts$ints[[i]]
-                    rmark = marks[i]
-                    #print(neighbors)
-                    if (is.null(neighbors)) { return(NULL) }
-                    #print('hi')
-                    vals = lapply(neighbors,function(j){
-                        nmark = marks[j]
-                        return(c(j,nmark))
-                    })
-                    vals = as.data.frame(do.call(rbind,vals))
-                    colnames(vals) <- c("neighbor_id","neighbor_phenotype")
-                    vals$reference_id = i
-                    vals$reference_phenotype = rmark
-                    return(vals)
+                    if (is.null(evts$ints[[i]])) { return(NULL)}
+                    df <- data.frame(neighbor_id=evts$ints[[i]])
+                    df$reference_id <- i 
+                    return(df)
                 })
                 fdata <- do.call(rbind,fdata)
                 fdata$neighbor_id <- as.numeric(fdata$neighbor_id)
                 fdata$reference_id <- as.numeric(fdata$reference_id)
+                #print("reference phenotype")
+                fdata$reference_phenotype <- sapply(fdata$reference_id, function(x){
+                    return(marks[x])
+                    })
+                #print("neighbor phenotype")
+                fdata$neighbor_phenotype <- sapply(fdata$neighbor_id, function(x){
+                    return(marks[x])
+                    })
                 cnts = as.data.frame(fdata %>% group_by(neighbor_phenotype,reference_phenotype) %>% summarize(interaction_count=n()))
                 # Check for zero remainder
                 values = list()
+                #print("cycle markers")
                 z = 0
                 for (marki in x@markers) {
                     for (markj in x@markers) {
@@ -293,6 +304,7 @@ setMethod(
                     }
                 }
                 #print(cnts)
+                #print("rbind")
                 if(length(values)>0) {
                     values <- as.data.frame(do.call(rbind,values))
                     colnames(values) <- c("neighbor_phenotype","reference_phenotype")
@@ -1128,3 +1140,77 @@ generate_mask <- function(lvl, mem, ppp) {
     return(marker_map)
 
 }
+
+############ Permutation Test NN ##############
+#' Calculate a permutation test result for nearest neighbors to say for each sample to see 
+#' if the neighbor distance something seen under the null assumption
+#'
+#' @param x IrisSpatialFeatures ImageSet object that has had extract nearest neighbors run
+#' @param permutations Set to 100 by default
+#'
+#' @return data.frame of markers and distances
+#'
+#' @docType methods
+#' @export
+#'
+#' @examples
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' interaction_permutation_test(dataset)
+#'
+#' @importFrom data.table rbindlist
+#' @rdname interaction_permutation_test
+setGeneric("interaction_permutation_test", function(x,permutations=20,subset=NULL)
+    standardGeneric("interaction_permutation_test"))
+
+#' @rdname interaction_permutation_test
+#' @aliases interaction_permutation_test,ANY,ANY-method
+setMethod(
+    "interaction_permutation_test",
+    signature = c("ImageSet"),
+    definition = function(x, permutations,subset) {
+        obs <- as.tibble(interaction_counts_sample_data_frame(x))
+        expected <- lapply(seq(1,permutations),function(i){
+            print(i)
+            #datar1 <- extract_nearest_neighbor(s)
+            vr <- as.tibble(interaction_counts_sample_data_frame(shuffle_labels(x,subset=subset)))
+            vr$iter <- i
+            return(vr)
+        })
+        expected <- rbindlist(expected)
+
+        ci <- expected %>% group_by(sample, reference_phenotype, neighbor_phenotype) %>% summarize(`5%`=quantile(total_interactions,probs=0.05),
+                                      `95%`=quantile(total_interactions,probs=0.95), expected_total_mean=mean(total_interactions),expected_total_sd=sd(total_interactions))
+        annot <- obs %>% full_join(ci,by=c('sample','reference_phenotype','neighbor_phenotype')) 
+        annot$z_score <- (annot$total_interactions-annot$expected_total_mean)/(annot$expected_total_sd/sqrt(permutations))
+        annot$permutations = permutations
+
+        # now get the p value
+        subset = annot %>% rename(observed = total_interactions) %>% select(sample,reference_phenotype, neighbor_phenotype, observed,z_score,permutations)
+        r2 = as.tibble(expected) %>% full_join(subset,by=c('sample','reference_phenotype','neighbor_phenotype'))
+        low_values = annot %>% filter(z_score <=0)
+        high_values = annot %>% filter(z_score > 0)
+        low = r2 %>% filter(z_score <=0) %>% filter(total_interactions <= observed)
+        high = r2 %>% filter(z_score >0) %>% filter(total_interactions >= observed)
+        hcnt = high %>% group_by(sample, reference_phenotype, neighbor_phenotype) %>% summarize(count=n())
+        high_values = high_values %>% full_join(hcnt,by=c('sample','reference_phenotype','neighbor_phenotype')) %>% mutate(p_value=count/permutations)  
+        high_values$p_value <- replace_na(high_values$p_value,0)
+
+        lcnt = low %>% group_by(sample, reference_phenotype, neighbor_phenotype) %>% summarize(count=n())
+        low_values = low_values %>% full_join(lcnt,by=c('sample','reference_phenotype','neighbor_phenotype')) %>% mutate(p_value=count/permutations)
+        low_values$p_value <- replace_na(low_values$p_value,0)
+        #return(list(low=low_values,high=high_values,annot=annot))
+        myna = annot %>% filter(is.na(z_score))
+        myna = annot %>% filter(is.na(z_score))
+        if (length(myna$sample) > 0) {
+           myna$count = NA
+           myna$p_value = NA
+        }
+        #myna$count = NA
+        #myna$p_value = NA
+        output = rbind(high_values,low_values,myna) %>% arrange(sample,reference_phenotype,neighbor_phenotype)
+
+        return(list(result=output,expected=expected))
+    }
+)
