@@ -284,8 +284,10 @@ setMethod(
             }
 
             #second map is the membrane map
-            binary <- apply(maps[['Membrane']],2,function(x)x>0)
-            x@raw@mem_seg_map <- binary
+            if ('Membrane' %in% names(maps)) {
+                binary <- apply(maps[['Membrane']],2,function(x)x>0)
+                x@raw@mem_seg_map <- binary
+            }
 
             if ("Mask" %in% names(maps)){
                 if (verbose) { print("Mask found") }
@@ -359,7 +361,8 @@ setMethod(
                 scores <- scores[grep('Mean',scores)]
                 markers <- c(markers, scores)
             }
-            x@raw@data <- x@raw@data[,markers]
+            marker_subset <- intersect(markers,colnames(x@raw@data))
+            x@raw@data <- x@raw@data[,marker_subset]
         }
 
         #fix the labels if necessary
