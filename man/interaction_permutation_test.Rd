@@ -3,15 +3,16 @@
 \docType{methods}
 \name{interaction_permutation_test}
 \alias{interaction_permutation_test}
-\alias{interaction_permutation_test,ImageSet,numeric,character-method}
+\alias{interaction_permutation_test,ImageSet-method}
 \alias{interaction_permutation_test,ANY,ANY-method}
 \title{Calculate a permutation test result for nearest neighbors to say for each sample to see 
 if the neighbor distance something seen under the null assumption}
 \usage{
-interaction_permutation_test(x, permutations = 20, subset = NULL)
+interaction_permutation_test(x, permutations = 20, subset = NULL,
+  verbose = FALSE, ...)
 
-\S4method{interaction_permutation_test}{ImageSet,numeric,character}(x,
-  permutations = 20, subset = NULL)
+\S4method{interaction_permutation_test}{ImageSet}(x, permutations, subset,
+  vebose)
 }
 \arguments{
 \item{x}{IrisSpatialFeatures ImageSet object that has had extract nearest neighbors run}

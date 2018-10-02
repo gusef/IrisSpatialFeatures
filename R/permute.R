@@ -51,6 +51,13 @@ setMethod(
                     }
                     x_copy@samples[[sample]]@coordinates[[frame]]@ppp$marks <- marks
                 }
+                if (length(x@interactions) != 0) {
+                    #stop(paste(
+                    #    'Please run extract.interactions before plotting the interactions.'
+                    #))
+                    x_copy@interactions[[sample]]$ppp[[frame]]$marks <-x_copy@samples[[sample]]@coordinates[[frame]]@ppp$marks
+                }
+
             }
         }
         return(x_copy)

@@ -24,6 +24,12 @@ setMethod(
     "interactions_sample_data_frame",
     signature = "ImageSet",
     definition = function(x) {
+        # make sure interactions have been extracted in beforehand
+        if (length(x@interactions) == 0) {
+            stop(paste(
+                'Please run extract.interactions before plotting the interactions.'
+            ))
+        }
         v <- get_all_interactions(x)
         dfs <- lapply(names(v),function(sample){
             mat <- v[[sample]]
@@ -118,47 +124,47 @@ setMethod(
             x$ints)
 
         #reshape so we get lists of matrices
-        per_means <-
-            lapply(interactions, function(x)
-                x$stats$per$mean)
-        per_vars <-
-            lapply(interactions, function(x)
-                x$stats$per$var)
-        avg_means <-
-            lapply(interactions, function(x)
-                x$stats$avg$mean)
-        avg_vars <-
-            lapply(interactions, function(x)
-                x$stats$avg$var)
-        nums <-
-            rowSums(sapply(interactions, function(x)
-                x$stats$nums))
+        #per_means <-
+        #    lapply(interactions, function(x)
+        #        x$stats$per$mean)
+        #per_vars <-
+        #    lapply(interactions, function(x)
+        #        x$stats$per$var)
+        #avg_means <-
+        #    lapply(interactions, function(x)
+        #        x$stats$avg$mean)
+        #avg_vars <-
+        #    lapply(interactions, function(x)
+        #        x$stats$avg$var)
+        #nums <-
+        #    rowSums(sapply(interactions, function(x)
+        #        x$stats$nums))
 
-        #get the total number of interactions
-        total_ints <-
-            lapply(1:length(per_means), function(x, int)
-                sweep(int[[x]]$stats$avg$mean, 2, int[[x]]$stats$nums, '*'), interactions)
+        ##get the total number of interactions
+        #total_ints <-
+        #    lapply(1:length(per_means), function(x, int)
+        #        sweep(int[[x]]$stats$avg$mean, 2, int[[x]]$stats$nums, '*'), interactions)
 
         #collapse the different coordinates
-        per_means <- collapseMatrices(per_means, rowMeans)
-        per_vars <- collapseMatrices(per_vars, rowMeans)
-        avg_means <- collapseMatrices(avg_means, rowMeans)
-        avg_vars <- collapseMatrices(avg_vars, rowMeans)
-        total_ints <- collapseMatrices(total_ints, rowSums)
+        #per_means <- collapseMatrices(per_means, rowMeans)
+        #per_vars <- collapseMatrices(per_vars, rowMeans)
+        #avg_means <- collapseMatrices(avg_means, rowMeans)
+        #avg_vars <- collapseMatrices(avg_vars, rowMeans)
+        #total_ints <- collapseMatrices(total_ints, rowSums)
 
-        #calculate the standard error on the combined coordinates
-        per_SE <- sweep(sqrt(per_vars), 2, sqrt(nums), '/')
-        avg_SE <- sweep(sqrt(avg_vars), 2, sqrt(nums), '/')
+        ##calculate the standard error on the combined coordinates
+        #per_SE <- sweep(sqrt(per_vars), 2, sqrt(nums), '/')
+        #avg_SE <- sweep(sqrt(avg_vars), 2, sqrt(nums), '/')
 
         return(list(
-            per = list(mean = per_means,
-                       SE = per_SE),
-            avg = list(mean = avg_means,
-                       SE = avg_SE),
-            total = total_ints,
+            #per = list(mean = per_means,
+            #           SE = per_SE),
+            #avg = list(mean = avg_means,
+            #           SE = avg_SE),
+            #total = total_ints,
             ppp = ppps,
-            ints = ints,
-            nums = nums
+            ints = ints
+            #nums = nums
         ))
     }
 )
@@ -168,8 +174,6 @@ setMethod(
 #' than an average neighbor count
 #'
 #' @param x IrisSpatialFeatures ImageSet object.
-#' @param membrane_border_width_px the width of the membrane divide in pixels
-#' @param interaction_distance_px the number of pixels beyond the membrane divide
 #' @param ... Additional arguments
 #' @examples
 #'
@@ -184,8 +188,8 @@ setMethod(
 #' @rdname interaction_counts_sample_data_frame
 setGeneric("interaction_counts_sample_data_frame",
            function(x, 
-                    membrane_border_width_px=2, 
-                    interaction_distance_px=2, ...)
+                    verbose = FALSE,
+                    ...)
                standardGeneric("interaction_counts_sample_data_frame"))
 
 #' @rdname interaction_counts_sample_data_frame
@@ -194,11 +198,14 @@ setMethod(
     "interaction_counts_sample_data_frame",
     signature = "ImageSet",
     definition = function(x, 
-                    membrane_border_width_px, 
-                    interaction_distance_px) {
+                    verbose) {
+        if (length(x@interactions) == 0) {
+            stop(paste(
+                'Please run extract.interactions before plotting the interactions.'
+            ))
+        }
         sresults <- interaction_counts_data_frame(x, 
-                                                  membrane_border_width_px, 
-                                                  interaction_distance_px)
+                                                  verbose)
         sresults <- sresults %>% group_by(sample,reference_phenotype,neighbor_phenotype) %>% summarize(total_interactions=sum(interaction_count),mean_interactions_per_mm2=mean(interactions_per_mm2),stderr_interactions_per_mm2=sd(interactions_per_mm2)/sqrt(n()),frame_count=n())
         return(sresults)
     }
@@ -209,8 +216,6 @@ setMethod(
 #' than an average neighbor count
 #'
 #' @param x IrisSpatialFeatures ImageSet object.
-#' @param membrane_border_width_px the width of the membrane divide in pixels
-#' @param interaction_distance_px the number of pixels beyond the membrane divide
 #' @param ... Additional arguments
 #' @examples
 #'
@@ -225,8 +230,7 @@ setMethod(
 #' @rdname interaction_counts_data_frame
 setGeneric("interaction_counts_data_frame",
            function(x, 
-                    membrane_border_width_px=2, 
-                    interaction_distance_px=2, 
+                    verbose=FALSE, 
                     ...)
                standardGeneric("interaction_counts_data_frame"))
 
@@ -236,61 +240,57 @@ setMethod(
     "interaction_counts_data_frame",
     signature = "ImageSet",
     definition = function(x, 
-                    membrane_border_width_px, 
-                    interaction_distance_px) {
+                    verbose) {
+        if (length(x@interactions) == 0) {
+            stop(paste(
+                'Please run extract.interactions before plotting the interactions.'
+            ))
+        }
+
         sresults <- lapply(names(x@samples),function(sample_name){
-            print(sample_name)
+            if (verbose) { print(sample_name) }
             sample <- x@samples[[sample_name]]
             fresults <- lapply(names(sample@coordinates),function(frame_name){
                 frame <- sample@coordinates[[frame_name]]
-                print(frame_name)
-                if (length(x@interactions)==0) {
-                    evts <- interaction_events(frame, 
-                                               membrane_border_width_px, 
-                                               interaction_distance_px,
-                                               x@markers)
-                } else {
-                    evts = list()
-                    evts[['ppp']] = x@interactions[[sample_name]]$ppp[[frame_name]]
-                    evts[['ints']] = x@interactions[[sample_name]]$ints[[frame_name]]
-                }
+                if (verbose) { print(frame_name) }
 
-                marks = as.character(evts$ppp$marks)
-                if (length(evts$ints)==0) {
+                marks = as.character(x@interactions[[sample_name]]$ppp[[frame_name]]$marks)
+                if (length(x@interactions[[sample_name]]$ints[[frame_name]])==0) {
                     print("zero interactions case. whole frame will not contribute. if you want to force zero counts for these, add this.")
                     return(NULL)
                 }
-                #print("make data frame")
-                #fdata <- lapply(seq(1,length(evts$ints),1),function(i){
-                #    neighbors = evts$ints[[i]]
-                #    if (is.null(neighbors)) { return(NULL) }
-                #    vals = lapply(neighbors,function(j){
-                #        return(c(j,marks[j]))
-                #    })
-                #    vals = as.data.frame(do.call(rbind,vals))
-                #    colnames(vals) <- c("neighbor_id","neighbor_phenotype")
-                #    vals$reference_id = i
-                #    vals$reference_phenotype = marks[i]
-                #    return(vals)
-                #})
-                fdata <- lapply(seq(1,length(evts$ints),1),function(i){
-                    if (is.null(evts$ints[[i]])) { return(NULL)}
-                    df <- data.frame(neighbor_id=evts$ints[[i]])
-                    df$reference_id <- i 
-                    return(df)
+                ## Lets set up a structure to hold the converted data
+                phenotypes <- levels(x@samples[[sample_name]]@coordinates[[frame_name]]@ppp$marks)
+                #print(phenotypes)
+                cnts = list()
+                for (phenotype_name1 in phenotypes) {
+                    cnts[[phenotype_name1]] == list()
+                    for (phenotype_name2 in phenotypes) {
+                        cnts[[phenotype_name1]][[phenotype_name2]] = 0
+                    }
+                }
+                for (i in seq(1,length(x@interactions[[sample_name]]$ints[[frame_name]]),1)) {
+                    reference_phenotype = marks[i]
+                    if (is.null(x@interactions[[sample_name]]$ints[[frame_name]][[i]])) { next }
+                    count_table <- table(sapply(x@interactions[[sample_name]]$ints[[frame_name]][[i]],function(x){return(marks[x])}))
+                    for (neighbor_phenotype in names(count_table)) {
+                        cnts[[reference_phenotype]][[neighbor_phenotype]] = count_table[[neighbor_phenotype]] + cnts[[reference_phenotype]][[neighbor_phenotype]]
+                    }
+
+                }
+                v1 <- lapply(phenotypes,function(reference_phenotype) {
+                    v2 <- lapply(phenotypes,function(neighbor_phenotype) {
+                        df <- data.frame(reference_phenotype = reference_phenotype,
+                            neighbor_phenotype=neighbor_phenotype,
+                            interaction_count=cnts[[reference_phenotype]][[neighbor_phenotype]])
+                        colnames(df) <- c('reference_phenotype','neighbor_phenotype','interaction_count')
+                        return(df)
+                    })
+                    v2 <- do.call(rbind,v2)
+                    return(v2)
                 })
-                fdata <- do.call(rbind,fdata)
-                fdata$neighbor_id <- as.numeric(fdata$neighbor_id)
-                fdata$reference_id <- as.numeric(fdata$reference_id)
-                #print("reference phenotype")
-                fdata$reference_phenotype <- sapply(fdata$reference_id, function(x){
-                    return(marks[x])
-                    })
-                #print("neighbor phenotype")
-                fdata$neighbor_phenotype <- sapply(fdata$neighbor_id, function(x){
-                    return(marks[x])
-                    })
-                cnts = as.data.frame(fdata %>% group_by(neighbor_phenotype,reference_phenotype) %>% summarize(interaction_count=n()))
+                cnts <- do.call(rbind,v1)
+
                 # Check for zero remainder
                 values = list()
                 #print("cycle markers")
@@ -332,7 +332,92 @@ setMethod(
     }
 )
 
+#' DataFrame from all the interaction proportions freshly calculated from our current extracted counts
+#'
+#' @param x IrisSpatialFeatures ImageSet object.
+#' @param ... Additional arguments
+#' @examples
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' interactions_sample_data_frame(dataset)
+#'
+#' @return data frame
+#' @import magrittr dplyr tibble
+#' @docType methods
+#' @export
+#' @rdname interaction_proportion_data_frame
+setGeneric("interaction_proportion_data_frame",
+           function(x, 
+                    verbose=FALSE, 
+                    ...)
+               standardGeneric("interaction_proportion_data_frame"))
 
+#' @rdname interaction_proportion_data_frame
+#' @aliases  interaction_proportion_data_frame,ANY,ANY-method
+setMethod(
+    "interaction_proportion_data_frame",
+    signature = "ImageSet",
+    definition = function(x, 
+                    verbose) {
+        if (length(x@interactions) == 0) {
+            stop(paste(
+                'Please run extract.interactions before plotting the interactions.'
+            ))
+        }
+        
+        sresults <- lapply(names(x@samples),function(sample_name){
+            if (verbose) { print(sample_name) }
+            ## Initialize the place to store data
+            phenotypes <- levels(x@samples[[sample_name]]@coordinates[[1]]@ppp$marks)
+            cnts <- list()
+            totals <- list()
+            for (phenotype_name1 in phenotypes) {
+                cnts[[phenotype_name1]] <- list()
+                totals[[phenotype_name1]] <- 0
+                for (phenotype_name2 in phenotypes) {
+                    cnts[[phenotype_name1]][[phenotype_name2]] <- 0
+                }
+            }
+            sample <- x@samples[[sample_name]]
+            for (frame_name in names(sample@coordinates)) {
+                frame <- sample@coordinates[[frame_name]]
+                if (verbose) { print(frame_name) }
+                marks = as.character(x@interactions[[sample_name]]$ppp[[frame_name]]$marks)
+                if (length(x@interactions[[sample_name]]$ints[[frame_name]])==0) {
+                    print("zero interactions case. whole frame will not contribute. if you want to force zero counts for these, add this.")
+                    next
+                }
+                cell_numbers = seq(1,length(x@interactions[[sample_name]]$ints[[frame_name]]),1)
+                for (i in cell_numbers) {
+                    reference_phenotype = marks[i]
+                    if (is.null(x@interactions[[sample_name]]$ints[[frame_name]][[i]])) { next } # skip cells with no neighbors
+                    count_table <- table(sapply(x@interactions[[sample_name]]$ints[[frame_name]][[i]],function(x){return(marks[x])})) # the number of each neighbor
+                    totals[[reference_phenotype]] = totals[[reference_phenotype]] + length(x@interactions[[sample_name]]$ints[[frame_name]][[i]])
+                    for (neighbor_phenotype in names(count_table)) {
+                        cnts[[reference_phenotype]][[neighbor_phenotype]] = cnts[[reference_phenotype]][[neighbor_phenotype]] + count_table[[neighbor_phenotype]]
+                    }
+                }
+            }
+            # Now assemble a dataframe for the sample
+            v1 <- lapply(phenotypes,function(phenotype1) {
+                v2 <- lapply(phenotypes,function(phenotype2) {
+                    row <- list(sample=sample_name,reference_phenotype=phenotype1,neighbor_phenotype=phenotype2,interactions=0,count=0,proportion=NULL)
+                    if (totals[[phenotype1]] > 0) {
+                        row[['interactions']] = totals[[phenotype1]]
+                        row[['count']] = cnts[[phenotype1]][[phenotype2]]
+                        row[['proportion']] = cnts[[phenotype1]][[phenotype2]]/row[['interactions']]
+                    }
+                    return(data.frame(row))
+                })
+                rows <- do.call(rbind,v2)
+            })
+            return(do.call(rbind,v1))
+        })
+        sresults <- do.call(rbind,sresults)
+        return(as.tibble(sresults))
+    }
+)
 
 setGeneric("interaction_events", function(x,
                                           membrane_border_width_px,
@@ -376,11 +461,11 @@ setMethod(
         #stop()
 
         #extract the means and variances
-        inter_stats <-
-            extract_interaction_stats(x, interactions, all_levels)
+        #inter_stats <-
+        #    extract_interaction_stats(x, interactions, all_levels)
 
         return(list(
-            stats = inter_stats,
+            #stats = inter_stats,
             ppp = x@ppp,
             ints = interactions
         ))
@@ -464,6 +549,7 @@ setMethod(
     "extract_interaction_stats",
     signature = "Coordinate",
     definition = function(x, interactions, all_levels) {
+        print("WARNING: This function 'extract_interaction_stats' is depricated")
         labels <- as.character(x@ppp$marks)
 
         #translate the coordinates in the lists to labels
@@ -1141,7 +1227,7 @@ generate_mask <- function(lvl, mem, ppp) {
 
 }
 
-############ Permutation Test NN ##############
+############ Permutation Test Interactions ##############
 #' Calculate a permutation test result for nearest neighbors to say for each sample to see 
 #' if the neighbor distance something seen under the null assumption
 #'
@@ -1161,7 +1247,7 @@ generate_mask <- function(lvl, mem, ppp) {
 #'
 #' @importFrom data.table rbindlist
 #' @rdname interaction_permutation_test
-setGeneric("interaction_permutation_test", function(x,permutations=20,subset=NULL)
+setGeneric("interaction_permutation_test", function(x,permutations=20,subset=NULL,verbose=FALSE,...)
     standardGeneric("interaction_permutation_test"))
 
 #' @rdname interaction_permutation_test
@@ -1169,10 +1255,11 @@ setGeneric("interaction_permutation_test", function(x,permutations=20,subset=NUL
 setMethod(
     "interaction_permutation_test",
     signature = c("ImageSet"),
-    definition = function(x, permutations,subset) {
+    definition = function(x, permutations,subset,vebose) {
         obs <- as.tibble(interaction_counts_sample_data_frame(x))
+        if (verbose) { print("finished observed") }
         expected <- lapply(seq(1,permutations),function(i){
-            print(i)
+            if (verbose) { print(i) }
             #datar1 <- extract_nearest_neighbor(s)
             vr <- as.tibble(interaction_counts_sample_data_frame(shuffle_labels(x,subset=subset)))
             vr$iter <- i
@@ -1210,6 +1297,100 @@ setMethod(
         #myna$count = NA
         #myna$p_value = NA
         output = rbind(high_values,low_values,myna) %>% arrange(sample,reference_phenotype,neighbor_phenotype)
+
+        return(list(result=output,expected=expected))
+    }
+)
+
+
+############ Permutation Test Interaction Comparison ##############
+#' Calculate a permutation test result for nearest neighbors to say for each sample to see 
+#' if the neighbor distance something seen under the null assumption
+#'
+#' @param x IrisSpatialFeatures ImageSet object that has had extract nearest neighbors run
+#' @param reference Reference phenotype to compare proportions around
+#' @param phenotype_A First cell type to compare proportions of
+#' @param phenotype_B Second cell type to compare proportions of
+#' @param permutations Set to 100 by default
+#' @param subset Limit permutations to these types
+#'
+#' @return data.frame of markers and distances
+#'
+#' @docType methods
+#' @export
+#'
+#' @examples
+#'
+#' #loading pre-read dataset
+#' dataset <- IrisSpatialFeatures_data
+#' interaction_permutation_test(dataset)
+#'
+#' @importFrom data.table rbindlist
+#' @rdname interaction_proportion_comparison_permutation_test
+setGeneric("interaction_proportion_comparison_permutation_test", function(x,reference,phenotype_A,phenotype_B,permutations=20,subset=NULL,verbose=FALSE,...)
+    standardGeneric("interaction_proportion_comparison_permutation_test"))
+
+#' @rdname interaction_proportion_comparison_permutation_test
+#' @aliases interaction_proportion_comparison_permutation_test,ANY,ANY-method
+setMethod(
+    "interaction_proportion_comparison_permutation_test",
+    signature = c("ImageSet"),
+    definition = function(x, reference,phenotype_A,phenotype_B,permutations,subset,verbose) {
+        obs <- interaction_proportion_data_frame(x) %>% filter(reference_phenotype==reference) %>% filter(neighbor_phenotype %in% c(phenotype_A,phenotype_B))
+        # Get our frame for A - B
+        obsA = obs %>% filter(neighbor_phenotype == phenotype_A) %>% rename(proportion_A = proportion)
+        obsB = obs %>% filter(neighbor_phenotype == phenotype_B) %>% rename(proportion_B = proportion)
+        if (length(obsA$sample)==0) { return(NULL) }
+        if (length(obsB$sample)==0) { return(NULL) }
+        obs = obsA %>% inner_join(obsB,by=c('sample','reference_phenotype')) %>% select(sample,reference_phenotype,proportion_A,proportion_B) %>% mutate(delta = proportion_A-proportion_B)
+
+        if (verbose) { print("finished observed") }
+        expected <- lapply(seq(1,permutations),function(i){
+            if (verbose) { print(i) }
+            vr <- interaction_proportion_data_frame(shuffle_labels(x,subset=subset)) %>% filter(reference_phenotype==reference) %>% filter(neighbor_phenotype %in% c(phenotype_A,phenotype_B))
+            expA = vr %>% filter(neighbor_phenotype == phenotype_A) %>% rename(proportion_A = proportion)
+            expB = vr %>% filter(neighbor_phenotype == phenotype_B) %>% rename(proportion_B = proportion)
+            if (length(expA$sample)==0) { return(NULL) }
+            if (length(expB$sample)==0) { return(NULL) }
+            vr = expA %>% inner_join(expB,by=c('sample','reference_phenotype')) %>% select(sample,reference_phenotype,proportion_A,proportion_B) %>% mutate(delta = proportion_A-proportion_B)
+            vr$iter <- i
+            return(vr)
+        })
+        expected <- rbindlist(expected)
+        ci <- expected %>% group_by(sample) %>% summarize(`5%`=quantile(delta,probs=0.05),
+                                           `95%`=quantile(delta,probs=0.95),
+                                           expected_delta_mean=mean(delta),
+                                           expected_delta_sd=sd(delta))
+
+        annot <- obs %>% full_join(ci,by=c('sample')) 
+
+        annot$z_score <- (annot$delta-annot$expected_delta_mean)/(annot$expected_delta_sd/sqrt(permutations))
+        annot$permutations = permutations
+
+        # now get the p value
+        subset = annot %>% rename(observed = delta) %>% select(sample, observed,z_score,permutations)
+        r2 = as.tibble(expected) %>% full_join(subset,by=c('sample'))
+        low_values = annot %>% filter(z_score <=0)
+        high_values = annot %>% filter(z_score > 0)
+        low = r2 %>% filter(z_score <=0) %>% filter(delta <= observed)
+        high = r2 %>% filter(z_score >0) %>% filter(delta >= observed)
+        hcnt = high %>% group_by(sample) %>% summarize(count=n())
+        high_values = high_values %>% full_join(hcnt,by=c('sample')) %>% mutate(p_value=count/permutations)  
+        high_values$p_value <- replace_na(high_values$p_value,0)
+
+        lcnt = low %>% group_by(sample) %>% summarize(count=n())
+        low_values = low_values %>% full_join(lcnt,by=c('sample')) %>% mutate(p_value=count/permutations)
+        low_values$p_value <- replace_na(low_values$p_value,0)
+        #return(list(low=low_values,high=high_values,annot=annot))
+        myna = annot %>% filter(is.na(z_score))
+        myna = annot %>% filter(is.na(z_score))
+        if (length(myna$sample) > 0) {
+           myna$count = NA
+           myna$p_value = NA
+        }
+        #myna$count = NA
+        #myna$p_value = NA
+        output = rbind(high_values,low_values,myna) %>% arrange(sample)
 
         return(list(result=output,expected=expected))
     }
