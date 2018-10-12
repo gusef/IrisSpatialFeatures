@@ -25,6 +25,7 @@ setMethod(
     signature = "ImageSet",
     definition = function(x) {
         # make sure interactions have been extracted in beforehand
+        stop("Use 'interaction_proportion_data_frame' function to access this")
         if (length(x@interactions) == 0) {
             stop(paste(
                 'Please run extract.interactions before plotting the interactions.'
