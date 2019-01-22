@@ -67,6 +67,8 @@ setMethod(
             colnames(df) <- c('frame','marker','density')
             df$sample <- sample
             df <- df[,c('sample','frame','marker','density')]
+            df$sample <- as.character(df$sample)
+            df$frame <- as.character(df$frame)
             return(df)
         })
         v <- do.call(rbind,dfs)
