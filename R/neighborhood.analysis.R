@@ -1,114 +1,5 @@
 
 
-#' Extract proximity for a range of distances.
-#' Pass an array of radii distances (in micrometers) to the function 
-#' that would otherwise work like "proximity_sample_data_frame"
-#'
-#' @param x IrisSpatialFeatures ImageSet object
-#' @param radii The array of distances to extract in microns.
-#' @param ... Additional arguments
-#' @return The proximial events for each cell
-#' @examples
-#'
-#' #loading pre-read dataset
-#' dataset <- IrisSpatialFeatures_data
-#' extract_proximity(dataset)
-#'
-#' @docType methods
-#' @export
-#' @rdname multiple_proximity_sample_data_frame
-setGeneric("multiple_proximity_sample_data_frame", function(x, ...) standardGeneric("multiple_proximity_sample_data_frame"))
-
-#' @rdname multiple_proximity_sample_data_frame
-#' @aliases multiple_proximity_sample_data_frame,ANY,ANY-method
-setMethod("multiple_proximity_sample_data_frame",
-          signature = "ImageSet",
-          definition = function(x, radii=c(10,20,40,100,200,400,1000)){
-              all_levels <- x@markers
-              v <- lapply(radii,function(distance){
-                print(distance)
-                x1 <- extract_proximity(x,distance/x@microns_per_pixel)
-                df <- proximity_sample_data_frame(x1)
-                df$distance <- distance
-                return(df)
-                })
-              df <- do.call(rbind,v)
-              return(df)
-})
-
-#' Return a data frame of the per-sample proximities
-#' like those output by the plot_proximties
-#'
-#' @param x IrisSpatialFeatures ImageSet object
-#' @param ... Additional arguments
-#' @return The proximial events for each cell
-#' @importFrom reshape2 melt
-#' @examples
-#'
-#' #loading pre-read dataset
-#' dataset <- IrisSpatialFeatures_data
-#' extract_proximity(dataset)
-#'
-#' @docType methods
-#' @export
-#' @rdname proximity_sample_data_frame
-setGeneric("proximity_sample_data_frame", function(x, ...) standardGeneric("proximity_sample_data_frame"))
-
-#' @rdname extract_proximity
-#' @aliases run_proximity,ANY,ANY-method
-setMethod("proximity_sample_data_frame",
-          signature = "ImageSet",
-          definition = function(x){
-              if (length(x@proximity)==0){
-                  stop(paste('Please run extract.proximity before plotting the interactions.'))
-              }
-              #return('output')
-
-              # Do the avg_proximities like plot
-              avg_proximities <- lapply(x@proximity,function(x)x$avg_proximities)
-              df <- melt(avg_proximities)
-              colnames(df) <- c('neighbor_phenotype','reference_phenotype','avg_proximity','sample')
-              df <- as.tibble(df)
-              df2 <- df %>% group_by(reference_phenotype,sample) %>% summarize(cummulative=sum(avg_proximity))
-              prox_df <- df %>% inner_join(df2,by=c('reference_phenotype','sample')) %>% mutate(normalized_averaged_fraction=avg_proximity/cummulative)
-
-
-              # Do the totals in a similar mannor
-              totals <- lapply(x@proximity,function(x)x$total)
-              df <- melt(totals)
-              colnames(df) <- c('neighbor_phenotype','reference_phenotype','neighbor_count','sample')
-              totals_df <- as.tibble(df)
-              #df <- df %>% inner_join(df2,by=c('reference_phenotype','sample')) %>% mutate(normalized=avg_proximity/cummulative)
-
-              # Get the reference counts
-              v1 <- lapply(names(x@samples),function(sample) {
-                #print(sample)
-                v2 <- lapply(names(x@samples[[sample]]@coordinates),function(frame) {
-                  #print(frame)
-                  df <- melt(table(x@samples[[sample]]@coordinates[[frame]]@ppp$marks))
-                  colnames(df) <- c('reference_phenotype','reference_count')
-                  df$frame <- frame
-                  return(df)
-                })
-                v2 <- do.call(rbind,v2)
-                v2$sample <- sample
-                return(v2)
-              })
-              cnts <- do.call(rbind,v1)
-              # take them to sample level
-              sample_counts <- as.tibble(cnts) %>% group_by(reference_phenotype,sample) %>% summarize(reference_count=sum(reference_count))
-
-              # incorperate the sample counts into the totals_df
-              totals_df <- totals_df %>% inner_join(sample_counts,by=c('reference_phenotype','sample')) %>% mutate(neighbors_per_reference_cell=neighbor_count/reference_count)
-              df2 <- totals_df %>% group_by(sample,reference_phenotype) %>% summarize(neighborhood_total=sum(neighbor_count))
-              totals_df <- totals_df %>% inner_join(df2,by=c('reference_phenotype','sample')) %>% mutate(normalized_total_fraction=neighbor_count/neighborhood_total)
-
-              v1 <- prox_df %>% select(sample,reference_phenotype,neighbor_phenotype,avg_proximity,normalized_averaged_fraction)
-              v2 <- totals_df %>% select(sample,reference_phenotype,neighbor_phenotype,neighbor_count,reference_count,normalized_total_fraction)
-              df <- v1 %>% inner_join(v2,by=c('sample','reference_phenotype','neighbor_phenotype'))
-              return(df)
-})
-
 #' Run a proximity analysis on all samples.
 #' There are two modes this function can be run. In the first mode it uses the major and minor axes for each cell as provided by inform. It then averages
 #' half of those two axes and adds an uncertainty margin, which are used to provide an estimate on whether two cells are touching. This mode can be used to approximate the interaction analysis.
@@ -202,7 +93,7 @@ setMethod("touching_events",
 
 extract_proximity_single <- function(d, fr, tr, radii, uncertainty_margin, only_closest){
     if (class(radii) =='character' && c( c('Entire.Cell.Major.Axis', 'Entire.Cell.Minor.Axis') %in% radii)){
-        #print("use uncertainty margin approach")
+
         #remove average ((minor+major)/2) radius from both cell.
         d <- sweep(d,2,fr[[radii[1]]]/4,FUN = '-')
         d <- sweep(d,2,fr[[radii[2]]]/4,FUN = '-')
@@ -215,7 +106,7 @@ extract_proximity_single <- function(d, fr, tr, radii, uncertainty_margin, only_
     }else{
         d <- d - radii
     }
-    #print(d)
+
     if (only_closest){
         #when looking at proximity we don't want to double count cells so for each 'to' cell
         #we only count the distance to the closest 'from' cell
@@ -224,6 +115,7 @@ extract_proximity_single <- function(d, fr, tr, radii, uncertainty_margin, only_
 
     #now call all of the distances that are touching
     counts <- sum(d<0)
+
     return(counts)
 }
 
@@ -330,9 +222,8 @@ setMethod("plot_proximities",
               }
 
               int <- lapply(x@proximity,function(x)x$avg_proximities)
-              # For each of the samples get the avg_proximities
-              dat <- sapply(int,function(x)x[,label]) # narrow down the avg_proximities to those referenced by the column 'label'
-              count <- get_counts_collapsed(x)[label,] # This appears to be an error.
+              dat <- sapply(int,function(x)x[,label])
+              count <- get_counts_collapsed(x)[label,]
               labels <- rownames(dat)
 
               if (normalize){
