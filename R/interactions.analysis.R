@@ -408,6 +408,8 @@ setMethod(
                         row[['interactions']] = totals[[phenotype1]]
                         row[['count']] = cnts[[phenotype1]][[phenotype2]]
                         row[['proportion']] = cnts[[phenotype1]][[phenotype2]]/row[['interactions']]
+                    } else { 
+                        return(NULL)
                     }
                     return(data.frame(row))
                 })
